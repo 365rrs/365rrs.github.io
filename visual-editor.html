@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="author" content="viggo" />
+  <title>WebStack.cc - 可视化编辑器</title>
+  <meta name="keywords" content="UI设计,设计导航,网址导航,设计资源,创意导航,设计师网址大全">
+  <meta name="description" content="WebStack - 设计师网址导航可视化编辑器">
+  <link rel="shortcut icon" href="assets/images/favicon.png">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Arimo:400,700,400italic">
+  <link rel="stylesheet" href="assets/css/fonts/linecons/css/linecons.css">
+  <link rel="stylesheet" href="assets/css/fonts/fontawesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="assets/css/bootstrap.css">
+  <link rel="stylesheet" href="assets/css/xenon-core.css">
+  <link rel="stylesheet" href="assets/css/xenon-components.css">
+  <link rel="stylesheet" href="assets/css/xenon-skins.css">
+  <link rel="stylesheet" href="assets/css/nav.css">
+  <script src="assets/js/jquery-1.11.1.min.js"></script>
+  <style>
+    .admin-panel {
+      max-width: 1000px;
+      margin: 30px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 5px;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    }
+    .category-list {
+      margin-top: 20px;
+    }
+    .category-item {
+      border: 1px solid #eee;
+      border-radius: 5px;
+      padding: 15px;
+      margin-bottom: 15px;
+      background: #fff;
+    }
+    .site-list {
+      min-height: 50px;
+      padding: 5px 0;
+    }
+    .site-item {
+      background: #f9f9f9;
+      border-radius: 3px;
+      padding: 10px;
+      margin: 5px 0;
+      cursor: move;
+    }
+    .modal-body .form-group {
+      margin-bottom: 15px;
+    }
+    .action-buttons {
+      margin-top: 10px;
+    }
+    .nav-buttons {
+      margin-bottom: 20px;
+    }
+    .drag-handle {
+      cursor: move;
+      opacity: 0.5;
+    }
+    .drag-handle:hover {
+      opacity: 1;
+    }
+    .drag-over {
+      border: 2px dashed #007bff !important;
+      background-color: #f8f9fa;
+    }
+    .sortable-placeholder {
+      background: #e9ecef;
+      border: 2px dashed #adb5bd;
+      border-radius: 3px;
+      height: 40px;
+      margin: 5px 0;
+    }
+  </style>
+</head>
+
+<body class="page-body">
+<!-- skin-white -->
+<div class="page-container">
+  <div class="sidebar-menu toggle-others fixed">
+    <div class="sidebar-menu-inner">
+      <header class="logo-env">
+        <!-- logo -->
+        <div class="logo">
+          <a href="index.html" class="logo-expanded">
+            <img src="assets/images/logo@2x.png" width="100%" alt="" />
+          </a>
+          <a href="index.html" class="logo-collapsed">
+            <img src="assets/images/logo-collapsed@2x.png" width="40" alt="" />
+          </a>
+        </div>
+        <div class="mobile-menu-toggle visible-xs">
+          <a href="#" data-toggle="user-info-menu">
+            <i class="linecons-cog"></i>
+          </a>
+          <a href="#" data-toggle="mobile-menu">
+            <i class="fa-bars"></i>
+          </a>
+        </div>
+      </header>
+      <ul id="main-menu" class="main-menu">
+        <li>
+          <a href="index.html">
+            <i class="linecons-star"></i>
+            <span class="title">主页</span>
+          </a>
+        </li>
+        <li>
+          <a href="admin.html">
+            <i class="linecons-key"></i>
+            <span class="title">数据管理</span>
+          </a>
+        </li>
+        <li>
+          <a href="visual-editor.html">
+            <i class="linecons-pencil"></i>
+            <span class="title">可视化编辑</span>
+          </a>
+        </li>
+        <li>
+          <a href="about.html">
+            <i class="linecons-heart"></i>
+            <span class="tooltip-blue">关于本站</span>
+            <span class="label label-Primary pull-right hidden-collapsed">♥︎</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div class="main-content">
+    <nav class="navbar user-info-navbar" role="navigation">
+      <ul class="user-info-menu left-links list-inline list-unstyled">
+        <li class="hidden-sm hidden-xs">
+          <a href="#" data-toggle="sidebar">
+            <i class="fa-bars"></i>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="container">
+      <div class="admin-panel">
+        <h2 class="text-center">可视化编辑器</h2>
+        <p class="text-center text-muted">管理网站分类和网址（可拖拽排序）</p>
+
+        <div class="nav-buttons">
+          <button id="addCategoryBtn" class="btn btn-success">
+            <i class="fa fa-plus"></i> 添加分类
+          </button>
+          <button id="saveBtn" class="btn btn-primary">
+            <i class="fa fa-save"></i> 保存更改
+          </button>
+          <a href="admin.html" class="btn btn-default">
+            <i class="fa fa-arrow-left"></i> 返回管理页面
+          </a>
+        </div>
+
+        <div id="messageArea" class="alert" style="display: none; margin-top: 20px;"></div>
+
+        <!-- 分类和网站列表 -->
+        <div id="categoryList" class="category-list sortable-categories">
+          <!-- 分类和网站列表将在这里动态生成 -->
+        </div>
+      </div>
+    </div>
+
+    <br />
+    <footer class="main-footer sticky footer-type-1">
+      <div class="footer-inner">
+        <div class="footer-text">
+          &copy; 2017-2022
+          <a href="about.html"><strong>WebStack</strong></a> design by <a href="https://www.viggoz.com"
+                                                                          target="_blank"><strong>Viggo</strong></a>
+        </div>
+        <div class="go-up">
+          <a href="#" rel="go-top">
+            <i class="fa-angle-up"></i>
+          </a>
+        </div>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<!-- 编辑模态框 -->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="editModalTitle">编辑</h4>
+      </div>
+      <div class="modal-body">
+        <form id="editForm">
+          <input type="hidden" id="editType">
+          <input type="hidden" id="editIndex">
+          <input type="hidden" id="editCategoryIndex">
+
+          <div class="form-group" id="nameField">
+            <label for="editName">名称:</label>
+            <input type="text" class="form-control" id="editName" required>
+          </div>
+
+          <div class="form-group" id="urlField">
+            <label for="editUrl">网址:</label>
+            <input type="url" class="form-control" id="editUrl" required>
+          </div>
+
+          <div class="form-group" id="logoField">
+            <label for="editLogo">Logo路径:</label>
+            <input type="text" class="form-control" id="editLogo">
+          </div>
+
+          <div class="form-group" id="descriptionField">
+            <label for="editDescription">描述:</label>
+            <input type="text" class="form-control" id="editDescription">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+        <button type="button" class="btn btn-primary" id="saveEditBtn">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Scripts -->
+<script src="assets/js/bootstrap.min.js"></script>
+<script src="assets/js/TweenMax.min.js"></script>
+<script src="assets/js/resizeable.js"></script>
+<script src="assets/js/joinable.js"></script>
+<script src="assets/js/xenon-api.js"></script>
+<script src="assets/js/xenon-toggles.js"></script>
+<script src="assets/js/websites.js"></script>
+<script>
+  $(document).ready(function() {
+    let currentData = null;
+
+    // 显示当前数据（优先显示本地数据，如果没有则显示默认数据）
+    function loadCurrentData() {
+      const localData = localStorage.getItem('websiteData');
+      if (localData) {
+        try {
+          // 验证本地数据格式
+          const parsedData = JSON.parse(localData);
+          if (validateDataStructure(parsedData)) {
+            currentData = parsedData;
+            return;
+          }
+        } catch (e) {
+          // 本地数据解析失败，使用默认数据
+        }
+      }
+      // 使用默认数据
+      currentData = JSON.parse(JSON.stringify(websiteData)); // 深拷贝
+    }
+
+    // 验证数据结构
+    function validateDataStructure(data) {
+      // 检查基本结构
+      if (!data || typeof data !== 'object') {
+        return false;
+      }
+
+      if (!data.categories || !Array.isArray(data.categories)) {
+        return false;
+      }
+
+      // 检查每个分类
+      for (let category of data.categories) {
+        if (!category.name || typeof category.name !== 'string') {
+          return false;
+        }
+
+        if (!category.sites || !Array.isArray(category.sites)) {
+          return false;
+        }
+
+        // 检查每个站点
+        for (let site of category.sites) {
+          if (!site.name || typeof site.name !== 'string') {
+            return false;
+          }
+
+          if (!site.url || typeof site.url !== 'string') {
+            return false;
+          }
+
+          // logo字段可选，但如果存在则应该是字符串
+          if (site.logo && typeof site.logo !== 'string') {
+            return false;
+          }
+
+          // description字段可选，但如果存在则应该是字符串
+          if (site.description && typeof site.description !== 'string') {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    }
+
+    // 保存数据
+    $('#saveBtn').click(function() {
+      try {
+        // 验证数据结构
+        if (!validateDataStructure(currentData)) {
+          showMessage('数据格式不正确：数据结构验证失败', 'danger');
+          return;
+        }
+
+        // 保存到localStorage
+        const jsonData = JSON.stringify(currentData, null, 2);
+        localStorage.setItem('websiteData', jsonData);
+        // 同时更新数据源偏好设置，使主页默认加载本地数据
+        localStorage.setItem('websiteDataSourcePreference', 'local');
+        showMessage('数据已保存到浏览器存储中。主页将默认使用此数据。', 'success');
+      } catch (e) {
+        showMessage('保存数据时出错: ' + e.message, 'danger');
+      }
+    });
+
+    // 添加分类
+    $('#addCategoryBtn').click(function() {
+      $('#editModalTitle').text('添加分类');
+      $('#editType').val('category');
+      $('#editIndex').val('');
+      $('#editName').val('');
+      $('#urlField').hide();
+      $('#logoField').hide();
+      $('#descriptionField').hide();
+      $('#editModal').modal('show');
+    });
+
+    // 保存编辑
+    $('#saveEditBtn').click(function() {
+      const type = $('#editType').val();
+      const name = $('#editName').val();
+      const url = $('#editUrl').val();
+      const logo = $('#editLogo').val();
+      const description = $('#editDescription').val();
+      const index = $('#editIndex').val();
+      const categoryIndex = $('#editCategoryIndex').val();
+
+      if (!name) {
+        showMessage('名称不能为空', 'warning');
+        return;
+      }
+
+      if (type === 'category') {
+        if (index === '') {
+          // 添加新分类
+          currentData.categories.push({
+            name: name,
+            sites: []
+          });
+        } else {
+          // 编辑现有分类
+          currentData.categories[index].name = name;
+        }
+      } else if (type === 'site') {
+        const siteData = {
+          name: name,
+          url: url || '',
+          logo: logo || '',
+          description: description || ''
+        };
+
+        if (index === '') {
+          // 添加新网站
+          currentData.categories[categoryIndex].sites.push(siteData);
+        } else {
+          // 编辑现有网站
+          currentData.categories[categoryIndex].sites[index] = siteData;
+        }
+      }
+
+      renderVisualEditor();
+      $('#editModal').modal('hide');
+    });
+
+    // 渲染可视化编辑器
+    function renderVisualEditor() {
+      const categoryList = $('#categoryList');
+      categoryList.empty();
+
+      currentData.categories.forEach((category, categoryIndex) => {
+        const categoryHtml = `
+          <div class="category-item" data-category-index="${categoryIndex}" draggable="true">
+            <div class="row">
+              <div class="col-xs-7">
+                <h4>
+                  <i class="fa fa-bars drag-handle category-drag-handle"></i>
+                  ${category.name}
+                </h4>
+              </div>
+              <div class="col-xs-5 text-right">
+                <button class="btn btn-xs btn-primary edit-category" data-category-index="${categoryIndex}">
+                  <i class="fa fa-edit"></i> 编辑
+                </button>
+                <button class="btn btn-xs btn-danger delete-category" data-category-index="${categoryIndex}">
+                  <i class="fa fa-trash"></i> 删除
+                </button>
+              </div>
+            </div>
+
+            <div class="action-buttons">
+              <button class="btn btn-xs btn-success add-site" data-category-index="${categoryIndex}">
+                <i class="fa fa-plus"></i> 添加网站
+              </button>
+            </div>
+
+            <div class="site-list sortable-sites" data-category-index="${categoryIndex}">
+              ${category.sites.map((site, siteIndex) => `
+                <div class="site-item" data-site-index="${siteIndex}" draggable="true">
+                  <div class="row">
+                    <div class="col-xs-1">
+                      <i class="fa fa-bars drag-handle site-drag-handle"></i>
+                    </div>
+                    <div class="col-xs-7">
+                      <strong>${site.name}</strong><br>
+                      <small>${site.url}</small>
+                    </div>
+                    <div class="col-xs-4 text-right">
+                      <button class="btn btn-xs btn-primary edit-site"
+                              data-category-index="${categoryIndex}"
+                              data-site-index="${siteIndex}">
+                        <i class="fa fa-edit"></i> 编辑
+                      </button>
+                      <button class="btn btn-xs btn-danger delete-site"
+                              data-category-index="${categoryIndex}"
+                              data-site-index="${siteIndex}">
+                        <i class="fa fa-trash"></i> 删除
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+
+        categoryList.append(categoryHtml);
+      });
+
+      // 初始化拖拽功能
+      initDragAndDrop();
+    }
+
+    // 初始化拖拽功能
+    function initDragAndDrop() {
+      // 分类拖拽
+      $('.sortable-categories .category-item').each(function() {
+        const el = this;
+
+        el.addEventListener('dragstart', function(e) {
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', el.dataset.categoryIndex);
+        });
+
+        el.addEventListener('dragover', function(e) {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+        });
+
+        el.addEventListener('dragenter', function(e) {
+          e.preventDefault();
+        });
+
+        el.addEventListener('drop', function(e) {
+          e.preventDefault();
+
+          const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+          const toIndex = parseInt(el.dataset.categoryIndex);
+
+          if (fromIndex !== toIndex) {
+            // 重新排列分类
+            const movedItem = currentData.categories.splice(fromIndex, 1)[0];
+            currentData.categories.splice(toIndex, 0, movedItem);
+            renderVisualEditor();
+          }
+        });
+      });
+
+      // 网站拖拽
+      $('.sortable-sites').each(function() {
+        const categoryIndex = $(this).data('category-index');
+        const siteList = this;
+
+        // 为网站列表添加拖拽区域
+        siteList.addEventListener('dragover', function(e) {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+        });
+
+        siteList.addEventListener('drop', function(e) {
+          e.preventDefault();
+
+          const fromCategoryIndex = parseInt(e.dataTransfer.getData('categoryIndex'));
+          const fromIndex = parseInt(e.dataTransfer.getData('siteIndex'));
+
+          if (!isNaN(fromCategoryIndex) && !isNaN(fromIndex)) {
+            // 跨分类移动
+            if (fromCategoryIndex !== categoryIndex) {
+              const movedItem = currentData.categories[fromCategoryIndex].sites.splice(fromIndex, 1)[0];
+              currentData.categories[categoryIndex].sites.push(movedItem);
+              renderVisualEditor();
+            }
+          }
+        });
+
+        // 网站项目拖拽
+        $(this).find('.site-item').each(function() {
+          const siteEl = this;
+          const siteIndex = parseInt(siteEl.dataset.siteIndex);
+
+          siteEl.addEventListener('dragstart', function(e) {
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('categoryIndex', categoryIndex);
+            e.dataTransfer.setData('siteIndex', siteIndex);
+          });
+
+          siteEl.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+
+            // 插入视觉提示
+            const rect = siteEl.getBoundingClientRect();
+            const midpoint = (rect.top + rect.bottom) / 2;
+
+            siteEl.classList.remove('drag-over-top', 'drag-over-bottom');
+
+            if (e.clientY < midpoint) {
+              siteEl.classList.add('drag-over-top');
+            } else {
+              siteEl.classList.add('drag-over-bottom');
+            }
+          });
+
+          siteEl.addEventListener('dragleave', function(e) {
+            siteEl.classList.remove('drag-over-top', 'drag-over-bottom');
+          });
+
+          siteEl.addEventListener('drop', function(e) {
+            e.preventDefault();
+            siteEl.classList.remove('drag-over-top', 'drag-over-bottom');
+
+            const fromCategoryIndex = parseInt(e.dataTransfer.getData('categoryIndex'));
+            const fromIndex = parseInt(e.dataTransfer.getData('siteIndex'));
+            const toCategoryIndex = categoryIndex;
+            const toIndex = siteIndex;
+
+            if (fromCategoryIndex === toCategoryIndex && fromIndex !== toIndex) {
+              // 同一分类内重新排列
+              const sites = currentData.categories[fromCategoryIndex].sites;
+              const movedItem = sites.splice(fromIndex, 1)[0];
+
+              // 计算插入位置
+              let insertIndex = toIndex;
+              if (fromIndex < toIndex) {
+                insertIndex++;
+              }
+
+              sites.splice(insertIndex, 0, movedItem);
+              renderVisualEditor();
+            }
+          });
+        });
+      });
+    }
+
+    // 编辑分类事件委托
+    $(document).on('click', '.edit-category', function() {
+      const categoryIndex = $(this).data('category-index');
+      const category = currentData.categories[categoryIndex];
+
+      $('#editModalTitle').text('编辑分类');
+      $('#editType').val('category');
+      $('#editIndex').val(categoryIndex);
+      $('#editName').val(category.name);
+      $('#urlField').hide();
+      $('#logoField').hide();
+      $('#descriptionField').hide();
+      $('#editModal').modal('show');
+    });
+
+    // 删除分类事件委托
+    $(document).on('click', '.delete-category', function() {
+      const categoryIndex = $(this).data('category-index');
+      const categoryName = currentData.categories[categoryIndex].name;
+
+      if (confirm(`确定要删除分类 "${categoryName}" 吗？这将同时删除该分类下的所有网站。`)) {
+        currentData.categories.splice(categoryIndex, 1);
+        renderVisualEditor();
+      }
+    });
+
+    // 添加网站事件委托
+    $(document).on('click', '.add-site', function() {
+      const categoryIndex = $(this).data('category-index');
+
+      $('#editModalTitle').text('添加网站');
+      $('#editType').val('site');
+      $('#editCategoryIndex').val(categoryIndex);
+      $('#editIndex').val('');
+      $('#editName').val('');
+      $('#editUrl').val('');
+      $('#editLogo').val('');
+      $('#editDescription').val('');
+      $('#urlField').show();
+      $('#logoField').show();
+      $('#descriptionField').show();
+      $('#editModal').modal('show');
+    });
+
+    // 编辑网站事件委托
+    $(document).on('click', '.edit-site', function() {
+      const categoryIndex = $(this).data('category-index');
+      const siteIndex = $(this).data('site-index');
+      const site = currentData.categories[categoryIndex].sites[siteIndex];
+
+      $('#editModalTitle').text('编辑网站');
+      $('#editType').val('site');
+      $('#editCategoryIndex').val(categoryIndex);
+      $('#editIndex').val(siteIndex);
+      $('#editName').val(site.name);
+      $('#editUrl').val(site.url || '');
+      $('#editLogo').val(site.logo || '');
+      $('#editDescription').val(site.description || '');
+      $('#urlField').show();
+      $('#logoField').show();
+      $('#descriptionField').show();
+      $('#editModal').modal('show');
+    });
+
+    // 删除网站事件委托
+    $(document).on('click', '.delete-site', function() {
+      const categoryIndex = $(this).data('category-index');
+      const siteIndex = $(this).data('site-index');
+      const siteName = currentData.categories[categoryIndex].sites[siteIndex].name;
+
+      if (confirm(`确定要删除网站 "${siteName}" 吗？`)) {
+        currentData.categories[categoryIndex].sites.splice(siteIndex, 1);
+        renderVisualEditor();
+      }
+    });
+
+    // 阻止拖拽图标事件冒泡
+    $(document).on('mousedown', '.drag-handle', function(e) {
+      e.preventDefault();
+    });
+
+    // 显示消息
+    function showMessage(message, type) {
+      const alertClass = 'alert-' + type;
+      $('#messageArea')
+              .removeClass('alert-success alert-danger alert-warning alert-info')
+              .addClass('alert ' + alertClass)
+              .html(message)
+              .show();
+
+      // 3秒后自动隐藏
+      setTimeout(function() {
+        $('#messageArea').fadeOut();
+      }, 3000);
+    }
+
+    // 初始化页面
+    loadCurrentData();
+    renderVisualEditor();
+  });
+</script>
+</body>
+
+</html>

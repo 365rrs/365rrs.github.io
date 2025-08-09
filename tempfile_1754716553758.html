@@ -1,0 +1,901 @@
+:E:\14_下载\Compressed\WebStackPage.github.io-master_3\WebStackPage.github.io-master\index.html
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="author" content="viggo" />
+    <title>WebStack.cc - 设计师网址导航</title>
+    <meta name="keywords" content="UI设计,UI设计素材,设计导航,网址导航,设计资源,创意导航,创意网站导航,设计师网址大全,设计素材大全,设计师导航,UI设计资源,优秀UI设计欣赏,设计师导航,设计师网址大全,设计师网址导航,产品经理网址导航,交互设计师网址导航,www.webstack.cc">
+    <meta name="description" content="WebStack - 收集国内外优秀设计网站、UI设计资源网站、灵感创意网站、素材资源网站，定时更新分享优质产品设计书签。www.webstack.cc">
+    <link rel="shortcut icon" href="assets/images/favicon.png">
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Arimo:400,700,400italic">
+    <link rel="stylesheet" href="assets/css/fonts/linecons/css/linecons.css">
+    <link rel="stylesheet" href="assets/css/fonts/fontawesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="assets/css/bootstrap.css">
+    <link rel="stylesheet" href="assets/css/xenon-core.css">
+    <link rel="stylesheet" href="assets/css/xenon-components.css">
+    <link rel="stylesheet" href="assets/css/xenon-skins.css">
+    <link rel="stylesheet" href="assets/css/nav.css">
+    <script src="assets/js/jquery-1.11.1.min.js"></script>
+    <style>
+        #data-source-selector {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            min-width: 200px;
+        }
+
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .data-source-btn {
+            margin: 5px;
+            display: block;
+            width: 100%;
+        }
+        
+        .remote-url-section {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .remote-url-section input {
+            width: 100%;
+            margin: 5px 0;
+        }
+        
+        /* 添加logo加载失败时的默认样式 */
+        .logo-placeholder {
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 12px;
+        }
+        
+        /* 二级菜单样式 */
+        .has-submenu > a:after {
+            content: "\f107";
+            font-family: FontAwesome;
+            float: right;
+            margin-right: 10px;
+            transition: transform 0.2s;
+        }
+        
+        .has-submenu.active > a:after {
+            transform: rotate(180deg);
+        }
+        
+        .submenu {
+            display: none;
+            padding-left: 20px;
+        }
+        
+        .submenu li a {
+            padding: 8px 15px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body class="page-body">
+<!-- 数据源选择器 -->
+<div id="data-source-selector">
+    <h4>选择数据源</h4>
+    <button id="load-default" class="btn btn-success btn-sm data-source-btn">
+        <i class="fa fa-file"></i> 默认数据
+    </button>
+    <button id="load-local" class="btn btn-info btn-sm data-source-btn">
+        <i class="fa fa-database"></i> 本地数据
+    </button>
+    <button id="load-remote" class="btn btn-warning btn-sm data-source-btn">
+        <i class="fa fa-cloud-download"></i> 远程数据
+    </button>
+    <div class="remote-url-section" id="remoteUrlSection">
+        <input type="text" id="remoteUrlInput" class="form-control" placeholder="请输入远程JSON URL">
+        <button id="loadRemoteData" class="btn btn-primary btn-sm data-source-btn">
+            <i class="fa fa-download"></i> 加载远程数据
+        </button>
+    </div>
+    <button id="hide-selector" class="btn btn-default btn-sm data-source-btn">
+        <i class="fa fa-times"></i> 隐藏
+    </button>
+</div>
+
+<!-- 加载提示 -->
+<div id="loading-overlay" style="display: none;">
+    <i class="fa fa-spinner fa-spin fa-3x"></i>
+    <p style="margin-top: 15px; color: white;">正在加载数据...</p>
+</div>
+
+<!-- skin-white -->
+<div class="page-container">
+    <div class="sidebar-menu toggle-others fixed">
+        <div class="sidebar-menu-inner">
+            <header class="logo-env">
+                <!-- logo -->
+                <div class="logo">
+                    <a href="index.html" class="logo-expanded">
+                        <img src="assets/images/logo@2x.png" width="100%" alt="" />
+                    </a>
+                    <a href="index.html" class="logo-collapsed">
+                        <img src="assets/images/logo-collapsed@2x.png" width="40" alt="" />
+                    </a>
+                </div>
+                <div class="mobile-menu-toggle visible-xs">
+                    <a href="#" data-toggle="user-info-menu">
+                        <i class="linecons-cog"></i>
+                    </a>
+                    <a href="#" data-toggle="mobile-menu">
+                        <i class="fa-bars"></i>
+                    </a>
+                </div>
+            </header>
+            <ul id="main-menu" class="main-menu">
+                <!-- 菜单项将通过JavaScript动态生成 -->
+            </ul>
+        </div>
+    </div>
+    <div class="main-content">
+        <nav class="navbar user-info-navbar" role="navigation">
+            <!-- User Info, Notifications and Menu Bar -->
+            <!-- Left links for user info navbar -->
+            <ul class="user-info-menu left-links list-inline list-unstyled">
+                <li class="hidden-sm hidden-xs">
+                    <a href="#" data-toggle="sidebar">
+                        <i class="fa-bars"></i>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="show-data-selector">
+                        <i class="fa fa-database"></i> 数据源
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <!-- 网站内容将通过JavaScript动态生成 -->
+        <div id="website-content">
+            <!-- 网站内容将在这里渲染 -->
+        </div>
+        <br />
+        <!-- Main Footer -->
+        <footer class="main-footer sticky footer-type-1">
+            <div class="footer-inner">
+                <div class="footer-text">
+                    &copy; 2017-2022
+                    <a href="about.html"><strong>WebStack</strong></a> design by <a href="https://www.viggoz.com"
+                                                                                    target="_blank"><strong>Viggo</strong></a>
+                </div>
+                <div class="go-up">
+                    <a href="#" rel="go-top">
+                        <i class="fa-angle-up"></i>
+                    </a>
+                </div>
+            </div>
+        </footer>
+    </div>
+</div>
+
+<!-- Bottom Scripts -->
+<script src="assets/js/bootstrap.min.js"></script>
+<script src="assets/js/TweenMax.min.js"></script>
+<script src="assets/js/resizeable.js"></script>
+<script src="assets/js/joinable.js"></script>
+<script src="assets/js/xenon-api.js"></script>
+<script src="assets/js/xenon-toggles.js"></script>
+<!-- JavaScripts for this page -->
+<script src="assets/js/jquery.nanoscroller.min.js"></script>
+<script src="assets/js/lozad.min.js"></script>
+<script src="assets/js/websites.js"></script>
+<script>
+    $(document).ready(function () {
+        let currentData = websiteData; // 默认使用 websites.js 中的数据
+        let lozadObserver = null; // 存储lozad观察者实例
+        let currentDataSource = 'default'; // 当前数据源
+
+        // 初始化lozad
+        function initLozad() {
+            if (typeof lozad !== 'undefined') {
+                lozadObserver = lozad();
+                return true;
+            }
+            return false;
+        }
+
+        // 保存数据源选择到localStorage
+        function saveDataSourcePreference(source) {
+            localStorage.setItem('websiteDataSourcePreference', source);
+        }
+
+        // 获取数据源选择从localStorage
+        function getDataSourcePreference() {
+            return localStorage.getItem('websiteDataSourcePreference') || 'default';
+        }
+
+        // 显示数据源选择器
+        $('#show-data-selector').click(function(e) {
+            e.preventDefault();
+            $('#data-source-selector').fadeIn();
+            
+            // 如果之前有保存的远程URL，显示出来
+            const remoteUrl = localStorage.getItem('remoteDataSourceUrl');
+            if (remoteUrl) {
+                $('#remoteUrlInput').val(remoteUrl);
+            }
+        });
+
+        // 隐藏数据源选择器
+        $('#hide-selector').click(function() {
+            $('#data-source-selector').fadeOut();
+        });
+
+        // 加载默认数据 (websites.js)
+        $('#load-default').click(function() {
+            showLoading();
+            setTimeout(() => {
+                currentData = websiteData;
+                currentDataSource = 'default';
+                regenerateContent();
+                $('#data-source-selector').fadeOut();
+                hideLoading();
+                showMessage('已切换到默认数据', 'success');
+                saveDataSourcePreference('default');
+            }, 500);
+        });
+
+        // 加载本地数据
+        $('#load-local').click(function() {
+            showLoading();
+            setTimeout(() => {
+                const localData = localStorage.getItem('websiteData');
+                if (localData) {
+                    try {
+                        // 尝试解析本地数据
+                        const parsedData = JSON.parse(localData);
+
+                        // 验证数据结构
+                        if (validateDataStructure(parsedData)) {
+                            currentData = parsedData;
+                            currentDataSource = 'local';
+                            regenerateContent();
+                            showMessage('已切换到本地数据', 'success');
+                            saveDataSourcePreference('local');
+                        } else {
+                            showMessage('本地数据结构不正确，使用默认数据。错误: 数据结构验证失败', 'warning');
+                            currentData = websiteData;
+                            currentDataSource = 'default';
+                            regenerateContent();
+                            saveDataSourcePreference('default');
+                        }
+                    } catch (e) {
+                        showMessage('本地数据格式错误，使用默认数据。错误: ' + e.message, 'warning');
+                        console.error('JSON解析错误:', e);
+                        currentData = websiteData;
+                        currentDataSource = 'default';
+                        regenerateContent();
+                        saveDataSourcePreference('default');
+                    }
+                } else {
+                    showMessage('未找到本地数据，使用默认数据', 'info');
+                    currentData = websiteData;
+                    currentDataSource = 'default';
+                    regenerateContent();
+                    saveDataSourcePreference('default');
+                }
+                $('#data-source-selector').fadeOut();
+                hideLoading();
+            }, 500);
+        });
+
+        // 切换到远程数据源
+        $('#load-remote').click(function() {
+            $('#remoteUrlSection').toggle();
+        });
+
+        // 从远程URL加载数据
+        $('#loadRemoteData').click(function() {
+            const url = $('#remoteUrlInput').val().trim();
+            if (!url) {
+                showMessage('请输入远程数据URL', 'warning');
+                return;
+            }
+
+            showLoading();
+            $('#data-source-selector').fadeOut();
+
+            // 使用代理服务器解决CORS问题
+            const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+            
+            $.ajax({
+                url: proxyUrl,
+                method: 'GET',
+                dataType: 'text',
+                success: function(data) {
+                    try {
+                        const parsedData = JSON.parse(data);
+                        // 验证数据结构
+                        if (validateDataStructure(parsedData)) {
+                            currentData = parsedData;
+                            currentDataSource = 'remote';
+                            regenerateContent();
+                            showMessage('远程数据加载成功', 'success');
+                            saveDataSourcePreference('remote');
+                            // 保存URL到localStorage
+                            localStorage.setItem('remoteDataSourceUrl', url);
+                        } else {
+                            showMessage('远程数据格式不正确', 'danger');
+                            currentData = websiteData;
+                            currentDataSource = 'default';
+                            regenerateContent();
+                            saveDataSourcePreference('default');
+                        }
+                    } catch (e) {
+                        showMessage('解析远程数据失败: ' + e.message, 'danger');
+                        currentData = websiteData;
+                        currentDataSource = 'default';
+                        regenerateContent();
+                        saveDataSourcePreference('default');
+                    }
+                    hideLoading();
+                },
+                error: function(xhr, status, error) {
+                    showMessage('加载远程数据失败: ' + error, 'danger');
+                    hideLoading();
+                }
+            });
+        });
+
+        // 验证数据结构（支持二级分类）
+        function validateDataStructure(data) {
+            // 检查基本结构
+            if (!data || typeof data !== 'object') {
+                return false;
+            }
+
+            if (!data.categories || !Array.isArray(data.categories)) {
+                return false;
+            }
+
+            // 检查每个分类
+            for (let category of data.categories) {
+                if (!category.name || typeof category.name !== 'string') {
+                    return false;
+                }
+
+                // 检查是否有子分类
+                if (category.subcategories) {
+                    // 如果有子分类，验证子分类结构
+                    if (!Array.isArray(category.subcategories)) {
+                        return false;
+                    }
+                    
+                    for (let subcategory of category.subcategories) {
+                        if (!subcategory.name || typeof subcategory.name !== 'string') {
+                            return false;
+                        }
+                        
+                        if (!subcategory.sites || !Array.isArray(subcategory.sites)) {
+                            return false;
+                        }
+                        
+                        // 检查每个站点
+                        for (let site of subcategory.sites) {
+                            if (!site.name || typeof site.name !== 'string') {
+                                return false;
+                            }
+                            
+                            if (!site.url || typeof site.url !== 'string') {
+                                return false;
+                            }
+                            
+                            // logo字段可选，但如果存在则应该是字符串
+                            if (site.logo && typeof site.logo !== 'string') {
+                                return false;
+                            }
+                            
+                            // description字段可选，但如果存在则应该是字符串
+                            if (site.description && typeof site.description !== 'string') {
+                                return false;
+                            }
+                        }
+                    }
+                } else if (category.sites) {
+                    // 如果没有子分类，直接检查站点
+                    if (!Array.isArray(category.sites)) {
+                        return false;
+                    }
+                    
+                    // 检查每个站点
+                    for (let site of category.sites) {
+                        if (!site.name || typeof site.name !== 'string') {
+                            return false;
+                        }
+                        
+                        if (!site.url || typeof site.url !== 'string') {
+                            return false;
+                        }
+                        
+                        // logo字段可选，但如果存在则应该是字符串
+                        if (site.logo && typeof site.logo !== 'string') {
+                            return false;
+                        }
+                        
+                        // description字段可选，但如果存在则应该是字符串
+                        if (site.description && typeof site.description !== 'string') {
+                            return false;
+                        }
+                    }
+                } else {
+                    // 既没有子分类也没有站点
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        // 显示加载提示
+        function showLoading() {
+            $('#loading-overlay').fadeIn();
+        }
+
+        // 隐藏加载提示
+        function hideLoading() {
+            $('#loading-overlay').fadeOut();
+        }
+
+        // 显示消息
+        function showMessage(message, type) {
+            // 创建消息元素
+            const alertClass = 'alert-' + (type || 'info');
+            const messageEl = $(`
+                    <div class="alert ${alertClass} alert-dismissible" role="alert"
+                         style="position: fixed; top: 20px; right: 20px; z-index: 3000; min-width: 300px;">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        ${message}
+                    </div>
+                `);
+
+            $('body').append(messageEl);
+
+            // 3秒后自动消失
+            setTimeout(() => {
+                messageEl.fadeOut(() => {
+                    messageEl.remove();
+                });
+            }, 3000);
+        }
+
+        // 重新生成内容
+        function regenerateContent() {
+            generateMenu();
+            generateWebsiteContent();
+        }
+
+        // 生成菜单（支持二级分类）
+        function generateMenu() {
+            const menu = $('#main-menu');
+            menu.empty();
+
+            // 根据当前数据中的分类数据动态生成菜单
+            currentData.categories.forEach((category, index) => {
+                // 检查是否有子分类
+                if (category.subcategories && category.subcategories.length > 0) {
+                    // 创建带子菜单的菜单项
+                    const menuItemId = `menu-category-${index}`;
+                    let menuItem = `
+                        <li class="has-submenu" id="${menuItemId}">
+                            <a href="#${category.name}" class="smooth">
+                                <i class="linecons-star"></i>
+                                <span class="title">${category.name}</span>
+                            </a>
+                            <ul class="submenu">
+                    `;
+                    
+                    // 添加子分类
+                    category.subcategories.forEach((subcategory, subIndex) => {
+                        menuItem += `
+                            <li>
+                                <a href="#${category.name}-${subcategory.name}" class="smooth">
+                                    <span class="title">${subcategory.name}</span>
+                                </a>
+                            </li>
+                        `;
+                    });
+                    
+                    menuItem += `
+                            </ul>
+                        </li>
+                    `;
+                    
+                    menu.append(menuItem);
+                    
+                    // 添加子菜单展开/收起功能
+                    $(`#${menuItemId} > a`).click(function(e) {
+                        e.preventDefault();
+                        const $parent = $(this).parent();
+                        $parent.toggleClass('active');
+                        $parent.find('.submenu').slideToggle(200);
+                    });
+                } else {
+                    // 创建普通菜单项
+                    const menuItem = `
+                        <li>
+                            <a href="#${category.name}" class="smooth">
+                                <i class="linecons-star"></i>
+                                <span class="title">${category.name}</span>
+                            </a>
+                        </li>
+                    `;
+                    menu.append(menuItem);
+                }
+            });
+
+            // 添加管理页面链接
+            menu.append(`
+                        <!-- 在主页面 index.html 的菜单中添加新链接 -->
+                        <li>
+                          <a href="admin.html">
+                            <i class="linecons-key"></i>
+                            <span class="title">数据管理</span>
+                          </a>
+                        </li>
+                `);
+
+            // 添加关于本站（固定项）
+            menu.append(`
+                    <li>
+                        <a href="about.html">
+                            <i class="linecons-heart"></i>
+                            <span class="tooltip-blue">关于本站</span>
+                            <span class="label label-Primary pull-right hidden-collapsed">♥︎</span>
+                        </a>
+                    </li>
+                `);
+        }
+
+        // 从网站URL提取域名
+        function extractDomain(url) {
+            try {
+                const domain = new URL(url).hostname;
+                return domain;
+            } catch (e) {
+                // 如果URL解析失败，尝试其他方式提取域名
+                const match = url.match(/^https?:\/\/([^\/\?#]+)/i);
+                return match ? match[1] : '';
+            }
+        }
+
+        // 生成favicon URL列表（多种备选方案）
+        function generateFaviconUrls(siteUrl) {
+            try {
+                const domain = extractDomain(siteUrl);
+                if (domain) {
+                    // 提供多种favicon服务作为备选方案
+                    return [
+                        `https://www.google.com/s2/favicons?domain=${domain}&sz=64`,
+                        `https://favicon.io/favicon.ico?domain=${domain}`,
+                        `https://${domain}/favicon.ico`,
+                        `https://${domain}/apple-touch-icon.png`,
+                        `https://${domain}/apple-touch-icon-precomposed.png`,
+                        `https://api.faviconkit.com/${domain}/64`,
+                        `https://api.statvoo.com/favicon/?url=${domain}`
+                    ];
+                }
+            } catch (e) {
+                console.warn('生成favicon URL失败:', e);
+            }
+            return ['assets/images/favicon.png'];
+        }
+
+        // 生成网站内容（支持二级分类）
+        function generateWebsiteContent() {
+            const content = $('#website-content');
+            content.empty();
+
+            currentData.categories.forEach(category => {
+                // 检查是否有子分类
+                if (category.subcategories && category.subcategories.length > 0) {
+                    // 添加主分类标题
+                    content.append(`
+                        <h4 class="text-gray">
+                            <i class="linecons-tag" style="margin-right: 7px;" id="${category.name}"></i>
+                            ${category.name}
+                        </h4>
+                    `);
+                    
+                    // 为每个子分类添加内容
+                    category.subcategories.forEach(subcategory => {
+                        // 添加子分类标题
+                        content.append(`
+                            <h5 class="text-gray" style="margin-left: 20px; margin-top: 20px;">
+                                <i class="linecons-tag" style="margin-right: 7px;" id="${category.name}-${subcategory.name}"></i>
+                                ${subcategory.name}
+                            </h5>
+                        `);
+                        
+                        // 添加网站列表
+                        let row = $('<div class="row" style="margin-left: 20px;"></div>');
+                        content.append(row);
+                        
+                        subcategory.sites.forEach((site, index) => {
+                            // 每行显示4个网站
+                            if (index % 4 === 0 && index > 0) {
+                                row = $('<div class="row" style="margin-left: 20px;"></div>');
+                                content.append(row);
+                            }
+                            
+                            // 确定logo URL的优先级：
+                            // 1. 如果有维护的logo，则使用维护的logo
+                            // 2. 如果没有维护logo，则使用从网站获取的favicon（多种备选方案）
+                            // 3. 如果获取favicon失败，则使用默认logo
+                            let logoUrl = site.logo;
+                            if (!logoUrl) {
+                                // 如果没有维护logo，则生成favicon URL列表
+                                const faviconUrls = generateFaviconUrls(site.url);
+                                // 使用第一个URL作为初始显示
+                                logoUrl = faviconUrls[0];
+                            }
+                            
+                            const siteHtml = `
+                                <div class="col-sm-3">
+                                    <div class="xe-widget xe-conversations box2 label-info"
+                                         onclick="window.open('${site.url}', '_blank')"
+                                         data-toggle="tooltip"
+                                         data-placement="bottom"
+                                         title=""
+                                         data-original-title="${site.url}">
+                                        <div class="xe-comment-entry">
+                                            <a class="xe-user-img">
+                                                <img data-src="${logoUrl}" class="lozad img-circle" width="40" 
+                                                     onerror="this.onerror=null;this.src='assets/images/favicon.png';">
+                                            </a>
+                                            <div class="xe-comment">
+                                                <a href="#" class="xe-user-name overflowClip_1">
+                                                    <strong>${site.name}</strong>
+                                                </a>
+                                                <p class="overflowClip_2">${site.description || ''}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            
+                            row.append(siteHtml);
+                        });
+                    });
+                } else {
+                    // 添加分类标题（无子分类）
+                    content.append(`
+                        <h4 class="text-gray">
+                            <i class="linecons-tag" style="margin-right: 7px;" id="${category.name}"></i>
+                            ${category.name}
+                        </h4>
+                    `);
+                    
+                    // 添加网站列表
+                    let row = $('<div class="row"></div>');
+                    content.append(row);
+                    
+                    category.sites.forEach((site, index) => {
+                        // 每行显示4个网站
+                        if (index % 4 === 0 && index > 0) {
+                            row = $('<div class="row"></div>');
+                            content.append(row);
+                        }
+                        
+                        // 确定logo URL的优先级：
+                        // 1. 如果有维护的logo，则使用维护的logo
+                        // 2. 如果没有维护logo，则使用从网站获取的favicon（多种备选方案）
+                        // 3. 如果获取favicon失败，则使用默认logo
+                        let logoUrl = site.logo;
+                        if (!logoUrl) {
+                            // 如果没有维护logo，则生成favicon URL列表
+                            const faviconUrls = generateFaviconUrls(site.url);
+                            // 使用第一个URL作为初始显示
+                            logoUrl = faviconUrls[0];
+                        }
+                        
+                        const siteHtml = `
+                            <div class="col-sm-3">
+                                <div class="xe-widget xe-conversations box2 label-info"
+                                     onclick="window.open('${site.url}', '_blank')"
+                                     data-toggle="tooltip"
+                                     data-placement="bottom"
+                                     title=""
+                                     data-original-title="${site.url}">
+                                    <div class="xe-comment-entry">
+                                        <a class="xe-user-img">
+                                            <img data-src="${logoUrl}" class="lozad img-circle" width="40" 
+                                                 onerror="this.onerror=null;this.src='assets/images/favicon.png';">
+                                        </a>
+                                        <div class="xe-comment">
+                                            <a href="#" class="xe-user-name overflowClip_1">
+                                                <strong>${site.name}</strong>
+                                            </a>
+                                            <p class="overflowClip_2">${site.description || ''}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        row.append(siteHtml);
+                    });
+                }
+                
+                // 添加分隔符
+                content.append('<br />');
+            });
+
+            // 初始化延迟加载（带错误处理）
+            try {
+                if (initLozad()) {
+                    lozadObserver.observe();
+                } else {
+                    // 如果lozad未定义，直接加载图片
+                    $('.lozad').each(function() {
+                        const $this = $(this);
+                        const src = $this.attr('data-src');
+                        if (src) {
+                            $this.attr('src', src);
+                        }
+                    });
+                }
+            } catch (e) {
+                console.warn('Lozad初始化失败，使用备用加载方式:', e);
+                // 备用方案：直接加载所有图片
+                $('.lozad').each(function() {
+                    const $this = $(this);
+                    const src = $this.attr('data-src');
+                    if (src) {
+                        $this.attr('src', src);
+                    }
+                });
+            }
+
+            // 初始化工具提示
+            $('[data-toggle="tooltip"]').tooltip();
+        }
+
+        // 自动加载远程数据
+        function autoLoadRemoteData(remoteUrl) {
+            return new Promise((resolve, reject) => {
+                showLoading();
+                
+                // 使用代理服务器解决CORS问题
+                const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(remoteUrl);
+                
+                $.ajax({
+                    url: proxyUrl,
+                    method: 'GET',
+                    dataType: 'text',
+                    timeout: 10000, // 10秒超时
+                    success: function(data) {
+                        try {
+                            const parsedData = JSON.parse(data);
+                            // 验证数据结构
+                            if (validateDataStructure(parsedData)) {
+                                currentData = parsedData;
+                                currentDataSource = 'remote';
+                                resolve(true);
+                            } else {
+                                reject(new Error('远程数据格式不正确'));
+                            }
+                        } catch (e) {
+                            reject(new Error('解析远程数据失败: ' + e.message));
+                        }
+                        hideLoading();
+                    },
+                    error: function(xhr, status, error) {
+                        reject(new Error('加载远程数据失败: ' + error));
+                        hideLoading();
+                    }
+                });
+            });
+        }
+
+        // 页面加载时根据用户偏好初始化内容
+        function initializeWithPreference() {
+            const preferredSource = getDataSourcePreference();
+
+            if (preferredSource === 'local') {
+                // 尝试加载本地数据
+                const localData = localStorage.getItem('websiteData');
+                if (localData) {
+                    try {
+                        const parsedData = JSON.parse(localData);
+                        if (validateDataStructure(parsedData)) {
+                            currentData = parsedData;
+                            currentDataSource = 'local';
+                            showMessage('已加载本地数据', 'info');
+                        } else {
+                            // 数据结构不正确，回退到默认数据
+                            currentData = websiteData;
+                            currentDataSource = 'default';
+                            saveDataSourcePreference('default');
+                            showMessage('本地数据结构不正确，使用默认数据', 'warning');
+                        }
+                    } catch (e) {
+                        // 解析失败，回退到默认数据
+                        currentData = websiteData;
+                        currentDataSource = 'default';
+                        saveDataSourcePreference('default');
+                        showMessage('本地数据解析失败，使用默认数据', 'warning');
+                    }
+                } else {
+                    // 未找到本地数据，回退到默认数据
+                    currentData = websiteData;
+                    currentDataSource = 'default';
+                    saveDataSourcePreference('default');
+                    showMessage('未找到本地数据，使用默认数据', 'info');
+                }
+            } else if (preferredSource === 'remote') {
+                // 尝试自动加载远程数据
+                const remoteUrl = localStorage.getItem('remoteDataSourceUrl');
+                if (remoteUrl) {
+                    $('#remoteUrlInput').val(remoteUrl);
+                    
+                    // 自动加载远程数据
+                    autoLoadRemoteData(remoteUrl)
+                        .then(() => {
+                            showMessage('已自动加载远程数据', 'success');
+                            regenerateContent();
+                        })
+                        .catch((error) => {
+                            // 加载失败，回退到默认数据
+                            currentData = websiteData;
+                            currentDataSource = 'default';
+                            saveDataSourcePreference('default');
+                            showMessage('远程数据加载失败，使用默认数据: ' + error.message, 'warning');
+                            regenerateContent();
+                        });
+                    return; // 提前返回，避免重复执行regenerateContent
+                } else {
+                    currentData = websiteData;
+                    currentDataSource = 'default';
+                    saveDataSourcePreference('default');
+                }
+            } else {
+                // 使用默认数据
+                currentData = websiteData;
+                currentDataSource = 'default';
+            }
+
+            regenerateContent();
+        }
+
+        // 页面加载时初始化内容
+        initializeWithPreference();
+    });
+</script>
+</body>
+
+</html>

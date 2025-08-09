@@ -1,0 +1,239 @@
+<!--
+author gaomingxichn@gmail.com
+-->
+<!DOCTYPE html>
+<!-- saved from url=(0022)http://blog.csdn.net/electroniXtar/ -->
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet">
+    <title>sql添加引号</title>
+    <!-- 引入 Vue 的 CDN 链接 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+</head>
+
+<body>
+<div id="app">
+    <div class="row">
+        <div class="col-md-2"></div>
+        <div class="col-md-8">
+            <br>
+            <h2>一键添加sql引号</h2>
+            <p class="lead">复制功能在<mark>Chrome</mark>浏览器生效</p>
+            <button class="btn btn-default" type="submit" @click="onReplaceClean()">清空</button>
+            <button class="btn btn-default" type="submit" @click="onReplace()">添加引号</button>
+            <button class="btn btn-default" type="submit" @click="onCopy()">复制</button>
+            <button class="btn btn-default" type="submit" @click="onReplaceNextRows()">逗号换行</button>
+            <button class="btn btn-default" type="submit" @click="onReplaceCleanNullRows()">删除空行</button>
+            <button class="btn btn-default" type="submit" @click="onReplaceAddComma()">添加逗号</button>
+            <button class="btn btn-default" type="submit" @click="onReplaceDouble()">添加双引号</button>
+            <button class="btn btn-default" type="submit" @click="onRePlaceMutipulKill()">添加kill</button>
+            <button class="btn btn-default" type="submit" @click="onRePlaceMutipulText()">左侧添加文本</button>
+            <!-- 新增右侧添加文本按钮 -->
+            <button class="btn btn-default" type="submit" @click="onRePlaceMutipulTextRight()">右侧添加文本</button>
+            <!-- 去重按钮 -->
+            <button class="btn btn-default" type="submit" @click="onRemoveDuplicates()">去重</button>
+            <!-- 统计行数按钮 -->
+            <button class="btn btn-default" type="submit" @click="countLines()">统计行数</button>
+            <!-- 排序按钮 -->
+            <button class="btn btn-default" type="submit" @click="sortLines()">排序</button>
+            <br>
+            <textarea class="form-control" v-model="txts" rows="10"></textarea>
+            <br>
+            <button class="btn btn-default" type="submit" @click="handleClear()">清空</button>
+            <button class="btn btn-default" type="submit" @click="diff()">比较不同</button>
+            <br>
+            <div style="display: flex;">
+                <textarea class="form-control" v-model="txta" rows="22" placeholder="全集"></textarea>
+                <textarea class="form-control" v-model="txtb" rows="22" placeholder="子集"></textarea>
+                <textarea class="form-control" v-model="txtc" rows="22" placeholder="差集"></textarea>
+                <textarea class="form-control" v-model="txtd" rows="22" placeholder="差集"></textarea>
+            </div>
+        </div>
+        <div class="col-md-2"></div>
+    </div>
+</div>
+
+
+</body>
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            txts: '',
+            txta: '',
+            txtb: '',
+            txtc: '',
+            txtd: '',
+            lineCount: 0 // 新增行数统计变量
+        },
+        methods: {
+            handleClear() {
+                this.txta = '';
+                this.txtb = '';
+                this.txtc = '';
+                this.txtd = '';
+            },
+            diff() {
+                const a = this.txta.split('\n').map(item => item.trim());
+                const b = this.txtb.split('\n').map(item => item.trim());
+
+                const amb = a.filter(item => !b.includes(item));
+                const bma = b.filter(item => !a.includes(item));
+
+                this.txtc = amb.join('\n');
+                this.txtd = bma.join('\n');
+            },
+            onReplaceClean() {
+                this.txts = '';
+            },
+            onReplaceCleanNullRows() {
+                if (this.txts === '' || this.txts === 'undefined') {
+                    return null;
+                }
+                this.txts = this.txts.replaceAll(/\n(\n)*( )*(\n)*\n/g, "\n");
+            },
+            onReplaceNextRows() {
+                if (this.txts === '' || this.txts === 'undefined') {
+                    return null;
+                }
+                this.txts = this.txts.replace(/[,\r]/g, ',\n');
+                this.txts = this.txts + '\r';
+                this.onReplaceCleanNullRows();
+            },
+            onReplace() {
+                if (this.txts === '' || this.txts === 'undefined') {
+                    return null;
+                }
+                // 去空行
+                this.onReplaceCleanNullRows();
+                // 将回车符替换成引号
+                this.txts = this.txts.replace(/[\n\r]/g, "','");
+                // 开头和结尾增加引号
+                this.txts = "'" + this.txts + "'";
+                // 去空格
+                this.txts = this.txts.replace(/\s/g, "");
+                // 去掉空引号
+                this.txts = this.txts.replaceAll(',\'\'', "");
+            },
+            onReplaceDouble() {
+                if (this.txts === '' || this.txts === 'undefined') {
+                    return null;
+                }
+                // 去空行
+                this.onReplaceCleanNullRows();
+                // 将回车符替换成引号
+                this.txts = this.txts.replace(/[\n\r]/g, '","');
+                // 开头和结尾增加引号
+                this.txts = '"' + this.txts + '"';
+                // 去掉空引号
+                this.txts = this.txts.replaceAll(',""', "");
+            },
+            onReplaceAddComma() {
+                if (this.txts === '' || this.txts === 'undefined') {
+                    return null;
+                }
+                // 去空行
+                this.onReplaceCleanNullRows();
+                // 将回车符替换成引号
+                this.txts = this.txts.replace(/[\n\r]/g, ',');
+                // 去空格
+                this.txts = this.txts.replace(/\s/g, "");
+                // 去掉空引号
+                this.txts = this.txts.replaceAll(',\'\'', "");
+            },
+            onCopy() {
+                var copy = function (e) {
+                    e.preventDefault();
+                    console.log('copy');
+                    var text = this.txts;
+                    if (e.clipboardData) {
+                        e.clipboardData.setData('text/plain', text);
+                    } else if (window.clipboardData) {
+                        window.clipboardData.setData('Text', text);
+                    }
+                }.bind(this);
+                window.addEventListener('copy', copy);
+                document.execCommand('copy');
+                window.removeEventListener('copy', copy);
+            },
+            onRePlaceMutipulKill() {
+                if (this.txts === '' || this.txts === 'undefined') {
+                    return null;
+                }
+
+                var lines = this.txts.split('\n');
+                var newLines = [];
+                for (var i = 0; i < lines.length; i++) {
+                    newLines.push('kill ' + lines[i]);
+                }
+                this.txts = newLines.join('\n');
+            },
+            onRePlaceMutipulText() {
+                if (this.txts === '' || this.txts === 'undefined') {
+                    return null;
+                }
+                var text = prompt("请输入要添加的文本", "");
+                if (text === null || text === "") {
+                    return null;
+                }
+
+                var lines = this.txts.split('\n');
+                var newLines = [];
+                for (var i = 0; i < lines.length; i++) {
+                    newLines.push(text + lines[i]); // 修改这里，将文本添加到每行的左侧
+                }
+                this.txts = newLines.join('\n');
+            },
+            // 新增右侧添加文本方法
+            onRePlaceMutipulTextRight() {
+                if (this.txts === '' || this.txts === 'undefined') {
+                    return null;
+                }
+                var text = prompt("请输入要添加的文本", "");
+                if (text === null || text === "") {
+                    return null;
+                }
+
+                var lines = this.txts.split('\n');
+                var newLines = [];
+                for (var i = 0; i < lines.length; i++) {
+                    newLines.push(lines[i] + text); // 将文本添加到每行的右侧
+                }
+                this.txts = newLines.join('\n');
+            },
+            // 去重方法
+            onRemoveDuplicates() {
+                if (this.txts === '' || this.txts === 'undefined') {
+                    return null;
+                }
+                const lines = this.txts.split('\n');
+                const uniqueLines = Array.from(new Set(lines));
+                this.txts = uniqueLines.join('\n');
+            },
+            // 统计行数方法
+            countLines() {
+                if (this.txts === '' || this.txts === 'undefined') {
+                    this.lineCount = 0;
+                    return;
+                }
+                const lines = this.txts.split('\n');
+                this.lineCount = lines.length;
+                alert(`当前文本行数为：${this.lineCount}`);
+            },
+            // 排序方法
+            sortLines() {
+                if (this.txts === '' || this.txts === 'undefined') {
+                    return null;
+                }
+                const lines = this.txts.split('\n');
+                // 使用数组的 sort 方法进行排序
+                lines.sort();
+                this.txts = lines.join('\n');
+            }
+        }
+    });
+</script>
+
+</html>

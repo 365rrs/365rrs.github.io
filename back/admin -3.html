@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="author" content="viggo" />
+  <title>WebStack.cc - 管理页面</title>
+  <meta name="keywords" content="UI设计,设计导航,网址导航,设计资源,创意导航,设计师网址大全">
+  <meta name="description" content="WebStack - 设计师网址导航管理页面">
+  <link rel="shortcut icon" href="assets/images/favicon.png">
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Arimo:400,700,400italic">
+  <link rel="stylesheet" href="assets/css/fonts/linecons/css/linecons.css">
+  <link rel="stylesheet" href="assets/css/fonts/fontawesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="assets/css/bootstrap.css">
+  <link rel="stylesheet" href="assets/css/xenon-core.css">
+  <link rel="stylesheet" href="assets/css/xenon-components.css">
+  <link rel="stylesheet" href="assets/css/xenon-skins.css">
+  <link rel="stylesheet" href="assets/css/nav.css">
+  <script src="assets/js/jquery-1.11.1.min.js"></script>
+  <style>
+    .admin-panel {
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 5px;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    textarea {
+      font-family: 'Courier New', monospace;
+      min-height: 300px;
+    }
+    .btn-group-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .btn-group-section {
+      flex: 1;
+      min-width: 200px;
+      background-color: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 5px;
+      padding: 15px;
+    }
+    .btn-group-section h4 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: #495057;
+      border-bottom: 1px solid #dee2e6;
+      padding-bottom: 8px;
+    }
+    .btn-group-section .btn {
+      margin: 5px;
+    }
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+    }
+    .file-input-wrapper input[type=file] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+    .data-stats {
+      background-color: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 4px;
+      padding: 10px;
+      margin: 15px 0;
+    }
+    .stat-item {
+      display: inline-block;
+      margin-right: 20px;
+    }
+    .stat-number {
+      font-weight: bold;
+      color: #007bff;
+    }
+    .action-buttons {
+      text-align: center;
+      margin: 20px 0;
+    }
+    .action-buttons .btn {
+      margin: 0 5px;
+      min-width: 120px;
+    }
+    .section-divider {
+      border-top: 1px solid #eee;
+      margin: 20px 0;
+    }
+    #fileInput {
+      display: none;
+    }
+    .data-source-section {
+      background-color: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 5px;
+      padding: 15px;
+      margin: 15px 0;
+    }
+    .data-source-section h4 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: #495057;
+      border-bottom: 1px solid #dee2e6;
+      padding-bottom: 8px;
+    }
+    .source-btn {
+      margin: 5px;
+    }
+    .source-active {
+      background-color: #007bff;
+      border-color: #007bff;
+      color: #fff;
+    }
+    .source-active:hover {
+      background-color: #0069d9;
+      border-color: #0062cc;
+    }
+    .save-default-info {
+      background-color: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 4px;
+      padding: 10px;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    .save-default-info i {
+      color: #856404;
+    }
+  </style>
+</head>
+
+<body class="page-body">
+<!-- skin-white -->
+<div class="page-container">
+  <div class="sidebar-menu toggle-others fixed">
+    <div class="sidebar-menu-inner">
+      <header class="logo-env">
+        <!-- logo -->
+        <div class="logo">
+          <a href="index.html" class="logo-expanded">
+            <img src="assets/images/logo@2x.png" width="100%" alt="" />
+          </a>
+          <a href="index.html" class="logo-collapsed">
+            <img src="assets/images/logo-collapsed@2x.png" width="40" alt="" />
+          </a>
+        </div>
+        <div class="mobile-menu-toggle visible-xs">
+          <a href="#" data-toggle="user-info-menu">
+            <i class="linecons-cog"></i>
+          </a>
+          <a href="#" data-toggle="mobile-menu">
+            <i class="fa-bars"></i>
+          </a>
+        </div>
+      </header>
+      <ul id="main-menu" class="main-menu">
+        <li>
+          <a href="index.html">
+            <i class="linecons-star"></i>
+            <span class="title">主页</span>
+          </a>
+        </li>
+        <li>
+          <a href="admin.html">
+            <i class="linecons-key"></i>
+            <span class="title">数据管理</span>
+          </a>
+        </li>
+        <li>
+          <a href="visual-editor.html">
+            <i class="linecons-pencil"></i>
+            <span class="title">可视化编辑</span>
+          </a>
+        </li>
+        <li>
+          <a href="about.html">
+            <i class="linecons-heart"></i>
+            <span class="tooltip-blue">关于本站</span>
+            <span class="label label-Primary pull-right hidden-collapsed">♥︎</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div class="main-content">
+    <nav class="navbar user-info-navbar" role="navigation">
+      <ul class="user-info-menu left-links list-inline list-unstyled">
+        <li class="hidden-sm hidden-xs">
+          <a href="#" data-toggle="sidebar">
+            <i class="fa-bars"></i>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="container">
+      <div class="admin-panel">
+        <h2 class="text-center">网站数据管理</h2>
+        <p class="text-center text-muted">导入/导出网站数据</p>
+
+        <!-- 数据源切换 -->
+        <div class="data-source-section">
+          <h4><i class="fa fa-database text-primary"></i> 数据源切换</h4>
+          <p>当前数据源: <span id="currentDataSource" class="text-primary font-weight-bold">默认数据</span></p>
+          <button id="useDefaultDataBtn" class="btn btn-outline-primary source-btn" title="使用默认数据">
+            <i class="fa fa-server"></i> 默认数据
+          </button>
+          <button id="useLocalDataBtn" class="btn btn-outline-success source-btn" title="使用本地存储数据">
+            <i class="fa fa-hdd-o"></i> 本地数据
+          </button>
+          <button id="saveAsDefaultBtn" class="btn btn-outline-warning source-btn" title="将当前数据保存为默认数据">
+            <i class="fa fa-save"></i> 保存为默认
+          </button>
+
+          <div class="save-default-info">
+            <i class="fa fa-info-circle"></i>
+            <strong>提示:</strong> 点击"保存为默认"可将当前显示的数据保存为默认数据，下次访问时将优先加载此数据。
+          </div>
+        </div>
+
+        <!-- 数据统计信息 -->
+        <div class="data-stats">
+          <div class="stat-item">
+            <span class="stat-label">分类数:</span>
+            <span id="categoryCount" class="stat-number">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">网站数:</span>
+            <span id="siteCount" class="stat-number">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">数据源:</span>
+            <span id="dataSource" class="stat-number">默认</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="dataTextarea">网站数据 (JSON格式):</label>
+          <textarea id="dataTextarea" class="form-control" placeholder="在这里粘贴JSON数据或点击导出按钮获取当前数据"></textarea>
+        </div>
+
+        <!-- 操作按钮区域 -->
+        <div class="btn-group-container">
+          <!-- 数据导出 -->
+          <div class="btn-group-section">
+            <h4><i class="fa fa-download text-info"></i> 数据导出</h4>
+            <button id="exportBtn" class="btn btn-info" title="将当前数据导出到文本框">
+              <i class="fa fa-copy"></i> 导出到文本框
+            </button>
+            <button id="exportFileBtn" class="btn btn-primary" title="将当前数据导出为JSON文件">
+              <i class="fa fa-file-export"></i> 导出为文件
+            </button>
+          </div>
+
+          <!-- 数据导入 -->
+          <div class="btn-group-section">
+            <h4><i class="fa fa-upload text-success"></i> 数据导入</h4>
+            <button id="importBtn" class="btn btn-success" title="从文本框导入数据">
+              <i class="fa fa-paste"></i> 从文本框导入
+            </button>
+            <button id="fileImportBtn" class="btn btn-default" title="从本地JSON文件导入数据">
+              <i class="fa fa-folder-open"></i> 从文件导入
+            </button>
+            <input type="file" id="fileInput" accept=".json">
+          </div>
+
+          <!-- 数据工具 -->
+          <div class="btn-group-section">
+            <h4><i class="fa fa-wrench text-warning"></i> 数据工具</h4>
+            <button id="validateBtn" class="btn btn-warning" title="验证当前数据格式是否正确">
+              <i class="fa fa-check"></i> 验证数据
+            </button>
+            <button id="clearDataBtn" class="btn btn-danger" title="清空本地保存的数据">
+              <i class="fa fa-trash"></i> 清空数据
+            </button>
+            <a href="visual-editor.html" class="btn btn-default" title="进入可视化编辑界面">
+              <i class="fa fa-pencil"></i> 可视化编辑
+            </a>
+          </div>
+        </div>
+
+        <div id="messageArea" class="alert" style="display: none; margin-top: 20px;"></div>
+
+        <!-- 使用说明 -->
+        <div class="panel panel-default" style="margin-top: 20px;">
+          <div class="panel-heading">
+            <h3 class="panel-title">使用说明</h3>
+          </div>
+          <div class="panel-body">
+            <ol>
+              <li><strong>数据源切换</strong>：在"默认数据"和"本地数据"之间切换，选择要使用的数据源</li>
+              <li><strong>保存为默认</strong>：将当前显示的数据保存为默认数据</li>
+              <li><strong>数据导出</strong>：点击"导出到文本框"将当前数据复制到文本框，或点击"导出为文件"保存为JSON文件</li>
+              <li><strong>数据导入</strong>：粘贴JSON数据后点击"从文本框导入"，或点击"从文件导入"选择本地JSON文件</li>
+              <li><strong>数据备份</strong>：建议定期导出数据并保存到云盘（如阿里云盘、Google Drive等）以防数据丢失</li>
+              <li><strong>数据验证</strong>：导入前可使用"验证数据"功能检查数据格式是否正确</li>
+              <li><strong>清空数据</strong>：点击"清空数据"可删除本地保存的数据，恢复使用默认数据</li>
+              <li><strong>可视化编辑</strong>：点击"可视化编辑"进入可视化界面编辑网站数据</li>
+            </ol>
+            <p class="text-info">
+              <i class="fa fa-info-circle"></i> 注意：导入数据会覆盖当前本地数据，请谨慎操作。建议导入前先备份当前数据。
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <br />
+    <footer class="main-footer sticky footer-type-1">
+      <div class="footer-inner">
+        <div class="footer-text">
+          &copy; 2017-2022
+          <a href="about.html"><strong>WebStack</strong></a> design by <a href="https://www.viggoz.com"
+                                                                          target="_blank"><strong>Viggo</strong></a>
+        </div>
+        <div class="go-up">
+          <a href="#" rel="go-top">
+            <i class="fa-angle-up"></i>
+          </a>
+        </div>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<!-- Bottom Scripts -->
+<script src="assets/js/bootstrap.min.js"></script>
+<script src="assets/js/TweenMax.min.js"></script>
+<script src="assets/js/resizeable.js"></script>
+<script src="assets/js/joinable.js"></script>
+<script src="assets/js/xenon-api.js"></script>
+<script src="assets/js/xenon-toggles.js"></script>
+<script src="assets/js/websites.js"></script>
+<script>
+  $(document).ready(function() {
+    // 生成带时间戳的文件名
+    function generateFileName() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+
+      return `webstack-data-${year}${month}${day}-${hours}${minutes}${seconds}.json`;
+    }
+
+    // 显示当前数据（优先显示本地数据，如果没有则显示默认数据）
+    function displayCurrentData() {
+      const localData = localStorage.getItem('websiteData');
+      let currentData;
+
+      if (localData) {
+        try {
+          // 验证本地数据格式
+          const parsedData = JSON.parse(localData);
+          if (validateDataStructure(parsedData)) {
+            $('#dataTextarea').val(JSON.stringify(parsedData, null, 2));
+            currentData = parsedData;
+            $('#dataSource').text('本地存储');
+          } else {
+            throw new Error('数据结构验证失败');
+          }
+        } catch (e) {
+          // 本地数据解析失败，使用默认数据
+          $('#dataTextarea').val(JSON.stringify(websiteData, null, 2));
+          currentData = websiteData;
+          $('#dataSource').text('默认数据');
+        }
+      } else {
+        // 使用默认数据
+        $('#dataTextarea').val(JSON.stringify(websiteData, null, 2));
+        currentData = websiteData;
+        $('#dataSource').text('默认数据');
+      }
+
+      // 更新统计数据
+      updateDataStats(currentData);
+    }
+
+    // 更新数据统计信息
+    function updateDataStats(data) {
+      if (data && data.categories) {
+        const categoryCount = data.categories.length;
+        let siteCount = 0;
+
+        data.categories.forEach(category => {
+          if (category.sites) {
+            siteCount += category.sites.length;
+          }
+        });
+
+        $('#categoryCount').text(categoryCount);
+        $('#siteCount').text(siteCount);
+      } else {
+        $('#categoryCount').text(0);
+        $('#siteCount').text(0);
+      }
+    }
+
+    // 验证数据结构
+    function validateDataStructure(data) {
+      // 检查基本结构
+      if (!data || typeof data !== 'object') {
+        return false;
+      }
+
+      if (!data.categories || !Array.isArray(data.categories)) {
+        return false;
+      }
+
+      // 检查每个分类
+      for (let category of data.categories) {
+        if (!category.name || typeof category.name !== 'string') {
+          return false;
+        }
+
+        if (!category.sites || !Array.isArray(category.sites)) {
+          return false;
+        }
+
+        // 检查每个站点
+        for (let site of category.sites) {
+          if (!site.name || typeof site.name !== 'string') {
+            return false;
+          }
+
+          if (!site.url || typeof site.url !== 'string') {
+            return false;
+          }
+
+          // logo字段可选，但如果存在则应该是字符串
+          if (site.logo && typeof site.logo !== 'string') {
+            return false;
+          }
+
+          // description字段可选，但如果存在则应该是字符串
+          if (site.description && typeof site.description !== 'string') {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    }
+
+    // 切换到默认数据源
+    function switchToDefaultData() {
+      $('#dataTextarea').val(JSON.stringify(websiteData, null, 2));
+      $('#currentDataSource').text('默认数据');
+      $('#dataSource').text('默认数据');
+      $('#useDefaultDataBtn').addClass('source-active');
+      $('#useLocalDataBtn').removeClass('source-active');
+      updateDataStats(websiteData);
+      showMessage('已切换到默认数据源', 'info');
+    }
+
+    // 切换到本地数据源
+    function switchToLocalData() {
+      const localData = localStorage.getItem('websiteData');
+      if (localData) {
+        try {
+          const parsedData = JSON.parse(localData);
+          if (validateDataStructure(parsedData)) {
+            $('#dataTextarea').val(JSON.stringify(parsedData, null, 2));
+            $('#currentDataSource').text('本地数据');
+            $('#dataSource').text('本地存储');
+            $('#useLocalDataBtn').addClass('source-active');
+            $('#useDefaultDataBtn').removeClass('source-active');
+            updateDataStats(parsedData);
+            showMessage('已切换到本地数据源', 'info');
+          } else {
+            showMessage('本地数据格式不正确，无法切换', 'danger');
+          }
+        } catch (e) {
+          showMessage('本地数据解析失败，无法切换', 'danger');
+        }
+      } else {
+        showMessage('本地数据不存在，请先导入数据', 'warning');
+      }
+    }
+
+    // 保存当前数据为默认数据
+    function saveAsDefaultData() {
+      try {
+        const jsonData = $('#dataTextarea').val();
+        if (!jsonData) {
+          showMessage('没有数据可保存', 'warning');
+          return;
+        }
+
+        const parsedData = JSON.parse(jsonData);
+
+        // 验证数据结构
+        if (!validateDataStructure(parsedData)) {
+          showMessage('数据格式不正确，无法保存为默认数据', 'danger');
+          return;
+        }
+
+        // 根据当前激活的数据源按钮记录偏好
+        if ($('#useLocalDataBtn').hasClass('source-active')) {
+          localStorage.setItem('websiteDataSourcePreference', 'local');
+          showMessage('当前数据已保存为默认数据，数据源偏好已设置为本地数据', 'success');
+        } else {
+          localStorage.setItem('websiteDataSourcePreference', 'default');
+          showMessage('当前数据已保存为默认数据，数据源偏好已设置为默认数据', 'success');
+        }
+        showMessage('当前数据已保存为默认数据，数据源偏好已设置为默认数据', 'success');
+      } catch (e) {
+        showMessage('JSON格式错误，无法保存: ' + e.message, 'danger');
+      }
+    }
+
+    // 数据源切换事件
+    $('#useDefaultDataBtn').click(function() {
+      switchToDefaultData();
+      // 记录用户偏好
+      localStorage.setItem('websiteDataSourcePreference', 'default');
+    });
+
+    $('#useLocalDataBtn').click(function() {
+      switchToLocalData();
+      // 记录用户偏好
+      localStorage.setItem('websiteDataSourcePreference', 'local');
+    });
+
+    $('#saveAsDefaultBtn').click(function() {
+      saveAsDefaultData();
+    });
+
+    // 导出数据到文本框（优先导出本地数据）
+    $('#exportBtn').click(function() {
+      displayCurrentData();
+      showMessage('数据已导出到文本框中', 'success');
+    });
+
+    // 导出数据到本地文件（优先导出本地数据）
+    $('#exportFileBtn').click(function() {
+      try {
+        // 获取当前显示的数据
+        let dataToExport;
+        const localData = localStorage.getItem('websiteData');
+
+        if (localData) {
+          try {
+            // 验证本地数据格式
+            const parsedData = JSON.parse(localData);
+            if (validateDataStructure(parsedData)) {
+              dataToExport = parsedData;
+            } else {
+              dataToExport = websiteData;
+            }
+          } catch (e) {
+            dataToExport = websiteData;
+          }
+        } else {
+          dataToExport = websiteData;
+        }
+
+        // 获取当前数据
+        const dataStr = JSON.stringify(dataToExport, null, 2);
+
+        // 创建Blob对象
+        const blob = new Blob([dataStr], {type: 'application/json'});
+
+        // 创建下载链接
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = generateFileName();
+
+        // 触发下载
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // 释放URL对象
+        URL.revokeObjectURL(url);
+
+        showMessage('数据已成功导出到文件 ' + link.download, 'success');
+      } catch (e) {
+        showMessage('导出文件时出错: ' + e.message, 'danger');
+      }
+    });
+
+    // 导入数据
+    $('#importBtn').click(function() {
+      try {
+        const jsonData = $('#dataTextarea').val();
+        if (!jsonData) {
+          showMessage('请先粘贴JSON数据', 'warning');
+          return;
+        }
+
+        const parsedData = JSON.parse(jsonData);
+
+        // 验证数据结构
+        if (!validateDataStructure(parsedData)) {
+          showMessage('数据格式不正确：数据结构验证失败', 'danger');
+          return;
+        }
+
+        // 保存到localStorage
+        localStorage.setItem('websiteData', jsonData);
+        // 同时更新数据源偏好设置，使主页默认加载本地数据
+        localStorage.setItem('websiteDataSourcePreference', 'local');
+
+        // 更新统计数据
+        updateDataStats(parsedData);
+        $('#dataSource').text('本地存储');
+        $('#currentDataSource').text('本地数据');
+        $('#useLocalDataBtn').addClass('source-active');
+        $('#useDefaultDataBtn').removeClass('source-active');
+
+        showMessage('数据已保存到浏览器存储中。主页将默认使用此数据。', 'success');
+      } catch (e) {
+        showMessage('JSON格式错误: ' + e.message, 'danger');
+      }
+    });
+
+    // 文件导入按钮点击事件
+    $('#fileImportBtn').click(function() {
+      $('#fileInput').click();
+    });
+
+    // 从文件导入数据
+    $('#fileInput').change(function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
+        showMessage('请选择JSON格式的文件', 'warning');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const jsonData = e.target.result;
+          const parsedData = JSON.parse(jsonData);
+
+          // 验证数据结构
+          if (!validateDataStructure(parsedData)) {
+            showMessage('文件中的数据格式不正确：数据结构验证失败', 'danger');
+            return;
+          }
+
+          // 保存到localStorage
+          localStorage.setItem('websiteData', jsonData);
+          // 同时更新数据源偏好设置，使主页默认加载本地数据
+          localStorage.setItem('websiteDataSourcePreference', 'local');
+
+          // 更新文本框内容
+          $('#dataTextarea').val(JSON.stringify(parsedData, null, 2));
+
+          // 更新统计数据
+          updateDataStats(parsedData);
+          $('#dataSource').text('本地存储');
+          $('#currentDataSource').text('本地数据');
+          $('#useLocalDataBtn').addClass('source-active');
+          $('#useDefaultDataBtn').removeClass('source-active');
+
+          showMessage('数据已从文件导入并保存到浏览器存储中。主页将默认使用此数据。', 'success');
+        } catch (error) {
+          showMessage('导入文件时出错: ' + error.message, 'danger');
+        }
+      };
+
+      reader.onerror = function() {
+        showMessage('读取文件时出错', 'danger');
+      };
+
+      reader.readAsText(file);
+
+      // 清空文件输入框，以便下次选择同一文件也能触发change事件
+      $(this).val('');
+    });
+
+    // 验证数据
+    $('#validateBtn').click(function() {
+      try {
+        const jsonData = $('#dataTextarea').val();
+        if (!jsonData) {
+          showMessage('请先粘贴JSON数据', 'warning');
+          return;
+        }
+
+        const parsedData = JSON.parse(jsonData);
+
+        // 验证数据结构
+        if (validateDataStructure(parsedData)) {
+          showMessage('数据格式验证通过', 'success');
+        } else {
+          showMessage('数据格式验证失败：数据结构不完整', 'danger');
+        }
+      } catch (e) {
+        showMessage('JSON格式错误: ' + e.message, 'danger');
+      }
+    });
+
+    // 清空本地数据
+    $('#clearDataBtn').click(function() {
+      if (confirm('确定要清空本地保存的数据吗？此操作不可恢复，将恢复使用默认数据。')) {
+        localStorage.removeItem('websiteData');
+        localStorage.removeItem('websiteDataSourcePreference');
+
+        // 显示默认数据
+        $('#dataTextarea').val(JSON.stringify(websiteData, null, 2));
+        $('#dataSource').text('默认数据');
+        $('#currentDataSource').text('默认数据');
+        $('#useDefaultDataBtn').addClass('source-active');
+        $('#useLocalDataBtn').removeClass('source-active');
+        updateDataStats(websiteData);
+
+        showMessage('本地数据已清空，已恢复使用默认数据', 'success');
+      }
+    });
+
+    // 显示消息
+    function showMessage(message, type) {
+      const alertClass = 'alert-' + type;
+      $('#messageArea')
+              .removeClass('alert-success alert-danger alert-warning alert-info')
+              .addClass('alert ' + alertClass)
+              .html(message)
+              .show();
+
+      // 3秒后自动隐藏
+      setTimeout(function() {
+        $('#messageArea').fadeOut();
+      }, 3000);
+    }
+
+    // 根据偏好设置初始化数据源
+    function initializeWithPreference() {
+      // 获取数据源偏好设置
+      const dataSourcePreference = localStorage.getItem('websiteDataSourcePreference');
+      
+      // 如果有偏好设置且为local，则尝试加载本地数据
+      if (dataSourcePreference === 'local') {
+        const localData = localStorage.getItem('websiteData');
+        if (localData) {
+          try {
+            const parsedData = JSON.parse(localData);
+            if (validateDataStructure(parsedData)) {
+              $('#dataTextarea').val(JSON.stringify(parsedData, null, 2));
+              $('#currentDataSource').text('本地数据');
+              $('#dataSource').text('本地存储');
+              $('#useLocalDataBtn').addClass('source-active');
+              updateDataStats(parsedData);
+              return;
+            }
+          } catch (e) {
+            // 本地数据解析失败，继续使用默认数据
+          }
+        }
+      }
+      
+      // 默认使用网站默认数据
+      $('#dataTextarea').val(JSON.stringify(websiteData, null, 2));
+      $('#currentDataSource').text('默认数据');
+      $('#dataSource').text('默认数据');
+      $('#useDefaultDataBtn').addClass('source-active');
+      updateDataStats(websiteData);
+    }
+
+    // 初始化显示当前数据
+    initializeWithPreference();
+  });
+</script>
+</body>
+
+</html>
