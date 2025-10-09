@@ -30,8 +30,11 @@ author gaomingxichn@gmail.com
             <button class="btn btn-default" type="submit" @click="onReplaceDouble()">添加双引号</button>
             <button class="btn btn-default" type="submit" @click="onRePlaceMutipulKill()">添加kill</button>
             <button class="btn btn-default" type="submit" @click="onRePlaceMutipulText()">左侧添加文本</button>
+            <button class="btn btn-default" type="submit" @click="onRemoveTextLeft()">左侧删除文本</button>
             <!-- 新增右侧添加文本按钮 -->
             <button class="btn btn-default" type="submit" @click="onRePlaceMutipulTextRight()">右侧添加文本</button>
+            <!-- 在右侧添加文本按钮后添加新按钮 -->
+            <button class="btn btn-default" type="submit" @click="onRemoveTextRight()">右侧删除文本</button>
             <!-- 去重按钮 -->
             <button class="btn btn-default" type="submit" @click="onRemoveDuplicates()">去重</button>
             <!-- 统计行数按钮 -->
@@ -186,6 +189,28 @@ author gaomingxichn@gmail.com
                 }
                 this.txts = newLines.join('\n');
             },
+            // 左侧删除文本方法
+            onRemoveTextLeft() {
+                if (this.txts === '' || this.txts === 'undefined') {
+                    return null;
+                }
+                var text = prompt("请输入要删除的左侧文本", "");
+                if (text === null || text === "") {
+                    return null;
+                }
+
+                var lines = this.txts.split('\n');
+                var newLines = [];
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i];
+                    // 如果行首包含指定文本，则删除它
+                    if (line.startsWith(text)) {
+                        line = line.substring(text.length);
+                    }
+                    newLines.push(line);
+                }
+                this.txts = newLines.join('\n');
+            },
             // 新增右侧添加文本方法
             onRePlaceMutipulTextRight() {
                 if (this.txts === '' || this.txts === 'undefined') {
@@ -200,6 +225,28 @@ author gaomingxichn@gmail.com
                 var newLines = [];
                 for (var i = 0; i < lines.length; i++) {
                     newLines.push(lines[i] + text); // 将文本添加到每行的右侧
+                }
+                this.txts = newLines.join('\n');
+            },
+            // 右侧删除文本方法
+            onRemoveTextRight() {
+                if (this.txts === '' || this.txts === 'undefined') {
+                    return null;
+                }
+                var text = prompt("请输入要删除的右侧文本", "");
+                if (text === null || text === "") {
+                    return null;
+                }
+
+                var lines = this.txts.split('\n');
+                var newLines = [];
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i];
+                    // 如果行尾包含指定文本，则删除它
+                    if (line.endsWith(text)) {
+                        line = line.substring(0, line.length - text.length);
+                    }
+                    newLines.push(line);
                 }
                 this.txts = newLines.join('\n');
             },
