@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>日志格式化工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", sans-serif;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        .input-area {
+            margin-bottom: 30px;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #409eff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #66b1ff;
+        }
+        .result-area {
+            padding: 20px;
+            background: #f5f7fa;
+            border-radius: 4px;
+        }
+        .log-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 4px;
+            border-left: 3px solid #409eff;
+        }
+        .log-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+        }
+        .copy-btn {
+            padding: 2px 8px;
+            background: #409eff;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .copy-btn:hover {
+            background: #66b1ff;
+        }
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .log-table th, .log-table td {
+            padding: 10px;
+            border: 1px solid #eee;
+            text-align: left;
+        }
+        .log-table th {
+            background: #f9f9f9;
+            color: #666;
+            width: 20%;
+        }
+        .json-content {
+            padding: 10px;
+            background: #fafafa;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            font-family: "Consolas", monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            color: #333;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .error提示 {
+            color: #f56c6c;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .success提示 {
+            color: #67c23a;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- 日志输入区 -->
+    <div class="input-area">
+        <textarea id="logInput" placeholder="请粘贴控制台打印的日志（示例：2025-10-17 08:51:10.24...）"></textarea>
+        <button onclick="parseLog()">解析日志</button>
+        <button onclick="clearAll()">清空</button>
+    </div>
+
+    <!-- 解析结果展示区 -->
+    <div class="result-area" id="resultArea" style="display: none;">
+        <!-- 追踪信息区 -->
+        <div class="log-section">
+            <div class="log-title">0. 追踪信息</div>
+            <table class="log-table" id="traceInfoTable"></table>
+        </div>
+
+        <!-- 基本信息区 -->
+        <div class="log-section">
+            <div class="log-title">1. 接口基本信息</div>
+            <table class="log-table" id="basicInfoTable"></table>
+        </div>
+
+        <!-- URL参数区 -->
+        <div class="log-section">
+            <div class="log-title">1.1 URL参数</div>
+            <table class="log-table" id="urlParamsTable"></table>
+        </div>
+
+        <!-- 请求体区 -->
+        <div class="log-section">
+            <div class="log-title">
+                2. 请求体（REQ BODY）
+                <button class="copy-btn" onclick="copyToClipboard('reqBodyContent')">复制</button>
+            </div>
+            <div id="reqBodyContent" class="json-content"></div>
+        </div>
+
+        <!-- 响应体区 -->
+        <div class="log-section">
+            <div class="log-title">
+                3. 响应体（RESP BODY）
+                <button class="copy-btn" onclick="copyToClipboard('respBodyContent')">复制</button>
+            </div>
+            <div id="respBodyContent" class="json-content"></div>
+        </div>
+
+        <!-- 请求头区 -->
+        <div class="log-section">
+            <div class="log-title">
+                4. 请求头（REQ HEADER）
+                <button class="copy-btn" onclick="copyToClipboard('reqHeaderContent')">复制</button>
+            </div>
+            <div id="reqHeaderContent" class="json-content"></div>
+        </div>
+    </div>
+
+    <!-- 错误提示区 -->
+    <div id="errorTip" class="error提示" style="display: none;"></div>
+    <div id="successTip" class="success提示" style="display: none;"></div>
+</div>
+
+<script>
+    // 基于关键字解析日志的核心函数
+    function parseLog() {
+        // 1. 获取输入的日志内容
+        const logText = document.getElementById("logInput").value.trim();
+        if (!logText) {
+            showError("请先粘贴日志内容！");
+            return;
+        }
+
+        try {
+            // 2. 提取日志打印时间
+            const logTime = extractLogTime(logText);
+            
+            // 3. 提取追踪信息
+            const traceInfo = extractTraceInfo(logText);
+            
+            // 4. 提取基本信息部分
+            const basicInfoPart = extractBasicInfo(logText);
+            if (!basicInfoPart) {
+                showError("无法解析基本信息部分，请检查日志格式");
+                return;
+            }
+
+            // 5. 提取各部分内容
+            const reqBody = extractSectionContent(logText, "[REQ BODY =>", "]");
+            const respBody = extractSectionContent(logText, "[RESP BODY =>", "]");
+            const reqHeader = extractSectionContent(logText, "[REQ HEADER =>", "]");
+
+            // 6. 构造日志数据对象
+            const logData = {
+                logTime: logTime || "无",
+                traceId: traceInfo.traceId || "无",
+                spanId: traceInfo.spanId || "无",
+                module: basicInfoPart.module || "空",
+                businessCode: basicInfoPart.businessCode || "空",
+                method: basicInfoPart.method || "无",
+                url: basicInfoPart.url || "无",
+                responseCode: basicInfoPart.responseCode || "无",
+                responseMsg: basicInfoPart.responseMsg || "空",
+                reqBody: reqBody || "无",
+                respBody: respBody || "无",
+                reqHeader: reqHeader || "无"
+            };
+
+            // 7. 格式化展示数据
+            renderResult(logData);
+        } catch (e) {
+            showError("日志解析失败: " + e.message);
+        }
+    }
+
+    // 提取日志打印时间
+    function extractLogTime(logText) {
+        // 匹配日志开头的时间格式：2025-10-17 08:51:10.24
+        const timeMatch = logText.match(/^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d+)/);
+        return timeMatch ? timeMatch[1] : null;
+    }
+
+    // 提取追踪信息
+    function extractTraceInfo(logText) {
+        const traceMatch = logText.match(/trace_id=([^\s]+)\s+span_id=([^\s]+)/);
+        return {
+            traceId: traceMatch ? traceMatch[1] : null,
+            spanId: traceMatch ? traceMatch[2] : null
+        };
+    }
+
+    // 提取基本信息部分
+    function extractBasicInfo(logText) {
+        // 匹配 [模块](业务码) ---> 方法, URL, 响应码, 响应信息 的格式
+        const basicInfoMatch = logText.match(/\[([^\]]*?)\]\(([^\)]*?)\) ---> (.*?)(?: \[REQ BODY =>|$)/);
+        if (!basicInfoMatch) {
+            return null;
+        }
+
+        // 解析方法、URL、响应码、响应信息
+        const basicParts = basicInfoMatch[3].split(", ");
+        
+        return {
+            module: basicInfoMatch[1],
+            businessCode: basicInfoMatch[2],
+            method: basicParts[0],
+            url: basicParts[1],
+            responseCode: basicParts[2],
+            responseMsg: basicParts[3]
+        };
+    }
+
+    // 提取指定标记间的内容
+    function extractSectionContent(text, startMarker, endMarker) {
+        const startIndex = text.indexOf(startMarker);
+        if (startIndex === -1) return "";
+        
+        const contentStart = startIndex + startMarker.length;
+        // 寻找对应的结束标记
+        let endIndex = contentStart;
+        let bracketCount = 1;
+        
+        // 处理嵌套的方括号情况
+        for (let i = contentStart; i < text.length; i++) {
+            if (text[i] === '[') {
+                bracketCount++;
+            } else if (text[i] === ']') {
+                bracketCount--;
+                if (bracketCount === 0) {
+                    endIndex = i;
+                    break;
+                }
+            }
+        }
+        
+        if (bracketCount !== 0) {
+            // 如果没有找到匹配的结束标记，尝试使用简单的查找
+            endIndex = text.indexOf(endMarker, contentStart);
+            if (endIndex === -1) return "";
+        }
+        
+        return text.substring(contentStart, endIndex).trim();
+    }
+
+    // 解析URL参数
+    function parseUrlParams(url) {
+        try {
+            const urlObj = new URL(url);
+            const params = {};
+            for (const [key, value] of urlObj.searchParams) {
+                params[key] = value;
+            }
+            return params;
+        } catch (e) {
+            return {};
+        }
+    }
+
+    // 格式化展示解析结果
+    function renderResult(logData) {
+        document.getElementById("errorTip").style.display = "none";
+        const resultArea = document.getElementById("resultArea");
+        resultArea.style.display = "block";
+
+        // 渲染追踪信息表格（包含调用时间）
+        const traceTable = document.getElementById("traceInfoTable");
+        traceTable.innerHTML = `
+                <tr><th>调用时间</th><td>${logData.logTime}</td></tr>
+                <tr><th>Trace ID</th><td>${logData.traceId}</td></tr>
+                <tr><th>Span ID</th><td>${logData.spanId}</td></tr>
+            `;
+
+        // 渲染基本信息表格
+        const basicTable = document.getElementById("basicInfoTable");
+        basicTable.innerHTML = `
+                <tr><th>模块</th><td>${logData.module}</td></tr>
+                <tr><th>业务码</th><td>${logData.businessCode}</td></tr>
+                <tr><th>请求方法</th><td>${logData.method}</td></tr>
+                <tr><th>请求URL</th><td>${logData.url}</td></tr>
+                <tr><th>响应码</th><td>${logData.responseCode}</td></tr>
+                <tr><th>响应信息</th><td>${logData.responseMsg}</td></tr>
+            `;
+
+        // 渲染URL参数表格
+        const urlParamsTable = document.getElementById("urlParamsTable");
+        const urlParams = parseUrlParams(logData.url);
+        let urlParamsHtml = "";
+        if (Object.keys(urlParams).length > 0) {
+            for (const [key, value] of Object.entries(urlParams)) {
+                urlParamsHtml += `<tr><th>${key}</th><td>${value}</td></tr>`;
+            }
+        } else {
+            urlParamsHtml = "<tr><td colspan='2'>无URL参数</td></tr>";
+        }
+        urlParamsTable.innerHTML = urlParamsHtml;
+
+        // 渲染请求体（URL参数转"键:值"）
+        const reqBodyEl = document.getElementById("reqBodyContent");
+        reqBodyEl.innerHTML = formatParam(logData.reqBody);
+
+        // 渲染响应体（JSON美化）
+        const respBodyEl = document.getElementById("respBodyContent");
+        respBodyEl.innerHTML = formatJson(logData.respBody);
+
+        // 渲染请求头（JSON美化）
+        const reqHeaderEl = document.getElementById("reqHeaderContent");
+        reqHeaderEl.innerHTML = formatJson(logData.reqHeader);
+    }
+
+    // 辅助函数：格式化URL参数（app_key=xxx&method=xxx 转清晰格式）
+    function formatParam(paramStr) {
+        if (paramStr === "无" || paramStr === "") return "无";
+        // 处理JSON格式的请求体
+        if (paramStr.startsWith('{') || paramStr.startsWith('[')) {
+            return formatJson(paramStr);
+        }
+        const paramArr = paramStr.split("&");
+        let paramHtml = "";
+        paramArr.forEach(param => {
+            const [key, value] = param.split("=");
+            // 解码URL编码（如%20转空格）
+            const decodeValue = value ? decodeURIComponent(value) : "无";
+            paramHtml += `${key || "未知键"}: ${decodeValue}\n`;
+        });
+        return paramHtml;
+    }
+
+    // 辅助函数：格式化JSON字符串（带缩进）
+    function formatJson(jsonStr) {
+        if (jsonStr === "无" || jsonStr === "") return "无";
+        try {
+            // 如果是数组字符串，需要特殊处理
+            if (jsonStr.startsWith('[') && jsonStr.endsWith(']')) {
+                // 尝试解析数组
+                const arrayObj = JSON.parse(jsonStr);
+                return JSON.stringify(arrayObj, null, 2);
+            }
+            // 如果是对象字符串
+            else if (jsonStr.startsWith('{') && jsonStr.endsWith('}')) {
+                const jsonObj = JSON.parse(jsonStr);
+                return JSON.stringify(jsonObj, null, 2);
+            }
+            // 其他情况直接返回
+            else {
+                return jsonStr;
+            }
+        } catch (e) {
+            // 非JSON格式直接返回原内容
+            return jsonStr;
+        }
+    }
+
+    // 辅助函数：显示错误提示
+    function showError(msg) {
+        const errorEl = document.getElementById("errorTip");
+        errorEl.textContent = msg;
+        errorEl.style.display = "block";
+        document.getElementById("resultArea").style.display = "none";
+        document.getElementById("successTip").style.display = "none";
+    }
+
+    // 辅助函数：显示成功提示
+    function showSuccess(msg) {
+        const successEl = document.getElementById("successTip");
+        successEl.textContent = msg;
+        successEl.style.display = "block";
+        document.getElementById("errorTip").style.display = "none";
+        
+        // 3秒后自动隐藏
+        setTimeout(() => {
+            successEl.style.display = "none";
+        }, 3000);
+    }
+
+    // 复制到剪贴板功能
+    function copyToClipboard(elementId) {
+        const content = document.getElementById(elementId).innerText;
+        navigator.clipboard.writeText(content)
+            .then(() => {
+                showSuccess("复制成功！");
+            })
+            .catch(err => {
+                showError("复制失败：" + err);
+            });
+    }
+
+    // 清空功能
+    function clearAll() {
+        document.getElementById("logInput").value = "";
+        document.getElementById("resultArea").style.display = "none";
+        document.getElementById("errorTip").style.display = "none";
+        document.getElementById("successTip").style.display = "none";
+    }
+</script>
+</body>
+</html>
