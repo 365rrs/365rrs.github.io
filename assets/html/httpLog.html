@@ -100,6 +100,44 @@
             max-height: 300px;
             overflow-y: auto;
         }
+
+        /* JSON 着色样式 */
+        .json-key {
+            color: #9225ba;
+        }
+        .json-string {
+            color: #008000;
+        }
+        .json-number {
+            color: #0000ff;
+        }
+        .json-boolean {
+            color: #ff0000;
+        }
+        .json-null {
+            color: #808080;
+        }
+
+        .timezone-btn {
+            padding: 2px 8px;
+            background: #67c23a;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .timezone-btn:hover {
+            background: #85ce61;
+        }
+
+        .timezone-info {
+            font-size: 12px;
+            color: #999;
+            margin-left: 10px;
+        }
+
         .error提示 {
             color: #f56c6c;
             font-size: 14px;
@@ -109,6 +147,14 @@
             color: #67c23a;
             font-size: 14px;
             margin-top: 10px;
+        }
+
+        /* 优化长URL显示 */
+        .url-content {
+            word-break: break-all;
+            word-wrap: break-word;
+            max-width: 100%;
+            overflow-wrap: break-word;
         }
     </style>
 </head>
@@ -175,6 +221,9 @@
 </div>
 
 <script>
+    // 时区状态变量 - 默认设置为 utc8
+    let currentTimezone = 'utc8'; // utc, utc8
+
     // 基于关键字解析日志的核心函数
     function parseLog() {
         // 1. 获取输入的日志内容
@@ -185,12 +234,13 @@
         }
 
         try {
-            // 2. 提取日志打印时间
-            const logTime = extractLogTime(logText);
-            
+            // 2. 智能提取日志打印时间
+            const timeAnalysis = extractAndAnalyzeLogTime(logText);
+            console.log("timeAnalysis:", timeAnalysis);
+
             // 3. 提取追踪信息
             const traceInfo = extractTraceInfo(logText);
-            
+
             // 4. 提取基本信息部分
             const basicInfoPart = extractBasicInfo(logText);
             if (!basicInfoPart) {
@@ -205,7 +255,9 @@
 
             // 6. 构造日志数据对象
             const logData = {
-                logTime: logTime || "无",
+                logTime: timeAnalysis.time || "无",
+                timezoneInfo: timeAnalysis.timezoneInfo || "unknown",
+                originalTimes: timeAnalysis.originalTimes || [],
                 traceId: traceInfo.traceId || "无",
                 spanId: traceInfo.spanId || "无",
                 module: basicInfoPart.module || "空",
@@ -226,11 +278,55 @@
         }
     }
 
-    // 提取日志打印时间
-    function extractLogTime(logText) {
-        // 匹配日志开头的时间格式：2025-10-17 08:51:10.24
-        const timeMatch = logText.match(/^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d+)/);
-        return timeMatch ? timeMatch[1] : null;
+    // 智能提取和识别日志时间
+    function extractAndAnalyzeLogTime(logText) {
+        // 查找所有可能的时间戳
+        const timeMatches = logText.match(/\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{2,3}/g);
+
+        if (!timeMatches || timeMatches.length === 0) {
+            return { time: null, timezoneInfo: 'unknown' };
+        }
+
+        // 如果只有一个时间戳，假定为UTC时间
+        if (timeMatches.length === 1) {
+            console.log('Only one time found, assuming UTC')
+            console.log('time:'+timeMatches[0])
+            currentTimezone = 'utc8'; // 默认显示UTC+8
+            return {
+                time: timeMatches[0],
+                timezoneInfo: 'assumed_utc',
+                originalTimes: timeMatches
+            };
+        }
+
+        // 如果有多个时间戳，分析它们之间的差异
+        if (timeMatches.length >= 2) {
+            console.log('Multiple times found, analyzing differences')
+            console.log('timeMatches:'+timeMatches)
+            const firstTime = new Date(timeMatches[0].replace(' ', 'T'));
+            const secondTime = new Date(timeMatches[1].replace(' ', 'T'));
+
+            // 计算小时差
+            const hourDiff = Math.abs(firstTime.getHours() - secondTime.getHours());
+
+            // 如果相差8小时左右，可能是本地时间和UTC时间
+            if (hourDiff === 8 || hourDiff === 16) {
+                // 返回UTC时间（假设第二个是UTC时间）
+                currentTimezone = 'utc8'; // 默认显示UTC+8
+                return {
+                    time: timeMatches[1],
+                    timezoneInfo: 'assumed_utc',
+                    originalTimes: timeMatches
+                };
+            }
+        }
+
+        // 默认返回第一个时间戳
+        return {
+            time: timeMatches[0],
+            timezoneInfo: 'default',
+            originalTimes: timeMatches
+        };
     }
 
     // 提取追踪信息
@@ -252,7 +348,7 @@
 
         // 解析方法、URL、响应码、响应信息
         const basicParts = basicInfoMatch[3].split(", ");
-        
+
         return {
             module: basicInfoMatch[1],
             businessCode: basicInfoMatch[2],
@@ -267,12 +363,12 @@
     function extractSectionContent(text, startMarker, endMarker) {
         const startIndex = text.indexOf(startMarker);
         if (startIndex === -1) return "";
-        
+
         const contentStart = startIndex + startMarker.length;
         // 寻找对应的结束标记
         let endIndex = contentStart;
         let bracketCount = 1;
-        
+
         // 处理嵌套的方括号情况
         for (let i = contentStart; i < text.length; i++) {
             if (text[i] === '[') {
@@ -285,13 +381,13 @@
                 }
             }
         }
-        
+
         if (bracketCount !== 0) {
             // 如果没有找到匹配的结束标记，尝试使用简单的查找
             endIndex = text.indexOf(endMarker, contentStart);
             if (endIndex === -1) return "";
         }
-        
+
         return text.substring(contentStart, endIndex).trim();
     }
 
@@ -317,11 +413,25 @@
 
         // 渲染追踪信息表格（包含调用时间）
         const traceTable = document.getElementById("traceInfoTable");
+        console.log('logData:'+logData)
+        const formattedTime = formatLogTime(logData.logTime);
+        console.log('formattedTime:'+formattedTime)
+
         traceTable.innerHTML = `
-                <tr><th>调用时间</th><td>${logData.logTime}</td></tr>
+                <tr>
+                    <th>调用时间</th>
+                    <td>
+                        ${formattedTime}
+                        <button class="timezone-btn" onclick="toggleTimezone('${logData.logTime}', '${logData.timezoneInfo}')">切换时区</button>
+                        <span id="timezoneLabel"></span>
+                    </td>
+                </tr>
                 <tr><th>Trace ID</th><td>${logData.traceId}</td></tr>
                 <tr><th>Span ID</th><td>${logData.spanId}</td></tr>
             `;
+
+        // 更新时区标签
+        updateTimezoneLabel();
 
         // 渲染基本信息表格
         const basicTable = document.getElementById("basicInfoTable");
@@ -329,7 +439,7 @@
                 <tr><th>模块</th><td>${logData.module}</td></tr>
                 <tr><th>业务码</th><td>${logData.businessCode}</td></tr>
                 <tr><th>请求方法</th><td>${logData.method}</td></tr>
-                <tr><th>请求URL</th><td>${logData.url}</td></tr>
+                <tr><th>请求URL</th><td class="url-content">${logData.url}</td></tr>
                 <tr><th>响应码</th><td>${logData.responseCode}</td></tr>
                 <tr><th>响应信息</th><td>${logData.responseMsg}</td></tr>
             `;
@@ -340,7 +450,7 @@
         let urlParamsHtml = "";
         if (Object.keys(urlParams).length > 0) {
             for (const [key, value] of Object.entries(urlParams)) {
-                urlParamsHtml += `<tr><th>${key}</th><td>${value}</td></tr>`;
+                urlParamsHtml += `<tr><th>${key}</th><td class="url-content">${value}</td></tr>`;
             }
         } else {
             urlParamsHtml = "<tr><td colspan='2'>无URL参数</td></tr>";
@@ -351,13 +461,116 @@
         const reqBodyEl = document.getElementById("reqBodyContent");
         reqBodyEl.innerHTML = formatParam(logData.reqBody);
 
-        // 渲染响应体（JSON美化）
+        // 渲染响应体（JSON美化并着色）
         const respBodyEl = document.getElementById("respBodyContent");
         respBodyEl.innerHTML = formatJson(logData.respBody);
 
-        // 渲染请求头（JSON美化）
+        // 渲染请求头（JSON美化并着色）
         const reqHeaderEl = document.getElementById("reqHeaderContent");
         reqHeaderEl.innerHTML = formatJson(logData.reqHeader);
+    }
+
+    // 格式化日志时间显示
+    function formatLogTime(timeStr) {
+        if (timeStr === "无") return timeStr;
+
+        try {
+            // 创建Date对象时明确指定时区
+            // 如果 currentTimezone 是 'utc'，则添加 'Z' 表示 UTC 时间
+            let date;
+            if (currentTimezone === 'utc') {
+                date = new Date(timeStr.replace(' ', 'T') + 'Z');
+            } else {
+                // 对于UTC+8时间，直接创建 Date 对象
+                date = new Date(timeStr.replace(' ', 'T'));
+            }
+
+            // 检查日期是否有效
+            if (isNaN(date.getTime())) {
+                return timeStr;
+            }
+
+            // 根据当前时区设置格式化时间（只保留utc和utc8）
+            switch(currentTimezone) {
+                case 'utc':
+                    // UTC时间
+                    return date.toISOString().replace('T', ' ').substring(0, 23);
+                case 'utc8':
+                    // 东八区时间
+                    const utc8Date = new Date(date.getTime() + 8 * 60 * 60 * 1000);
+                    // return utc8Date.toISOString().replace('T', ' ').substring(0, 23);
+                    return utc8Date.toLocaleString('zh-CN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false
+                    }).replace(/\//g, '-');
+                default:
+                    // 默认使用UTC+8时间
+                    const defaultUtc8Date = new Date(date.getTime() + 8 * 60 * 60 * 1000);
+                    return defaultUtc8Date.toLocaleString('zh-CN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false
+                    }).replace(/\//g, '-');
+            }
+        } catch (e) {
+            return timeStr;
+        }
+    }
+
+    // 切换时区显示
+    function toggleTimezone(originalTime, timezoneInfo) {
+        // 切换时区状态（只在utc和 utc8之间切换）
+        switch(currentTimezone) {
+            case 'utc':
+                currentTimezone = 'utc8';
+                break;
+            case 'utc8':
+                currentTimezone = 'utc';
+                break;
+            default:
+                currentTimezone = 'utc8';
+        }
+
+        // 更新时区标签
+        updateTimezoneLabel();
+
+        // 重新格式化时间显示
+        const timeCell = document.querySelector('#traceInfoTable tr:first-child td');
+        if (timeCell) {
+            const formattedTime = formatLogTime(originalTime);
+            timeCell.innerHTML = `
+                ${formattedTime}
+                <button class="timezone-btn" onclick="toggleTimezone('${originalTime}', '${timezoneInfo}')">切换时区</button>
+                <span id="timezoneLabel"></span>
+            `;
+            updateTimezoneLabel(); // 重新设置标签
+        }
+    }
+
+    // 更新时区标签显示
+    function updateTimezoneLabel() {
+        const labelElement = document.getElementById('timezoneLabel');
+        if (labelElement) {
+            switch(currentTimezone) {
+                case 'utc':
+                    labelElement.textContent = '(UTC)';
+                    break;
+                case 'utc8':
+                    labelElement.textContent = '(UTC+8)';
+                    break;
+                default:
+                    labelElement.textContent = '(UTC+8)';
+            }
+        }
     }
 
     // 辅助函数：格式化URL参数（app_key=xxx&method=xxx 转清晰格式）
@@ -378,29 +591,47 @@
         return paramHtml;
     }
 
-    // 辅助函数：格式化JSON字符串（带缩进）
+    // 辅助函数：格式化并着色JSON字符串
     function formatJson(jsonStr) {
         if (jsonStr === "无" || jsonStr === "") return "无";
         try {
-            // 如果是数组字符串，需要特殊处理
-            if (jsonStr.startsWith('[') && jsonStr.endsWith(']')) {
-                // 尝试解析数组
-                const arrayObj = JSON.parse(jsonStr);
-                return JSON.stringify(arrayObj, null, 2);
-            }
-            // 如果是对象字符串
-            else if (jsonStr.startsWith('{') && jsonStr.endsWith('}')) {
+            if ((jsonStr.startsWith('{') && jsonStr.endsWith('}')) ||
+                (jsonStr.startsWith('[') && jsonStr.endsWith(']'))) {
                 const jsonObj = JSON.parse(jsonStr);
-                return JSON.stringify(jsonObj, null, 2);
-            }
-            // 其他情况直接返回
-            else {
+                return syntaxHighlight(jsonObj);
+            } else {
                 return jsonStr;
             }
         } catch (e) {
-            // 非JSON格式直接返回原内容
             return jsonStr;
         }
+    }
+
+    // JSON语法高亮函数
+    function syntaxHighlight(json) {
+        if (typeof json != 'string') {
+            json = JSON.stringify(json, undefined, 2);
+        }
+
+        // 转义HTML特殊字符
+        json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+        // 应用语法高亮
+        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+            let cls = 'json-number';
+            if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    cls = 'json-key';
+                } else {
+                    cls = 'json-string';
+                }
+            } else if (/true|false/.test(match)) {
+                cls = 'json-boolean';
+            } else if (/null/.test(match)) {
+                cls = 'json-null';
+            }
+            return '<span class="' + cls + '">' + match + '</span>';
+        });
     }
 
     // 辅助函数：显示错误提示
@@ -418,7 +649,7 @@
         successEl.textContent = msg;
         successEl.style.display = "block";
         document.getElementById("errorTip").style.display = "none";
-        
+
         // 3秒后自动隐藏
         setTimeout(() => {
             successEl.style.display = "none";
