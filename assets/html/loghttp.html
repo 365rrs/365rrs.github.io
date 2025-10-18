@@ -100,7 +100,7 @@
             max-height: 300px;
             overflow-y: auto;
         }
-        
+
         /* JSON 着色样式 */
         .json-key {
             color: #9225ba;
@@ -117,7 +117,7 @@
         .json-null {
             color: #808080;
         }
-        
+
         .timezone-btn {
             padding: 2px 8px;
             background: #67c23a;
@@ -131,13 +131,13 @@
         .timezone-btn:hover {
             background: #85ce61;
         }
-        
+
         .timezone-info {
             font-size: 12px;
             color: #999;
             margin-left: 10px;
         }
-        
+
         .error提示 {
             color: #f56c6c;
             font-size: 14px;
@@ -148,7 +148,7 @@
             font-size: 14px;
             margin-top: 10px;
         }
-        
+
         /* 优化长URL显示 */
         .url-content {
             word-break: break-all;
@@ -156,7 +156,7 @@
             max-width: 100%;
             overflow-wrap: break-word;
         }
-        
+
         /* URL容器样式 */
         .url-container {
             display: flex;
@@ -181,11 +181,11 @@
             right: 20px; /* 显示位置 */
         }
 
-        
+
         .notification.success {
             background-color: #67c23a;
         }
-        
+
         .notification.error {
             background-color: #f56c6c;
         }
@@ -251,7 +251,7 @@
     <!-- 错误提示区 -->
     <div id="errorTip" class="error提示" style="display: none;"></div>
     <div id="successTip" class="success提示" style="display: none;"></div>
-    
+
     <!-- 新增的通知框 -->
     <div id="notification" class="notification"></div>
 </div>
@@ -259,7 +259,7 @@
 <script>
     // 时区状态变量 - 默认设置为 utc8
     let currentTimezone = 'utc8'; // utc, utc8
-    
+
     // 基于关键字解析日志的核心函数
     function parseLog() {
         // 1. 获取输入的日志内容
@@ -273,10 +273,10 @@
             // 2. 智能提取日志打印时间
             const timeAnalysis = extractAndAnalyzeLogTime(logText);
             console.log("timeAnalysis:", timeAnalysis);
-            
+
             // 3. 提取追踪信息
             const traceInfo = extractTraceInfo(logText);
-            
+
             // 4. 提取基本信息部分
             const basicInfoPart = extractBasicInfo(logText);
             if (!basicInfoPart) {
@@ -296,8 +296,6 @@
                 originalTimes: timeAnalysis.originalTimes || [],
                 traceId: traceInfo.traceId || "无",
                 spanId: traceInfo.spanId || "无",
-                module: basicInfoPart.module || "空",
-                businessCode: basicInfoPart.businessCode || "空",
                 method: basicInfoPart.method || "无",
                 url: basicInfoPart.url || "无",
                 responseCode: basicInfoPart.responseCode || "无",
@@ -318,48 +316,48 @@
     function extractAndAnalyzeLogTime(logText) {
         // 查找所有可能的时间戳
         const timeMatches = logText.match(/\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}\.\d{2,3}/g);
-        
+
         if (!timeMatches || timeMatches.length === 0) {
             return { time: null, timezoneInfo: 'unknown' };
         }
-        
+
         // 如果只有一个时间戳，假定为UTC时间
         if (timeMatches.length === 1) {
             console.log('Only one time found, assuming UTC')
             console.log('time:'+timeMatches[0])
             currentTimezone = 'utc8'; // 默认显示UTC+8
             return {
-                time: timeMatches[0], 
+                time: timeMatches[0],
                 timezoneInfo: 'assumed_utc',
                 originalTimes: timeMatches
             };
         }
-        
+
         // 如果有多个时间戳，分析它们之间的差异
         if (timeMatches.length >= 2) {
             console.log('Multiple times found, analyzing differences')
             console.log('timeMatches:'+timeMatches)
             const firstTime = new Date(timeMatches[0].replace(' ', 'T'));
             const secondTime = new Date(timeMatches[1].replace(' ', 'T'));
-            
+
             // 计算小时差
             const hourDiff = Math.abs(firstTime.getHours() - secondTime.getHours());
-            
+
             // 如果相差8小时左右，可能是本地时间和UTC时间
             if (hourDiff === 8 || hourDiff === 16) {
                 // 返回UTC时间（假设第二个是UTC时间）
                 currentTimezone = 'utc8'; // 默认显示UTC+8
-                return { 
+                return {
                     time: timeMatches[1],
                     timezoneInfo: 'assumed_utc',
                     originalTimes: timeMatches
                 };
             }
         }
-        
+
         // 默认返回第一个时间戳
-        return { 
-            time: timeMatches[0], 
+        return {
+            time: timeMatches[0],
             timezoneInfo: 'default',
             originalTimes: timeMatches
         };
@@ -384,10 +382,8 @@
 
         // 解析方法、URL、响应码、响应信息
         const basicParts = basicInfoMatch[3].split(", ");
-        
+
         return {
-            module: basicInfoMatch[1],
-            businessCode: basicInfoMatch[2],
             method: basicParts[0],
             url: basicParts[1],
             responseCode: basicParts[2],
@@ -399,12 +395,12 @@
     function extractSectionContent(text, startMarker, endMarker) {
         const startIndex = text.indexOf(startMarker);
         if (startIndex === -1) return "";
-        
+
         const contentStart = startIndex + startMarker.length;
         // 寻找对应的结束标记
         let endIndex = contentStart;
         let bracketCount = 1;
-        
+
         // 处理嵌套的方括号情况
         for (let i = contentStart; i < text.length; i++) {
             if (text[i] === '[') {
@@ -417,13 +413,13 @@
                 }
             }
         }
-        
+
         if (bracketCount !== 0) {
             // 如果没有找到匹配的结束标记，尝试使用简单的查找
             endIndex = text.indexOf(endMarker, contentStart);
             if (endIndex === -1) return "";
         }
-        
+
         return text.substring(contentStart, endIndex).trim();
     }
 
@@ -452,7 +448,7 @@
         console.log('logData:'+logData)
         const formattedTime = formatLogTime(logData.logTime);
         console.log('formattedTime:'+formattedTime)
-        
+
         traceTable.innerHTML = `
                 <tr>
                     <th>调用时间</th>
@@ -469,11 +465,9 @@
         // 更新时区标签
         updateTimezoneLabel();
 
-        // 渲染基本信息表格
+        // 渲染基本信息表格（已删除模块和业务码）
         const basicTable = document.getElementById("basicInfoTable");
         basicTable.innerHTML = `
-                <tr><th>模块</th><td>${logData.module}</td></tr>
-                <tr><th>业务码</th><td>${logData.businessCode}</td></tr>
                 <tr><th>请求方法</th><td>${logData.method}</td></tr>
                 <tr>
                     <th>请求URL</th>
@@ -517,7 +511,7 @@
     // 格式化日志时间显示
     function formatLogTime(timeStr) {
         if (timeStr === "无") return timeStr;
-        
+
         try {
             // 创建Date对象时明确指定时区
             // 如果 currentTimezone 是 'utc'，则添加 'Z' 表示 UTC 时间
@@ -528,12 +522,12 @@
                 // 对于UTC+8时间，直接创建 Date 对象
                 date = new Date(timeStr.replace(' ', 'T'));
             }
-            
+
             // 检查日期是否有效
             if (isNaN(date.getTime())) {
                 return timeStr;
             }
-            
+
             // 根据当前时区设置格式化时间（只保留utc和utc8）
             switch(currentTimezone) {
                 case 'utc':
@@ -583,10 +577,10 @@
             default:
                 currentTimezone = 'utc8';
         }
-        
+
         // 更新时区标签
         updateTimezoneLabel();
-        
+
         // 重新格式化时间显示
         const timeCell = document.querySelector('#traceInfoTable tr:first-child td');
         if (timeCell) {
@@ -639,7 +633,7 @@
     function formatJson(jsonStr) {
         if (jsonStr === "无" || jsonStr === "") return "无";
         try {
-            if ((jsonStr.startsWith('{') && jsonStr.endsWith('}')) || 
+            if ((jsonStr.startsWith('{') && jsonStr.endsWith('}')) ||
                 (jsonStr.startsWith('[') && jsonStr.endsWith(']'))) {
                 const jsonObj = JSON.parse(jsonStr);
                 return syntaxHighlight(jsonObj);
@@ -656,10 +650,10 @@
         if (typeof json != 'string') {
             json = JSON.stringify(json, undefined, 2);
         }
-        
+
         // 转义HTML特殊字符
         json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        
+
         // 应用语法高亮
         return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
             let cls = 'json-number';
@@ -693,24 +687,24 @@
         successEl.textContent = msg;
         successEl.style.display = "block";
         document.getElementById("errorTip").style.display = "none";
-        
+
         // 3秒后自动隐藏
         setTimeout(() => {
             successEl.style.display = "none";
         }, 3000);
     }
-    
+
     // 显示通知函数
     function showNotification(message, type = 'success') {
         const notification = document.getElementById('notification');
         notification.textContent = message;
         notification.className = 'notification ' + type;
-        
+
         // 显示通知
         setTimeout(() => {
             notification.classList.add('show');
         }, 10);
-        
+
         // 3秒后隐藏通知
         setTimeout(() => {
             notification.classList.remove('show');
