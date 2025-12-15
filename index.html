@@ -76,41 +76,6 @@
             color: #999;
             font-size: 12px;
         }
-        
-        /* 搜索相关样式 */
-        .navbar-center {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            top: 50%;
-            transform: translate(-50%, -50%);
-        }
-        
-        .user-info-navbar {
-            position: relative;
-        }
-        
-        .search-highlight {
-            background-color: #ffeb3b;
-            padding: 2px 4px;
-            border-radius: 2px;
-        }
-        
-        .site-hidden {
-            display: none !important;
-        }
-        
-        .category-hidden {
-            display: none !important;
-        }
-        
-        .search-result-info {
-            background: #f8f9fa;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
-            border-left: 4px solid #007bff;
-        }
     </style>
 </head>
 
@@ -188,17 +153,6 @@
                     </a>
                 </li>
             </ul>
-            <!-- 搜索框居中 -->
-            <div class="navbar-center">
-                <form class="navbar-form" role="search" style="margin: 0;">
-                    <div class="form-group">
-                        <input type="text" class="form-control" id="search-input" placeholder="搜索网站..." style="width: 300px;">
-                    </div>
-                    <button type="button" class="btn btn-link" id="clear-search">
-                        <i class="fa fa-times"></i>
-                    </button>
-                </form>
-            </div>
         </nav>
         <!-- 网站内容将通过JavaScript动态生成 -->
         <div id="website-content">
@@ -761,123 +715,6 @@
             regenerateContent();
         }
 
-        // 搜索功能
-        let searchTimeout;
-        
-        // 搜索输入事件
-        $('#search-input').on('input', function() {
-            clearTimeout(searchTimeout);
-            const query = $(this).val().trim();
-            
-            searchTimeout = setTimeout(() => {
-                performSearch(query);
-            }, 300);
-        });
-        
-        // 清除搜索
-        $('#clear-search').click(function() {
-            $('#search-input').val('');
-            performSearch('');
-        });
-        
-        // 执行搜索
-        function performSearch(query) {
-            if (!query) {
-                // 显示所有内容
-                $('.xe-widget').removeClass('site-hidden');
-                $('h4[id]').removeClass('category-hidden');
-                $('.search-result-info').remove();
-                $('.search-highlight').each(function() {
-                    $(this).replaceWith($(this).text());
-                });
-                return;
-            }
-            
-            const lowerQuery = query.toLowerCase();
-            let totalResults = 0;
-            let categoryResults = {};
-            
-            // 遍历所有分类
-            currentData.categories.forEach(category => {
-                let categoryHasResults = false;
-                let categoryResultCount = 0;
-                
-                // 遍历分类中的网站
-                category.sites.forEach((site, index) => {
-                    const siteName = site.name.toLowerCase();
-                    const siteDesc = (site.description || '').toLowerCase();
-                    const siteUrl = site.url.toLowerCase();
-                    
-                    const matchesName = siteName.includes(lowerQuery);
-                    const matchesDesc = siteDesc.includes(lowerQuery);
-                    const matchesUrl = siteUrl.includes(lowerQuery);
-                    
-                    const siteElement = $(`.xe-widget:contains('${site.name}')`);
-                    
-                    if (matchesName || matchesDesc || matchesUrl) {
-                        siteElement.removeClass('site-hidden');
-                        categoryHasResults = true;
-                        categoryResultCount++;
-                        totalResults++;
-                        
-                        // 高亮匹配文本
-                        highlightText(siteElement, query);
-                    } else {
-                        siteElement.addClass('site-hidden');
-                    }
-                });
-                
-                // 显示/隐藏分类标题
-                const categoryHeader = $(`h4[id="${category.name}"]`);
-                if (categoryHasResults) {
-                    categoryHeader.removeClass('category-hidden');
-                    categoryResults[category.name] = categoryResultCount;
-                } else {
-                    categoryHeader.addClass('category-hidden');
-                }
-            });
-            
-            // 显示搜索结果信息
-            $('.search-result-info').remove();
-            if (totalResults > 0) {
-                const resultInfo = `<div class="search-result-info">
-                    <i class="fa fa-search"></i> 找到 ${totalResults} 个相关网站
-                </div>`;
-                $('#website-content').prepend(resultInfo);
-            } else {
-                const noResultInfo = `<div class="search-result-info">
-                    <i class="fa fa-exclamation-circle"></i> 未找到相关网站，请尝试其他关键词
-                </div>`;
-                $('#website-content').prepend(noResultInfo);
-            }
-        }
-        
-        // 高亮匹配文本
-        function highlightText(element, query) {
-            // 清除之前的高亮
-            element.find('.search-highlight').each(function() {
-                $(this).replaceWith($(this).text());
-            });
-            
-            const regex = new RegExp(`(${query})`, 'gi');
-            
-            // 高亮网站名称
-            const nameElement = element.find('.xe-user-name strong');
-            if (nameElement.length) {
-                const originalText = nameElement.text();
-                const highlightedText = originalText.replace(regex, '<span class="search-highlight">$1</span>');
-                nameElement.html(highlightedText);
-            }
-            
-            // 高亮描述
-            const descElement = element.find('.xe-comment p');
-            if (descElement.length) {
-                const originalText = descElement.text();
-                const highlightedText = originalText.replace(regex, '<span class="search-highlight">$1</span>');
-                descElement.html(highlightedText);
-            }
-        }
-        
         // 页面加载时初始化内容
         initializeWithPreference();
     });
