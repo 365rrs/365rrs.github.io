@@ -73,6 +73,19 @@
         .copy-btn:hover {
             background: #66b1ff;
         }
+        .format-btn {
+            padding: 2px 8px;
+            background: #e6a23c;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+        .format-btn:hover {
+            background: #ebb563;
+        }
         .log-table {
             width: 100%;
             border-collapse: collapse;
@@ -198,6 +211,7 @@
         <textarea id="logInput" placeholder="请粘贴控制台打印的日志（示例：2025-10-17 08:51:10.24...）"></textarea>
         <button onclick="parseLog()">解析日志</button>
         <button onclick="clearAll()">清空</button>
+        <button onclick="copyAllInfo()" style="background:#67c23a;">一键复制</button>
     </div>
 
     <!-- 解析结果展示区 -->
@@ -223,8 +237,11 @@
         <!-- 请求体区 -->
         <div class="log-section">
             <div class="log-title">
-                2. 请求体（REQ BODY）
-                <button class="copy-btn" onclick="copyToClipboard('reqBodyContent')">复制</button>
+                <span>2. 请求体（REQ BODY）</span>
+                <span>
+                    <button class="format-btn" id="reqBodyFormatBtn" onclick="toggleJsonFormat('reqBody')">压缩</button>
+                    <button class="copy-btn" onclick="copyToClipboard('reqBodyContent')">复制</button>
+                </span>
             </div>
             <div id="reqBodyContent" class="json-content"></div>
         </div>
@@ -232,8 +249,11 @@
         <!-- 响应体区 -->
         <div class="log-section">
             <div class="log-title">
-                3. 响应体（RESP BODY）
-                <button class="copy-btn" onclick="copyToClipboard('respBodyContent')">复制</button>
+                <span>3. 响应体（RESP BODY）</span>
+                <span>
+                    <button class="format-btn" id="respBodyFormatBtn" onclick="toggleJsonFormat('respBody')">压缩</button>
+                    <button class="copy-btn" onclick="copyToClipboard('respBodyContent')">复制</button>
+                </span>
             </div>
             <div id="respBodyContent" class="json-content"></div>
         </div>
@@ -259,6 +279,10 @@
 <script>
     // 时区状态变量 - 默认设置为 utc8
     let currentTimezone = 'utc8'; // utc, utc8
+
+    // 存储原始JSON数据和当前展示模式
+    const jsonRawData = { reqBody: '', respBody: '' };
+    const jsonFormatMode = { reqBody: 'formatted', respBody: 'formatted' };
 
     // 基于关键字解析日志的核心函数
     function parseLog() {
@@ -495,6 +519,14 @@
         }
         urlParamsTable.innerHTML = urlParamsHtml;
 
+        // 保存原始数据并重置格式化状态
+        jsonRawData.reqBody = logData.reqBody;
+        jsonRawData.respBody = logData.respBody;
+        jsonFormatMode.reqBody = 'formatted';
+        jsonFormatMode.respBody = 'formatted';
+        document.getElementById('reqBodyFormatBtn').textContent = '压缩';
+        document.getElementById('respBodyFormatBtn').textContent = '压缩';
+
         // 渲染请求体（URL参数转"键:值"）
         const reqBodyEl = document.getElementById("reqBodyContent");
         reqBodyEl.innerHTML = formatParam(logData.reqBody);
@@ -636,7 +668,7 @@
             if ((jsonStr.startsWith('{') && jsonStr.endsWith('}')) ||
                 (jsonStr.startsWith('[') && jsonStr.endsWith(']'))) {
                 const jsonObj = JSON.parse(jsonStr);
-                return syntaxHighlight(jsonObj);
+                return syntaxHighlight(jsonObj, false);
             } else {
                 return jsonStr;
             }
@@ -645,10 +677,35 @@
         }
     }
 
+    // 切换JSON压缩/格式化
+    function toggleJsonFormat(type) {
+        const raw = jsonRawData[type];
+        if (!raw || raw === '无' || raw === '') return;
+
+        const elId = type === 'reqBody' ? 'reqBodyContent' : 'respBodyContent';
+        const btnId = type === 'reqBody' ? 'reqBodyFormatBtn' : 'respBodyFormatBtn';
+        const el = document.getElementById(elId);
+
+        try {
+            const obj = JSON.parse(raw);
+            if (jsonFormatMode[type] === 'formatted') {
+                jsonFormatMode[type] = 'compressed';
+                el.innerHTML = syntaxHighlight(obj, true);
+                document.getElementById(btnId).textContent = '格式化';
+            } else {
+                jsonFormatMode[type] = 'formatted';
+                el.innerHTML = syntaxHighlight(obj, false);
+                document.getElementById(btnId).textContent = '压缩';
+            }
+        } catch (e) {
+            // 非JSON内容不处理
+        }
+    }
+
     // JSON语法高亮函数
-    function syntaxHighlight(json) {
+    function syntaxHighlight(json, compress) {
         if (typeof json != 'string') {
-            json = JSON.stringify(json, undefined, 2);
+            json = compress ? JSON.stringify(json) : JSON.stringify(json, undefined, 2);
         }
 
         // 转义HTML特殊字符
@@ -733,6 +790,59 @@
             .catch(err => {
                 showNotification("复制失败：" + err, 'error');
             });
+    }
+
+    // 一键复制所有关键信息
+    function copyAllInfo() {
+        const resultArea = document.getElementById('resultArea');
+        if (resultArea.style.display === 'none') {
+            showNotification('请先解析日志！', 'error');
+            return;
+        }
+
+        // 调用时间
+        const timeRow = document.querySelector('#traceInfoTable tr:first-child td');
+        const time = timeRow ? timeRow.firstChild.textContent.trim() : '无';
+
+        // Trace ID
+        const traceRow = document.querySelector('#traceInfoTable tr:nth-child(2) td');
+        const traceId = traceRow ? traceRow.textContent.trim() : '无';
+
+        // 请求URL
+        const urlEl = document.getElementById('urlText');
+        const url = urlEl ? urlEl.textContent.trim() : '无';
+
+        // URL参数
+        const urlParamsTable = document.getElementById('urlParamsTable');
+        let urlParams = '';
+        urlParamsTable.querySelectorAll('tr').forEach(row => {
+            const th = row.querySelector('th');
+            const td = row.querySelector('td');
+            if (th && td) {
+                urlParams += `  ${th.textContent}: ${td.textContent}\n`;
+            } else if (td) {
+                urlParams += `  ${td.textContent}\n`;
+            }
+        });
+
+        // 请求体、响应体
+        const reqBody = document.getElementById('reqBodyContent').innerText;
+        const respBody = document.getElementById('respBodyContent').innerText;
+
+        const parts = [
+            `调用时间: ${time}`,
+            `Trace ID: ${traceId}`,
+            `请求URL: ${url}`,
+        ];
+        // if (urlParams.trim()) {
+        //     parts.push(`URL参数:\n${urlParams.trimEnd()}`);
+        // }
+        parts.push(`request body:\n${reqBody}`, `response body:\n${respBody}`);
+        const text = parts.join('\n\n') + '\n';
+
+        navigator.clipboard.writeText(text)
+            .then(() => showNotification('一键复制成功！'))
+            .catch(err => showNotification('复制失败：' + err, 'error'));
     }
 
     // 清空功能
