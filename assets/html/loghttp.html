@@ -522,18 +522,18 @@
         // 保存原始数据并重置格式化状态
         jsonRawData.reqBody = logData.reqBody;
         jsonRawData.respBody = logData.respBody;
-        jsonFormatMode.reqBody = 'formatted';
-        jsonFormatMode.respBody = 'formatted';
-        document.getElementById('reqBodyFormatBtn').textContent = '压缩';
-        document.getElementById('respBodyFormatBtn').textContent = '压缩';
+        jsonFormatMode.reqBody = 'compressed';
+        jsonFormatMode.respBody = 'compressed';
+        document.getElementById('reqBodyFormatBtn').textContent = '格式化';
+        document.getElementById('respBodyFormatBtn').textContent = '格式化';
 
-        // 渲染请求体（URL参数转"键:值"）
+        // 渲染请求体
         const reqBodyEl = document.getElementById("reqBodyContent");
-        reqBodyEl.innerHTML = formatParam(logData.reqBody);
+        reqBodyEl.innerHTML = formatParamCompressed(logData.reqBody);
 
-        // 渲染响应体（JSON美化并着色）
+        // 渲染响应体
         const respBodyEl = document.getElementById("respBodyContent");
-        respBodyEl.innerHTML = formatJson(logData.respBody);
+        respBodyEl.innerHTML = formatJsonCompressed(logData.respBody);
 
         // 渲染请求头（JSON美化并着色）
         const reqHeaderEl = document.getElementById("reqHeaderContent");
@@ -641,6 +641,28 @@
                     labelElement.textContent = '(UTC+8)';
             }
         }
+    }
+
+    // 压缩格式的JSON渲染
+    function formatJsonCompressed(jsonStr) {
+        if (jsonStr === '无' || jsonStr === '') return '无';
+        try {
+            if ((jsonStr.startsWith('{') && jsonStr.endsWith('}')) ||
+                (jsonStr.startsWith('[') && jsonStr.endsWith(']'))) {
+                return syntaxHighlight(JSON.parse(jsonStr), true);
+            }
+            return jsonStr;
+        } catch (e) {
+            return jsonStr;
+        }
+    }
+
+    function formatParamCompressed(paramStr) {
+        if (paramStr === '无' || paramStr === '') return '无';
+        if (paramStr.startsWith('{') || paramStr.startsWith('[')) {
+            return formatJsonCompressed(paramStr);
+        }
+        return formatParam(paramStr);
     }
 
     // 辅助函数：格式化URL参数（app_key=xxx&method=xxx 转清晰格式）
