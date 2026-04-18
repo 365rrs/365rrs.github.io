@@ -275,7 +275,8 @@ var DataSourceManager = {
         var deferred = $.Deferred();
 
         if (source === 'private') {
-            var raw = localStorage.getItem(wsKey('private_data'));
+            // 优先读带版本后缀的 key，兼容旧版本
+            var raw = localStorage.getItem(wsKey('private_data')) || localStorage.getItem('ws_private_data');
             if (raw) {
                 try {
                     var data = JSON.parse(raw);
@@ -331,11 +332,14 @@ var DataSourceManager = {
     },
 
     /**
-     * 读取私有数据对象
+     * 读取私有数据对象（兼容旧版本无后缀的 key）
      * @returns {Object|null}
      */
     getPrivateData: function () {
+        // 优先读带版本后缀的 key
         var raw = localStorage.getItem(wsKey('private_data'));
+        // 兼容旧版本（无后缀）
+        if (!raw) raw = localStorage.getItem('ws_private_data');
         if (!raw) return null;
         try {
             return JSON.parse(raw);

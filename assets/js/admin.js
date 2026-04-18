@@ -724,8 +724,9 @@ var BookmarkManager = {
             var index = parseInt($(this).data('index'), 10);
 
             if (action === 'edit-site') {
-                var site = BookmarkManager._getSite(catId, index, parentId);
-                BookmarkManager._openModal('edit', catId, index, parentId, site);
+                BookmarkManager._getSite(catId, index, parentId).done(function (site) {
+                    BookmarkManager._openModal('edit', catId, index, parentId, site);
+                });
             } else if (action === 'del-site') {
                 BookmarkManager.deleteSite(catId, index, parentId);
             } else if (action === 'move-site-up') {
@@ -894,14 +895,21 @@ var BookmarkManager = {
     },
 
     /**
-     * 从数据中获取指定书签
+     * 从当前激活数据源获取指定书签
      */
     _getSite: function (catId, index, parentId) {
-        var data = DataSourceManager.getPrivateData();
-        if (!data) return null;
-        var sites = BookmarkManager._getSites(data, catId, parentId);
-        if (!sites || index < 0 || index >= sites.length) return null;
-        return sites[index];
+        var deferred = $.Deferred();
+        var source = DataSourceManager.getActive();
+
+        DataSourceManager.load(source).done(function (data) {
+            var sites = BookmarkManager._getSites(data, catId, parentId);
+            var site = (sites && index >= 0 && index < sites.length) ? sites[index] : null;
+            deferred.resolve(site);
+        }).fail(function () {
+            deferred.resolve(null);
+        });
+
+        return deferred.promise();
     },
 
     /**
