@@ -1,1024 +1,470 @@
-<!-- 该版本支持远程数据源，可从阿里云OSS上下载json文件 -->
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="author" content="viggo" />
-  <title>WebStack.cc - 管理页面</title>
-  <meta name="keywords" content="UI设计,设计导航,网址导航,设计资源,创意导航,设计师网址大全">
-  <meta name="description" content="WebStack - 设计师网址导航管理页面">
-  <link rel="shortcut icon" href="assets/images/favicon.png">
-  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Arimo:400,700,400italic">
-  <link rel="stylesheet" href="assets/css/fonts/linecons/css/linecons.css">
-  <link rel="stylesheet" href="assets/css/fonts/fontawesome/css/font-awesome.min.css">
-  <link rel="stylesheet" href="assets/css/bootstrap.css">
-  <link rel="stylesheet" href="assets/css/xenon-core.css">
-  <link rel="stylesheet" href="assets/css/xenon-components.css">
-  <link rel="stylesheet" href="assets/css/xenon-skins.css">
-  <link rel="stylesheet" href="assets/css/nav.css">
-  <script src="assets/js/jquery-1.11.1.min.js"></script>
-  <style>
-    .admin-panel {
-      max-width: 800px;
-      margin: 30px auto;
-      padding: 20px;
-      background: #fff;
-      border-radius: 5px;
-      box-shadow: 0 1px 1px rgba(0,0,0,0.1);
-    }
-    .form-group {
-      margin-bottom: 20px;
-    }
-    textarea {
-      font-family: 'Courier New', monospace;
-      min-height: 300px;
-    }
-    .btn-group-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 15px;
-    }
-    .btn-group-section {
-      flex: 1;
-      min-width: 200px;
-      background-color: #f8f9fa;
-      border: 1px solid #e9ecef;
-      border-radius: 5px;
-      padding: 15px;
-    }
-    .btn-group-section h4 {
-      margin-top: 0;
-      margin-bottom: 15px;
-      color: #495057;
-      border-bottom: 1px solid #dee2e6;
-      padding-bottom: 8px;
-    }
-    .btn-group-section .btn {
-      margin: 5px;
-    }
-    .file-input-wrapper {
-      position: relative;
-      overflow: hidden;
-      display: inline-block;
-    }
-    .file-input-wrapper input[type=file] {
-      position: absolute;
-      left: 0;
-      top: 0;
-      opacity: 0;
-      width: 100%;
-      height: 100%;
-      cursor: pointer;
-    }
-    .data-stats {
-      background-color: #f8f9fa;
-      border: 1px solid #e9ecef;
-      border-radius: 4px;
-      padding: 10px;
-      margin: 15px 0;
-    }
-    .stat-item {
-      display: inline-block;
-      margin-right: 20px;
-    }
-    .stat-number {
-      font-weight: bold;
-      color: #007bff;
-    }
-    .action-buttons {
-      text-align: center;
-      margin: 20px 0;
-    }
-    .action-buttons .btn {
-      margin: 0 5px;
-      min-width: 120px;
-    }
-    .section-divider {
-      border-top: 1px solid #eee;
-      margin: 20px 0;
-    }
-    #fileInput {
-      display: none;
-    }
-    .data-source-section {
-      background-color: #f8f9fa;
-      border: 1px solid #e9ecef;
-      border-radius: 5px;
-      padding: 15px;
-      margin: 15px 0;
-    }
-    .data-source-section h4 {
-      margin-top: 0;
-      margin-bottom: 15px;
-      color: #495057;
-      border-bottom: 1px solid #dee2e6;
-      padding-bottom: 8px;
-    }
-    .source-btn {
-      margin: 5px;
-    }
-    .source-active {
-      background-color: #007bff;
-      border-color: #007bff;
-      color: #fff;
-    }
-    .source-active:hover {
-      background-color: #0069d9;
-      border-color: #0062cc;
-    }
-    .save-default-info {
-      background-color: #fff3cd;
-      border: 1px solid #ffeaa7;
-      border-radius: 4px;
-      padding: 10px;
-      margin-top: 10px;
-      font-size: 14px;
-    }
-    .save-default-info i {
-      color: #856404;
-    }
-    .remote-url-section {
-      margin-top: 15px;
-      padding: 10px;
-      background-color: #e9f7fe;
-      border: 1px solid #bee5eb;
-      border-radius: 4px;
-      display: none;
-    }
-    .remote-url-section input {
-      margin: 5px 0;
-    }
-    .cors-warning {
-      background-color: #fff3cd;
-      border: 1px solid #ffeaa7;
-      border-radius: 4px;
-      padding: 10px;
-      margin-top: 10px;
-      font-size: 14px;
-      display: none;
-    }
-    .cors-warning i {
-      color: #856404;
-    }
-    .manual-import-section {
-      margin-top: 10px;
-      padding: 10px;
-      background-color: #f8f9fa;
-      border: 1px solid #e9ecef;
-      border-radius: 4px;
-      display: none;
-    }
-  </style>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="author" content="viggo" />
+    <title>WebStack - 管理面板</title>
+    <link rel="shortcut icon" href="./assets/images/favicon.png">
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Arimo:400,700,400italic">
+    <link rel="stylesheet" href="./assets/css/fonts/linecons/css/linecons.css">
+    <link rel="stylesheet" href="./assets/css/fonts/fontawesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="./assets/css/bootstrap.css">
+    <link rel="stylesheet" href="./assets/css/admin.css">
+    <script src="./assets/js/jquery-1.11.1.min.js"></script>
+    <script src="https://gosspublic.alicdn.com/aliyun-oss-sdk-6.18.1.min.js"></script>
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+        <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
 </head>
 
-<body class="page-body">
-<!-- skin-white -->
-<div class="page-container">
-  <div class="sidebar-menu toggle-others fixed">
-    <div class="sidebar-menu-inner">
-      <header class="logo-env">
-        <!-- logo -->
-        <div class="logo">
-          <a href="index.html" class="logo-expanded">
-            <img src="assets/images/logo@2x.png" width="100%" alt="" />
-          </a>
-          <a href="index.html" class="logo-collapsed">
-            <img src="assets/images/logo-collapsed@2x.png" width="40" alt="" />
-          </a>
+<body class="admin-body">
+
+    <!-- 顶部导航栏 -->
+    <nav class="admin-navbar">
+        <div class="admin-navbar-left">
+            <a href="index.html" class="admin-logo">
+                <img src="./assets/images/logo@2x.png" height="28" alt="WebStack">
+            </a>
+            <span class="admin-title">管理面板</span>
         </div>
-        <div class="mobile-menu-toggle visible-xs">
-          <a href="#" data-toggle="user-info-menu">
-            <i class="linecons-cog"></i>
-          </a>
-          <a href="#" data-toggle="mobile-menu">
-            <i class="fa-bars"></i>
-          </a>
+        <div class="admin-navbar-right">
+            <a href="index.html" class="admin-back-link">
+                <i class="linecons-arrow-left"></i> 返回主页
+            </a>
         </div>
-      </header>
-      <ul id="main-menu" class="main-menu">
-        <li>
-          <a href="index.html">
-            <i class="linecons-star"></i>
-            <span class="title">主页</span>
-          </a>
-        </li>
-        <li>
-          <a href="admin.html">
-            <i class="linecons-key"></i>
-            <span class="title">数据管理</span>
-          </a>
-        </li>
-        <li>
-          <a href="visual-editor.html">
-            <i class="linecons-pencil"></i>
-            <span class="title">可视化编辑</span>
-          </a>
-        </li>
-        <li>
-          <a href="about.html">
-            <i class="linecons-heart"></i>
-            <span class="tooltip-blue">关于本站</span>
-            <span class="label label-Primary pull-right hidden-collapsed">♥︎</span>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </div>
-  <div class="main-content">
-    <nav class="navbar user-info-navbar" role="navigation">
-      <ul class="user-info-menu left-links list-inline list-unstyled">
-        <li class="hidden-sm hidden-xs">
-          <a href="#" data-toggle="sidebar">
-            <i class="fa-bars"></i>
-          </a>
-        </li>
-      </ul>
     </nav>
 
-    <div class="container">
-      <div class="admin-panel">
-        <h2 class="text-center">网站数据管理</h2>
-        <p class="text-center text-muted">导入/导出网站数据</p>
+    <!-- 主体布局 -->
+    <div class="admin-container">
 
-        <!-- 数据源切换 -->
-        <div class="data-source-section">
-          <h4><i class="fa fa-database text-primary"></i> 数据源切换</h4>
-          <p>当前数据源: <span id="currentDataSource" class="text-primary font-weight-bold">默认数据</span></p>
-          <button id="useDefaultDataBtn" class="btn btn-outline-primary source-btn" title="使用默认数据">
-            <i class="fa fa-server"></i> 默认数据
-          </button>
-          <button id="useLocalDataBtn" class="btn btn-outline-success source-btn" title="使用本地存储数据">
-            <i class="fa fa-hdd-o"></i> 本地数据
-          </button>
-          <button id="useRemoteDataBtn" class="btn btn-outline-info source-btn" title="从远程URL加载数据">
-            <i class="fa fa-cloud-download"></i> 远程数据
-          </button>
-          <button id="saveAsDefaultBtn" class="btn btn-outline-warning source-btn" title="将当前数据保存为默认数据">
-            <i class="fa fa-save"></i> 保存为默认
-          </button>
+        <!-- 左侧标签页导航 -->
+        <div class="admin-sidebar">
+            <ul class="admin-tabs" id="admin-tabs">
+                <li class="admin-tab active" data-panel="panel-category">
+                    <a href="#">&#128218; 分类管理</a>
+                </li>
+                <li class="admin-tab" data-panel="panel-bookmark">
+                    <a href="#">&#128278; 书签管理</a>
+                </li>
+                <li class="admin-tab" data-panel="panel-import-export">
+                    <a href="#">&#128230; 导入/导出</a>
+                </li>
+                <li class="admin-tab" data-panel="panel-oss-config">
+                    <a href="#">&#9729;&#65039; OSS 配置</a>
+                </li>
+                <li class="admin-tab" data-panel="panel-sync">
+                    <a href="#">&#128260; 同步状态</a>
+                </li>
+            </ul>
+        </div>
 
-          <div class="remote-url-section" id="remoteUrlSection">
-            <label for="remoteUrlInput">远程数据URL:</label>
-            <input type="text" id="remoteUrlInput" class="form-control" placeholder="请输入JSON数据的URL地址">
-            <button id="loadRemoteDataBtn" class="btn btn-info btn-sm" style="margin-top: 5px;">
-              <i class="fa fa-download"></i> 加载远程数据
-            </button>
-            
-            <div class="cors-warning" id="corsWarning">
-              <i class="fa fa-exclamation-triangle"></i>
-              <strong>注意:</strong> 如果遇到跨域问题，请使用下方的手动导入功能。
+        <!-- 右侧内容区 -->
+        <div class="admin-content">
+
+            <!-- 分类管理面板 -->
+            <div class="admin-panel active" id="panel-category">
+
+                <!-- 只读提示（默认数据源时显示） -->
+                <div id="cat-readonly-tip" class="alert alert-warning" style="display:none;margin-bottom:16px;">
+                    <i class="fa fa-lock" style="margin-right:6px;"></i>
+                    默认数据源为只读，请切换至私有数据源后编辑。
+                </div>
+
+                <!-- 工具栏 -->
+                <div class="cat-toolbar">
+                    <div class="cat-toolbar-left">
+                        <span class="cat-source-label">当前数据源：<strong id="cat-source-name">默认数据源</strong></span>
+                        <button class="btn btn-sm btn-default" id="cat-switch-source-btn" style="margin-left:10px;">
+                            <i class="fa fa-exchange"></i> 切换数据源
+                        </button>
+                    </div>
+                    <div class="cat-toolbar-right">
+                        <button class="btn btn-sm btn-primary" id="cat-add-btn">
+                            <i class="fa fa-plus"></i> 添加一级分类
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 分类树 -->
+                <div id="category-tree" class="category-tree-wrap">
+                    <div class="cat-loading">加载中...</div>
+                </div>
+
             </div>
-            
-            <div class="manual-import-section" id="manualImportSection">
-              <button id="toggleManualImportBtn" class="btn btn-default btn-sm" style="margin-top: 5px;">
-                <i class="fa fa-plus"></i> 展开手动导入
-              </button>
-              <div id="manualImportContent" style="display: none; margin-top: 10px;">
-                <label for="remoteDataTextarea">粘贴远程数据内容:</label>
-                <textarea id="remoteDataTextarea" class="form-control" rows="5" placeholder="在此粘贴从远程URL获取的JSON数据"></textarea>
-                <button id="importRemoteDataBtn" class="btn btn-success btn-sm" style="margin-top: 5px;">
-                  <i class="fa fa-upload"></i> 导入数据
-                </button>
-              </div>
+
+            <!-- 书签管理面板 -->
+            <div class="admin-panel" id="panel-bookmark">
+
+                <!-- 只读提示 -->
+                <div id="bm-readonly-tip" class="alert alert-warning" style="display:none;margin-bottom:16px;">
+                    <i class="fa fa-lock" style="margin-right:6px;"></i>
+                    默认数据源为只读，请切换至私有数据源后编辑。
+                </div>
+
+                <!-- 工具栏 -->
+                <div class="cat-toolbar">
+                    <div class="cat-toolbar-left">
+                        <span class="cat-source-label">当前数据源：<strong id="bm-source-name">默认数据源</strong></span>
+                        <button class="btn btn-sm btn-default" id="bm-switch-source-btn" style="margin-left:10px;">
+                            <i class="fa fa-exchange"></i> 切换数据源
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 书签列表容器 -->
+                <div id="bookmark-list">
+                    <div class="bm-loading">加载中...</div>
+                </div>
+
             </div>
-          </div>
 
-          <div class="save-default-info">
-            <i class="fa fa-info-circle"></i>
-            <strong>提示:</strong> 点击"保存为默认"可将当前显示的数据保存为默认数据，下次访问时将优先加载此数据。
-          </div>
+            <!-- 导入/导出面板 -->
+            <div class="admin-panel" id="panel-import-export">
+
+                <!-- 任务13：数据源状态提示 -->
+                <div class="ie-source-bar">
+                    <span>当前数据源：<strong id="ie-source-name">默认数据源</strong></span>
+                    <span id="ie-source-hint" class="ie-source-hint" style="display:none;">
+                        <i class="fa fa-info-circle"></i> 导入将切换至私有数据源
+                    </span>
+                </div>
+
+                <!-- 区块1：导出数据 -->
+                <div class="ie-block">
+                    <div class="ie-block-title">导出数据</div>
+                    <p class="ie-block-desc">将当前激活数据源导出为 JSON 文件</p>
+                    <button class="btn btn-primary" id="ie-export-btn">
+                        <i class="fa fa-download"></i> 导出 JSON 文件
+                    </button>
+                </div>
+
+                <!-- 区块2：导入数据（文件） -->
+                <div class="ie-block">
+                    <div class="ie-block-title">导入数据（文件）</div>
+                    <p class="ie-block-desc">从本地 JSON 文件导入数据，将覆盖当前私有数据源</p>
+                    <input type="file" id="ie-import-file" accept=".json" style="display:none;">
+                    <button class="btn btn-default" id="ie-import-file-btn">
+                        <i class="fa fa-folder-open"></i> 选择 JSON 文件
+                    </button>
+                    <div id="ie-import-result" class="ie-result" style="display:none;"></div>
+                </div>
+
+                <!-- 区块3：复制 JSON -->
+                <div class="ie-block">
+                    <div class="ie-block-title">复制 JSON</div>
+                    <p class="ie-block-desc">复制当前激活数据源的 JSON 文本</p>
+                    <button class="btn btn-default" id="ie-show-json-btn">
+                        <i class="fa fa-code"></i> 显示 JSON
+                    </button>
+                    <textarea id="ie-json-display" class="ie-textarea" rows="20" readonly style="display:none;"></textarea>
+                    <button class="btn btn-default" id="ie-copy-btn" style="display:none;">
+                        <i class="fa fa-clipboard"></i> 一键复制
+                    </button>
+                </div>
+
+                <!-- 区块4：粘贴 JSON -->
+                <div class="ie-block">
+                    <div class="ie-block-title">粘贴 JSON</div>
+                    <p class="ie-block-desc">粘贴 JSON 文本导入数据，将覆盖当前私有数据源</p>
+                    <textarea id="ie-json-paste" class="ie-textarea" rows="20" placeholder="请在此粘贴 JSON 数据..."></textarea>
+                    <button class="btn btn-primary" id="ie-paste-import-btn">
+                        <i class="fa fa-upload"></i> 解析并导入
+                    </button>
+                    <div id="ie-paste-result" class="ie-result" style="display:none;"></div>
+                </div>
+
+            </div>
+
+            <!-- OSS 配置面板 -->
+            <div class="admin-panel" id="panel-oss-config">
+
+                <div class="ie-block">
+                    <div class="ie-block-title">OSS 配置</div>
+                    <p class="ie-block-desc">配置阿里云 OSS 以启用数据云端备份与同步功能。建议使用仅有特定 Bucket 读写权限的 RAM 子账号。</p>
+
+                    <div class="form-group">
+                        <label>AccessKeyId</label>
+                        <input type="text" class="form-control" id="oss-ak" placeholder="请输入 AccessKeyId" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>AccessKeySecret</label>
+                        <input type="password" class="form-control" id="oss-sk" placeholder="请输入 AccessKeySecret" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label>Bucket</label>
+                        <input type="text" class="form-control" id="oss-bucket" placeholder="例如：my-webstack">
+                    </div>
+                    <div class="form-group">
+                        <label>Region</label>
+                        <input type="text" class="form-control" id="oss-region" placeholder="例如：oss-cn-hangzhou">
+                    </div>
+                    <div class="form-group">
+                        <label>基础路径前缀</label>
+                        <input type="text" class="form-control" id="oss-prefix" placeholder="例如：webstack/">
+                        <p class="help-block" style="font-size:12px;color:#a0aab4;">文件将存储为 {前缀}version.json 和 {前缀}data-{版本号}.json</p>
+                    </div>
+
+                    <div class="oss-btn-row">
+                        <button class="btn btn-primary" id="oss-save-btn">
+                            <i class="fa fa-save"></i> 保存配置
+                        </button>
+                        <button class="btn btn-default" id="oss-test-btn">
+                            <i class="fa fa-plug"></i> 测试连接
+                        </button>
+                        <button class="btn btn-default" id="oss-export-btn">
+                            <i class="fa fa-download"></i> 导出配置
+                        </button>
+                        <label class="btn btn-default" style="margin:0;cursor:pointer;">
+                            <i class="fa fa-upload"></i> 导入配置
+                            <input type="file" id="oss-import-file" accept=".json" style="display:none;">
+                        </label>
+                    </div>
+
+                    <div id="oss-result" class="ie-result" style="display:none;margin-top:12px;"></div>
+                </div>
+
+            </div>
+
+            <!-- 同步状态面板 -->
+            <div class="admin-panel" id="panel-sync">
+
+                <!-- 同步状态区域 -->
+                <div class="ie-block" id="sync-status-block">
+                    <div class="ie-block-title">同步状态</div>
+                    <div id="sync-status-content">
+                        <div class="sync-status-row">
+                            <span class="sync-status-label">最后上传：</span>
+                            <span id="sync-last-upload">—</span>
+                        </div>
+                        <div class="sync-status-row">
+                            <span class="sync-status-label">上传版本：</span>
+                            <span id="sync-last-upload-ver">—</span>
+                        </div>
+                        <div class="sync-status-row">
+                            <span class="sync-status-label">最后下载：</span>
+                            <span id="sync-last-download">—</span>
+                        </div>
+                        <div class="sync-status-row">
+                            <span class="sync-status-label">下载版本：</span>
+                            <span id="sync-last-download-ver">—</span>
+                        </div>
+                        <div class="sync-status-row">
+                            <span class="sync-status-label">本地版本：</span>
+                            <span id="sync-local-ver">—</span>
+                        </div>
+                        <div class="sync-status-row">
+                            <span class="sync-status-label">应用版本：</span>
+                            <span id="sync-app-ver">—</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 手动同步 -->
+                <div class="ie-block">
+                    <div class="ie-block-title">手动同步</div>
+                    <p class="ie-block-desc">手动将本地私有数据上传至 OSS，或从 OSS 下载最新数据覆盖本地。</p>
+                    <div id="sync-oss-incomplete-tip" class="ie-result ie-result-err" style="display:none;margin-bottom:10px;">
+                        <i class="fa fa-exclamation-circle"></i> OSS 配置不完整，请先前往 <a href="#" id="sync-goto-oss-config">OSS 配置</a> 面板完成配置。
+                    </div>
+                    <div class="oss-btn-row">
+                        <button class="btn btn-primary" id="sync-upload-btn" disabled>
+                            <i class="fa fa-cloud-upload"></i> 上传至 OSS
+                        </button>
+                        <button class="btn btn-default" id="sync-download-btn" disabled>
+                            <i class="fa fa-cloud-download"></i> 从 OSS 下载
+                        </button>
+                    </div>
+                    <div id="sync-result" class="ie-result" style="display:none;margin-top:12px;"></div>
+                </div>
+
+                <!-- 自动同步配置 -->
+                <div class="ie-block">
+                    <div class="ie-block-title">自动同步配置</div>
+                    <div class="form-group sync-config-row">
+                        <label class="sync-toggle-label">
+                            <input type="checkbox" id="sync-on-load"> 页面加载时自动同步
+                        </label>
+                        <p class="help-block" style="font-size:12px;color:#a0aab4;margin:4px 0 0;">打开主页时自动检查 OSS 版本并下载最新数据</p>
+                    </div>
+                    <div class="form-group sync-config-row">
+                        <label class="sync-toggle-label">
+                            <input type="checkbox" id="sync-interval-enable"> 定时自动同步
+                        </label>
+                        <div id="sync-interval-wrap" style="margin-top:8px;display:none;">
+                            <select class="form-control" id="sync-interval-select" style="width:auto;display:inline-block;">
+                                <option value="1800">每 30 分钟</option>
+                                <option value="3600" selected>每 1 小时</option>
+                                <option value="7200">每 2 小时</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="sync-config-save-btn">
+                        <i class="fa fa-save"></i> 保存自动同步配置
+                    </button>
+                    <div id="sync-config-result" class="ie-result" style="display:none;margin-top:10px;"></div>
+                </div>
+
+            </div>
+
         </div>
-
-        <!-- 数据统计信息 -->
-        <div class="data-stats">
-          <div class="stat-item">
-            <span class="stat-label">分类数:</span>
-            <span id="categoryCount" class="stat-number">0</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">网站数:</span>
-            <span id="siteCount" class="stat-number">0</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">数据源:</span>
-            <span id="dataSource" class="stat-number">默认</span>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="dataTextarea">网站数据 (JSON格式):</label>
-          <textarea id="dataTextarea" class="form-control" placeholder="在这里粘贴JSON数据或点击导出按钮获取当前数据"></textarea>
-        </div>
-
-        <!-- 操作按钮区域 -->
-        <div class="btn-group-container">
-          <!-- 数据导出 -->
-          <div class="btn-group-section">
-            <h4><i class="fa fa-download text-info"></i> 数据导出</h4>
-            <button id="exportBtn" class="btn btn-info" title="将当前数据导出到文本框">
-              <i class="fa fa-copy"></i> 导出到文本框
-            </button>
-            <button id="exportFileBtn" class="btn btn-primary" title="将当前数据导出为JSON文件">
-              <i class="fa fa-file-export"></i> 导出为文件
-            </button>
-          </div>
-
-          <!-- 数据导入 -->
-          <div class="btn-group-section">
-            <h4><i class="fa fa-upload text-success"></i> 数据导入</h4>
-            <button id="importBtn" class="btn btn-success" title="从文本框导入数据">
-              <i class="fa fa-paste"></i> 从文本框导入
-            </button>
-            <button id="fileImportBtn" class="btn btn-default" title="从本地JSON文件导入数据">
-              <i class="fa fa-folder-open"></i> 从文件导入
-            </button>
-            <input type="file" id="fileInput" accept=".json">
-          </div>
-
-          <!-- 数据工具 -->
-          <div class="btn-group-section">
-            <h4><i class="fa fa-wrench text-warning"></i> 数据工具</h4>
-            <button id="validateBtn" class="btn btn-warning" title="验证当前数据格式是否正确">
-              <i class="fa fa-check"></i> 验证数据
-            </button>
-            <button id="clearDataBtn" class="btn btn-danger" title="清空本地保存的数据">
-              <i class="fa fa-trash"></i> 清空数据
-            </button>
-            <a href="visual-editor.html" class="btn btn-default" title="进入可视化编辑界面">
-              <i class="fa fa-pencil"></i> 可视化编辑
-            </a>
-          </div>
-        </div>
-
-        <div id="messageArea" class="alert" style="display: none; margin-top: 20px;"></div>
-
-        <!-- 使用说明 -->
-        <div class="panel panel-default" style="margin-top: 20px;">
-          <div class="panel-heading">
-            <h3 class="panel-title">使用说明</h3>
-          </div>
-          <div class="panel-body">
-            <ol>
-              <li><strong>数据源切换</strong>：在"默认数据"、"本地数据"和"远程数据"之间切换，选择要使用的数据源</li>
-              <li><strong>远程数据</strong>：点击"远程数据"按钮，输入JSON数据的URL地址，点击"加载远程数据"按钮加载</li>
-              <li><strong>跨域问题处理</strong>：如果远程数据加载失败，可以使用手动导入功能</li>
-              <li><strong>保存为默认</strong>：将当前显示的数据保存为默认数据</li>
-              <li><strong>数据导出</strong>：点击"导出到文本框"将当前数据复制到文本框，或点击"导出为文件"保存为JSON文件</li>
-              <li><strong>数据导入</strong>：粘贴JSON数据后点击"从文本框导入"，或点击"从文件导入"选择本地JSON文件</li>
-              <li><strong>数据备份</strong>：建议定期导出数据并保存到云盘（如阿里云盘、Google Drive等）以防数据丢失</li>
-              <li><strong>数据验证</strong>：导入前可使用"验证数据"功能检查数据格式是否正确</li>
-              <li><strong>清空数据</strong>：点击"清空数据"可删除本地保存的数据，恢复使用默认数据</li>
-              <li><strong>可视化编辑</strong>：点击"可视化编辑"进入可视化界面编辑网站数据</li>
-            </ol>
-            <p class="text-info">
-              <i class="fa fa-info-circle"></i> 注意：导入数据会覆盖当前本地数据，请谨慎操作。建议导入前先备份当前数据。
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
 
-    <br />
-    <footer class="main-footer sticky footer-type-1">
-      <div class="footer-inner">
-        <div class="footer-text">
-          &copy; 2017-2022
-          <a href="about.html"><strong>WebStack</strong></a> design by <a href="https://www.viggoz.com"
-                                                                          target="_blank"><strong>Viggo</strong></a>
-        </div>
-        <div class="go-up">
-          <a href="#" rel="go-top">
-            <i class="fa-angle-up"></i>
-          </a>
-        </div>
-      </div>
-    </footer>
-  </div>
-</div>
-
-<!-- Bottom Scripts -->
-<script src="assets/js/bootstrap.min.js"></script>
-<script src="assets/js/TweenMax.min.js"></script>
-<script src="assets/js/resizeable.js"></script>
-<script src="assets/js/joinable.js"></script>
-<script src="assets/js/xenon-api.js"></script>
-<script src="assets/js/xenon-toggles.js"></script>
-<script src="assets/js/websites.js"></script>
-<script>
-  $(document).ready(function() {
-    // 生成带时间戳的文件名
-    function generateFileName() {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = String(now.getDate()).padStart(2, '0');
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      const seconds = String(now.getSeconds()).padStart(2, '0');
-
-      return `webstack-data-${year}${month}${day}-${hours}${minutes}${seconds}.json`;
-    }
-
-    // 显示当前数据（优先显示本地数据，如果没有则显示默认数据）
-    function displayCurrentData() {
-      const localData = localStorage.getItem('websiteData');
-      let currentData;
-
-      if (localData) {
-        try {
-          // 验证本地数据格式
-          const parsedData = JSON.parse(localData);
-          if (validateDataStructure(parsedData)) {
-            $('#dataTextarea').val(JSON.stringify(parsedData, null, 2));
-            currentData = parsedData;
-            $('#dataSource').text('本地存储');
-          } else {
-            throw new Error('数据结构验证失败');
-          }
-        } catch (e) {
-          // 本地数据解析失败，使用默认数据
-          $('#dataTextarea').val(JSON.stringify(websiteData, null, 2));
-          currentData = websiteData;
-          $('#dataSource').text('默认数据');
-        }
-      } else {
-        // 使用默认数据
-        $('#dataTextarea').val(JSON.stringify(websiteData, null, 2));
-        currentData = websiteData;
-        $('#dataSource').text('默认数据');
-      }
-
-      // 更新统计数据
-      updateDataStats(currentData);
-    }
-
-    // 更新数据统计信息
-    function updateDataStats(data) {
-      if (data && data.categories) {
-        const categoryCount = data.categories.length;
-        let siteCount = 0;
-
-        data.categories.forEach(category => {
-          if (category.sites) {
-            siteCount += category.sites.length;
-          }
-        });
-
-        $('#categoryCount').text(categoryCount);
-        $('#siteCount').text(siteCount);
-      } else {
-        $('#categoryCount').text(0);
-        $('#siteCount').text(0);
-      }
-    }
-
-    // 验证数据结构
-    function validateDataStructure(data) {
-      // 检查基本结构
-      if (!data || typeof data !== 'object') {
-        return false;
-      }
-
-      if (!data.categories || !Array.isArray(data.categories)) {
-        return false;
-      }
-
-      // 检查每个分类
-      for (let category of data.categories) {
-        if (!category.name || typeof category.name !== 'string') {
-          return false;
-        }
-
-        if (!category.sites || !Array.isArray(category.sites)) {
-          return false;
-        }
-
-        // 检查每个站点
-        for (let site of category.sites) {
-          if (!site.name || typeof site.name !== 'string') {
-            return false;
-          }
-
-          if (!site.url || typeof site.url !== 'string') {
-            return false;
-          }
-
-          // logo字段可选，但如果存在则应该是字符串
-          if (site.logo && typeof site.logo !== 'string') {
-            return false;
-          }
-
-          // description字段可选，但如果存在则应该是字符串
-          if (site.description && typeof site.description !== 'string') {
-            return false;
-          }
-        }
-      }
-
-      return true;
-    }
-
-    // 切换到默认数据源
-    function switchToDefaultData() {
-      $('#dataTextarea').val(JSON.stringify(websiteData, null, 2));
-      $('#currentDataSource').text('默认数据');
-      $('#dataSource').text('默认数据');
-      $('#useDefaultDataBtn').addClass('source-active');
-      $('#useLocalDataBtn').removeClass('source-active');
-      $('#useRemoteDataBtn').removeClass('source-active');
-      $('#remoteUrlSection').hide();
-      updateDataStats(websiteData);
-      showMessage('已切换到默认数据源', 'info');
-    }
-
-    // 切换到本地数据源
-    function switchToLocalData() {
-      const localData = localStorage.getItem('websiteData');
-      if (localData) {
-        try {
-          const parsedData = JSON.parse(localData);
-          if (validateDataStructure(parsedData)) {
-            $('#dataTextarea').val(JSON.stringify(parsedData, null, 2));
-            $('#currentDataSource').text('本地数据');
-            $('#dataSource').text('本地存储');
-            $('#useLocalDataBtn').addClass('source-active');
-            $('#useDefaultDataBtn').removeClass('source-active');
-            $('#useRemoteDataBtn').removeClass('source-active');
-            $('#remoteUrlSection').hide();
-            updateDataStats(parsedData);
-            showMessage('已切换到本地数据源', 'info');
-          } else {
-            showMessage('本地数据格式不正确，无法切换', 'danger');
-          }
-        } catch (e) {
-          showMessage('本地数据解析失败，无法切换', 'danger');
-        }
-      } else {
-        showMessage('本地数据不存在，请先导入数据', 'warning');
-      }
-    }
-
-    // 切换到远程数据源
-    function switchToRemoteData() {
-      $('#useRemoteDataBtn').addClass('source-active');
-      $('#useDefaultDataBtn').removeClass('source-active');
-      $('#useLocalDataBtn').removeClass('source-active');
-      $('#remoteUrlSection').show();
-      
-      // 如果之前加载过远程数据，则显示URL
-      const remoteUrl = localStorage.getItem('remoteDataSourceUrl');
-      if (remoteUrl) {
-        $('#remoteUrlInput').val(remoteUrl);
-      }
-      
-      showMessage('请输入远程数据URL并点击加载按钮', 'info');
-    }
-
-    // 从远程URL加载数据（使用代理方式处理CORS问题）
-    function loadRemoteData() {
-      const url = $('#remoteUrlInput').val().trim();
-      if (!url) {
-        showMessage('请输入远程数据URL', 'warning');
-        return;
-      }
-
-      // 显示加载中状态
-      showMessage('正在加载远程数据...', 'info');
-      $('#corsWarning').hide();
-      
-      // 使用代理服务器解决CORS问题
-      const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-      
-      $.ajax({
-        url: proxyUrl,
-        method: 'GET',
-        dataType: 'text',
-        success: function(data) {
-          try {
-            const parsedData = JSON.parse(data);
-            // 验证数据结构
-            if (validateDataStructure(parsedData)) {
-              $('#dataTextarea').val(JSON.stringify(parsedData, null, 2));
-              $('#currentDataSource').text('远程数据');
-              $('#dataSource').text('远程数据');
-              updateDataStats(parsedData);
-              
-              // 保存URL到localStorage
-              localStorage.setItem('remoteDataSourceUrl', url);
-              
-              showMessage('远程数据加载成功', 'success');
-            } else {
-              showMessage('远程数据格式不正确', 'danger');
-            }
-          } catch (e) {
-            showMessage('解析远程数据失败: ' + e.message, 'danger');
-          }
-        },
-        error: function(xhr, status, error) {
-          // 处理CORS错误
-          showMessage('加载远程数据失败: ' + error + '。请使用手动导入功能。', 'danger');
-          $('#corsWarning').show();
-        }
-      });
-    }
-
-    // 保存当前数据为默认数据
-    function saveAsDefaultData() {
-      try {
-        const jsonData = $('#dataTextarea').val();
-        if (!jsonData) {
-          showMessage('没有数据可保存', 'warning');
-          return;
-        }
-
-        const parsedData = JSON.parse(jsonData);
-
-        // 验证数据结构
-        if (!validateDataStructure(parsedData)) {
-          showMessage('数据格式不正确，无法保存为默认数据', 'danger');
-          return;
-        }
-
-        // 根据当前激活的数据源按钮记录偏好
-        if ($('#useLocalDataBtn').hasClass('source-active')) {
-          localStorage.setItem('websiteDataSourcePreference', 'local');
-          showMessage('当前数据已保存为默认数据，数据源偏好已设置为本地数据', 'success');
-        } else if ($('#useRemoteDataBtn').hasClass('source-active')) {
-          localStorage.setItem('websiteDataSourcePreference', 'remote');
-          showMessage('当前数据已保存为默认数据，数据源偏好已设置为远程数据', 'success');
-        } else {
-          localStorage.setItem('websiteDataSourcePreference', 'default');
-          showMessage('当前数据已保存为默认数据，数据源偏好已设置为默认数据', 'success');
-        }
-      } catch (e) {
-        showMessage('JSON格式错误，无法保存: ' + e.message, 'danger');
-      }
-    }
-
-    // 数据源切换事件
-    $('#useDefaultDataBtn').click(function() {
-      switchToDefaultData();
-      // 记录用户偏好
-      localStorage.setItem('websiteDataSourcePreference', 'default');
-    });
-
-    $('#useLocalDataBtn').click(function() {
-      switchToLocalData();
-      // 记录用户偏好
-      localStorage.setItem('websiteDataSourcePreference', 'local');
-    });
-
-    $('#useRemoteDataBtn').click(function() {
-      switchToRemoteData();
-      // 记录用户偏好
-      localStorage.setItem('websiteDataSourcePreference', 'remote');
-    });
-
-    $('#loadRemoteDataBtn').click(function() {
-      loadRemoteData();
-    });
-
-    $('#saveAsDefaultBtn').click(function() {
-      saveAsDefaultData();
-    });
-
-    // 手动导入功能切换
-    $('#toggleManualImportBtn').click(function() {
-      const content = $('#manualImportContent');
-      if (content.is(':visible')) {
-        content.hide();
-        $(this).html('<i class="fa fa-plus"></i> 展开手动导入');
-      } else {
-        content.show();
-        $(this).html('<i class="fa fa-minus"></i> 收起手动导入');
-      }
-    });
-
-    // 导入远程数据
-    $('#importRemoteDataBtn').click(function() {
-      try {
-        const jsonData = $('#remoteDataTextarea').val();
-        if (!jsonData) {
-          showMessage('请先粘贴JSON数据', 'warning');
-          return;
-        }
-
-        const parsedData = JSON.parse(jsonData);
-
-        // 验证数据结构
-        if (!validateDataStructure(parsedData)) {
-          showMessage('数据格式不正确：数据结构验证失败', 'danger');
-          return;
-        }
-
-        // 保存到localStorage
-        localStorage.setItem('websiteData', jsonData);
-        // 同时更新数据源偏好设置，使主页默认加载本地数据
-        localStorage.setItem('websiteDataSourcePreference', 'local');
-
-        // 更新统计数据
-        updateDataStats(parsedData);
-        $('#dataTextarea').val(JSON.stringify(parsedData, null, 2));
-        $('#dataSource').text('本地存储');
-        $('#currentDataSource').text('本地数据');
-        $('#useLocalDataBtn').addClass('source-active');
-        $('#useDefaultDataBtn').removeClass('source-active');
-        $('#useRemoteDataBtn').removeClass('source-active');
-        $('#remoteUrlSection').hide();
-
-        showMessage('数据已保存到浏览器存储中。主页将默认使用此数据。', 'success');
-      } catch (e) {
-        showMessage('JSON格式错误: ' + e.message, 'danger');
-      }
-    });
-
-    // 导出数据到文本框（优先导出本地数据）
-    $('#exportBtn').click(function() {
-      displayCurrentData();
-      showMessage('数据已导出到文本框中', 'success');
-    });
-
-    // 导出数据到本地文件（优先导出本地数据）
-    $('#exportFileBtn').click(function() {
-      try {
-        // 获取当前显示的数据
-        let dataToExport;
-        const localData = localStorage.getItem('websiteData');
-
-        if (localData) {
-          try {
-            // 验证本地数据格式
-            const parsedData = JSON.parse(localData);
-            if (validateDataStructure(parsedData)) {
-              dataToExport = parsedData;
-            } else {
-              dataToExport = websiteData;
-            }
-          } catch (e) {
-            dataToExport = websiteData;
-          }
-        } else {
-          dataToExport = websiteData;
-        }
-
-        // 获取当前数据
-        const dataStr = JSON.stringify(dataToExport, null, 2);
-
-        // 创建Blob对象
-        const blob = new Blob([dataStr], {type: 'application/json'});
-
-        // 创建下载链接
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = generateFileName();
-
-        // 触发下载
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        // 释放URL对象
-        URL.revokeObjectURL(url);
-
-        showMessage('数据已成功导出到文件 ' + link.download, 'success');
-      } catch (e) {
-        showMessage('导出文件时出错: ' + e.message, 'danger');
-      }
-    });
-
-    // 导入数据
-    $('#importBtn').click(function() {
-      try {
-        const jsonData = $('#dataTextarea').val();
-        if (!jsonData) {
-          showMessage('请先粘贴JSON数据', 'warning');
-          return;
-        }
-
-        const parsedData = JSON.parse(jsonData);
-
-        // 验证数据结构
-        if (!validateDataStructure(parsedData)) {
-          showMessage('数据格式不正确：数据结构验证失败', 'danger');
-          return;
-        }
-
-        // 保存到localStorage
-        localStorage.setItem('websiteData', jsonData);
-        // 同时更新数据源偏好设置，使主页默认加载本地数据
-        localStorage.setItem('websiteDataSourcePreference', 'local');
-
-        // 更新统计数据
-        updateDataStats(parsedData);
-        $('#dataSource').text('本地存储');
-        $('#currentDataSource').text('本地数据');
-        $('#useLocalDataBtn').addClass('source-active');
-        $('#useDefaultDataBtn').removeClass('source-active');
-        $('#useRemoteDataBtn').removeClass('source-active');
-        $('#remoteUrlSection').hide();
-
-        showMessage('数据已保存到浏览器存储中。主页将默认使用此数据。', 'success');
-      } catch (e) {
-        showMessage('JSON格式错误: ' + e.message, 'danger');
-      }
-    });
-
-    // 文件导入按钮点击事件
-    $('#fileImportBtn').click(function() {
-      $('#fileInput').click();
-    });
-
-    // 从文件导入数据
-    $('#fileInput').change(function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
-        showMessage('请选择JSON格式的文件', 'warning');
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const jsonData = e.target.result;
-          const parsedData = JSON.parse(jsonData);
-
-          // 验证数据结构
-          if (!validateDataStructure(parsedData)) {
-            showMessage('文件中的数据格式不正确：数据结构验证失败', 'danger');
-            return;
-          }
-
-          // 保存到localStorage
-          localStorage.setItem('websiteData', jsonData);
-          // 同时更新数据源偏好设置，使主页默认加载本地数据
-          localStorage.setItem('websiteDataSourcePreference', 'local');
-
-          // 更新文本框内容
-          $('#dataTextarea').val(JSON.stringify(parsedData, null, 2));
-
-          // 更新统计数据
-          updateDataStats(parsedData);
-          $('#dataSource').text('本地存储');
-          $('#currentDataSource').text('本地数据');
-          $('#useLocalDataBtn').addClass('source-active');
-          $('#useDefaultDataBtn').removeClass('source-active');
-          $('#useRemoteDataBtn').removeClass('source-active');
-          $('#remoteUrlSection').hide();
-
-          showMessage('数据已从文件导入并保存到浏览器存储中。主页将默认使用此数据。', 'success');
-        } catch (error) {
-          showMessage('导入文件时出错: ' + error.message, 'danger');
-        }
-      };
-
-      reader.onerror = function() {
-        showMessage('读取文件时出错', 'danger');
-      };
-
-      reader.readAsText(file);
-
-      // 清空文件输入框，以便下次选择同一文件也能触发change事件
-      $(this).val('');
-    });
-
-    // 验证数据
-    $('#validateBtn').click(function() {
-      try {
-        const jsonData = $('#dataTextarea').val();
-        if (!jsonData) {
-          showMessage('请先粘贴JSON数据', 'warning');
-          return;
-        }
-
-        const parsedData = JSON.parse(jsonData);
-
-        // 验证数据结构
-        if (validateDataStructure(parsedData)) {
-          showMessage('数据格式验证通过', 'success');
-        } else {
-          showMessage('数据格式验证失败：数据结构不完整', 'danger');
-        }
-      } catch (e) {
-        showMessage('JSON格式错误: ' + e.message, 'danger');
-      }
-    });
-
-    // 清空本地数据
-    $('#clearDataBtn').click(function() {
-      if (confirm('确定要清空本地保存的数据吗？此操作不可恢复，将恢复使用默认数据。')) {
-        localStorage.removeItem('websiteData');
-        localStorage.removeItem('websiteDataSourcePreference');
-        localStorage.removeItem('remoteDataSourceUrl');
-
-        // 显示默认数据
-        $('#dataTextarea').val(JSON.stringify(websiteData, null, 2));
-        $('#dataSource').text('默认数据');
-        $('#currentDataSource').text('默认数据');
-        $('#useDefaultDataBtn').addClass('source-active');
-        $('#useLocalDataBtn').removeClass('source-active');
-        $('#useRemoteDataBtn').removeClass('source-active');
-        $('#remoteUrlSection').hide();
-        updateDataStats(websiteData);
-
-        showMessage('本地数据已清空，已恢复使用默认数据', 'success');
-      }
-    });
-
-    // // 显示消息
-    // function showMessage(message, type) {
-    //   const alertClass = 'alert-' + type;
-    //   $('#messageArea')
-    //           .removeClass('alert-success alert-danger alert-warning alert-info')
-    //           .addClass('alert ' + alertClass)
-    //           .html(message)
-    //           .show();
-    //
-    //   // 3秒后自动隐藏
-    //   setTimeout(function() {
-    //     $('#messageArea').fadeOut();
-    //   }, 3000);
-    // }
-    // 显示消息
-    function showMessage(message, type) {
-      // 创建消息元素
-      const alertClass = 'alert-' + (type || 'info');
-      const messageEl = $(`
-                    <div class="alert ${alertClass} alert-dismissible" role="alert"
-                         style="position: fixed; top: 20px; right: 20px; z-index: 3000; min-width: 300px;">
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                        ${message}
+    <!-- 添加/编辑分类 Modal -->
+    <div class="modal fade" id="modal-category" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    <h4 class="modal-title" id="modal-cat-title">添加一级分类</h4>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="modal-cat-mode" value="add-top">
+                    <input type="hidden" id="modal-cat-id" value="">
+                    <input type="hidden" id="modal-cat-parent-id" value="">
+
+                    <div class="form-group" id="modal-cat-name-group">
+                        <label>分类名称 <small class="text-muted">（支持 emoji）</small></label>
+                        <input type="text" class="form-control" id="modal-cat-name" placeholder="例如：🔥 热门推荐">
                     </div>
-                `);
 
-      $('body').append(messageEl);
+                    <div class="form-group" id="modal-cat-icon-group">
+                        <label>图标</label>
+                        <div class="icon-picker" id="icon-picker">
+                            <label class="icon-option">
+                                <input type="radio" name="cat-icon" value="linecons-star" checked>
+                                <span class="icon-preview"><i class="linecons-star"></i></span>
+                            </label>
+                            <label class="icon-option">
+                                <input type="radio" name="cat-icon" value="linecons-doc">
+                                <span class="icon-preview"><i class="linecons-doc"></i></span>
+                            </label>
+                            <label class="icon-option">
+                                <input type="radio" name="cat-icon" value="linecons-lightbulb">
+                                <span class="icon-preview"><i class="linecons-lightbulb"></i></span>
+                            </label>
+                            <label class="icon-option">
+                                <input type="radio" name="cat-icon" value="linecons-thumbs-up">
+                                <span class="icon-preview"><i class="linecons-thumbs-up"></i></span>
+                            </label>
+                            <label class="icon-option">
+                                <input type="radio" name="cat-icon" value="linecons-diamond">
+                                <span class="icon-preview"><i class="linecons-diamond"></i></span>
+                            </label>
+                            <label class="icon-option">
+                                <input type="radio" name="cat-icon" value="linecons-pencil">
+                                <span class="icon-preview"><i class="linecons-pencil"></i></span>
+                            </label>
+                            <label class="icon-option">
+                                <input type="radio" name="cat-icon" value="linecons-user">
+                                <span class="icon-preview"><i class="linecons-user"></i></span>
+                            </label>
+                            <label class="icon-option">
+                                <input type="radio" name="cat-icon" value="linecons-heart">
+                                <span class="icon-preview"><i class="linecons-heart"></i></span>
+                            </label>
+                            <label class="icon-option">
+                                <input type="radio" name="cat-icon" value="linecons-cog">
+                                <span class="icon-preview"><i class="linecons-cog"></i></span>
+                            </label>
+                            <label class="icon-option">
+                                <input type="radio" name="cat-icon" value="linecons-tag">
+                                <span class="icon-preview"><i class="linecons-tag"></i></span>
+                            </label>
+                            <label class="icon-option">
+                                <input type="radio" name="cat-icon" value="linecons-search">
+                                <span class="icon-preview"><i class="linecons-search"></i></span>
+                            </label>
+                            <label class="icon-option">
+                                <input type="radio" name="cat-icon" value="linecons-cloud">
+                                <span class="icon-preview"><i class="linecons-cloud"></i></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="modal-cat-save">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-      // 3秒后自动消失
-      setTimeout(() => {
-        messageEl.fadeOut(() => {
-          messageEl.remove();
-        });
-      }, 3000);
-    }
+    <!-- 添加/编辑书签 Modal -->
+    <div class="modal fade" id="modal-bookmark" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    <h4 class="modal-title" id="modal-bm-title">添加书签</h4>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="modal-bm-mode" value="add">
+                    <input type="hidden" id="modal-bm-cat-id" value="">
+                    <input type="hidden" id="modal-bm-parent-id" value="">
+                    <input type="hidden" id="modal-bm-index" value="-1">
 
-    // 根据偏好设置初始化数据源
-    function initializeWithPreference() {
-      // 获取数据源偏好设置
-      const dataSourcePreference = localStorage.getItem('websiteDataSourcePreference');
-      
-      // 如果有偏好设置且为local，则尝试加载本地数据
-      if (dataSourcePreference === 'local') {
-        const localData = localStorage.getItem('websiteData');
-        if (localData) {
-          try {
-            const parsedData = JSON.parse(localData);
-            if (validateDataStructure(parsedData)) {
-              $('#dataTextarea').val(JSON.stringify(parsedData, null, 2));
-              $('#currentDataSource').text('本地数据');
-              $('#dataSource').text('本地存储');
-              $('#useLocalDataBtn').addClass('source-active');
-              updateDataStats(parsedData);
-              return;
-            }
-          } catch (e) {
-            // 本地数据解析失败，继续使用默认数据
-          }
-        }
-      }
-      
-      // 如果有偏好设置且为remote，则尝试加载远程数据
-      if (dataSourcePreference === 'remote') {
-        const remoteUrl = localStorage.getItem('remoteDataSourceUrl');
-        if (remoteUrl) {
-          $('#remoteUrlInput').val(remoteUrl);
-          $('#useRemoteDataBtn').addClass('source-active');
-          $('#remoteUrlSection').show();
-          // 不自动加载远程数据，避免CORS问题
-          showMessage('请手动点击"加载远程数据"按钮加载数据', 'info');
-          return;
-        }
-      }
-      
-      // 默认使用网站默认数据
-      $('#dataTextarea').val(JSON.stringify(websiteData, null, 2));
-      $('#currentDataSource').text('默认数据');
-      $('#dataSource').text('默认数据');
-      $('#useDefaultDataBtn').addClass('source-active');
-      updateDataStats(websiteData);
-    }
+                    <div class="form-group">
+                        <label>书签名称</label>
+                        <input type="text" class="form-control" id="modal-bm-name" placeholder="例如：Dribbble">
+                    </div>
+                    <div class="form-group">
+                        <label>URL</label>
+                        <input type="text" class="form-control" id="modal-bm-url" placeholder="https://example.com/">
+                    </div>
+                    <div class="form-group">
+                        <label>Logo 图片地址</label>
+                        <div class="bm-logo-input-row">
+                            <img id="modal-bm-logo-preview" src="./assets/images/favicon.png" width="32" height="32" style="border-radius:50%;object-fit:cover;flex-shrink:0;">
+                            <input type="text" class="form-control" id="modal-bm-logo" placeholder="留空则自动获取网站图标">
+                            <button type="button" class="btn btn-default btn-sm" id="modal-bm-logo-fetch" title="从 URL 自动获取图标">
+                                <i class="fa fa-refresh"></i>
+                            </button>
+                            <button type="button" class="btn btn-default btn-sm" id="modal-bm-logo-pick" title="从本地 logos 文件夹选择">
+                                <i class="fa fa-folder-open"></i>
+                            </button>
+                        </div>
+                        <p class="help-block" id="modal-bm-logo-hint" style="margin:4px 0 0;font-size:12px;color:#a0aab4;">填写 URL 后可自动获取网站图标</p>
+                    </div>
+                    <div class="form-group">
+                        <label>所属分类</label>
+                        <select class="form-control" id="modal-bm-category">
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="modal-bm-save">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    // 初始化显示当前数据
-    initializeWithPreference();
-  });
-</script>
+    <!-- Logo 选择器 Modal -->
+    <div class="modal fade" id="modal-logo-picker" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    <h4 class="modal-title">选择 Logo</h4>
+                </div>
+                <div class="modal-body">
+                    <input type="text" class="form-control" id="logo-picker-search" placeholder="搜索 logo 名称..." style="margin-bottom:12px;">
+                    <div id="logo-picker-grid" style="display:flex;flex-wrap:wrap;gap:8px;max-height:400px;overflow-y:auto;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./assets/js/bootstrap.min.js"></script>
+    <script src="./assets/js/app.js"></script>
+    <script src="./assets/js/admin.js"></script>
 </body>
 
 </html>
