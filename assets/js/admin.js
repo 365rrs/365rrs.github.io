@@ -129,19 +129,19 @@ var CategoryManager = {
      */
     _bindEvents: function () {
         // 添加一级分类按钮
-        $('#cat-add-btn').on('click', function () {
+        $('#cat-add-btn').off('click.cat').on('click.cat', function () {
             CategoryManager._openModal('add-top', '', '');
         });
 
         // 切换数据源按钮
-        $('#cat-switch-source-btn').on('click', function () {
+        $('#cat-switch-source-btn').off('click.cat').on('click.cat', function () {
             var current = DataSourceManager.getActive();
             var target = (current === 'default') ? 'private' : 'default';
             CategoryManager._switchSource(target);
         });
 
         // 分类树操作按钮（事件委托）
-        $('#category-tree').on('click', '[data-action]', function () {
+        $('#category-tree').off('click.cat').on('click.cat', '[data-action]', function () {
             var action = $(this).data('action');
             var id = $(this).data('id');
             var parentId = $(this).data('parent') || '';
@@ -168,7 +168,7 @@ var CategoryManager = {
         });
 
         // Modal 保存按钮
-        $('#modal-cat-save').on('click', function () {
+        $('#modal-cat-save').off('click.cat').on('click.cat', function () {
             var mode = $('#modal-cat-mode').val();
             var name = $.trim($('#modal-cat-name').val());
             var id = $('#modal-cat-id').val();
@@ -501,6 +501,7 @@ $(document).ready(function () {
         // 切换到分类管理时刷新
         if (panelId === 'panel-category') {
             CategoryManager.render();
+            CategoryManager._bindEvents();
         }
         // 切换到书签管理时刷新
         if (panelId === 'panel-bookmark') {
