@@ -501,12 +501,10 @@ $(document).ready(function () {
         // 切换到分类管理时刷新
         if (panelId === 'panel-category') {
             CategoryManager.render();
-            CategoryManager._bindEvents();
         }
         // 切换到书签管理时刷新
         if (panelId === 'panel-bookmark') {
             BookmarkManager.render();
-            BookmarkManager._bindEvents();
         }
         // 切换到导入/导出时初始化
         if (panelId === 'panel-import-export') {
@@ -526,6 +524,9 @@ $(document).ready(function () {
     // 初始化默认激活面板（书签管理）
     BookmarkManager.render();
     BookmarkManager._bindEvents();
+
+    // 初始化分类管理事件（只绑定一次）
+    CategoryManager._bindEvents();
 
     // 支持 URL hash 直接跳转到指定面板（如 admin.html#sync）
     var hash = window.location.hash.replace('#', '');
@@ -800,14 +801,6 @@ var BookmarkManager = {
         // 所属分类下拉：填充叶子节点分类
         $('#modal-bookmark').off('show.bs.modal.bm').on('show.bs.modal.bm', function () {
             BookmarkManager._fillCategorySelect();
-        });
-
-        // URL 失焦时自动尝试获取 favicon（仅当 logo 字段为空时）
-        $('#modal-bm-url').off('blur.bm').on('blur.bm', function () {
-            var url = $.trim($(this).val());
-            if (url && !$.trim($('#modal-bm-logo').val())) {
-                BookmarkManager._fetchFavicon(url);
-            }
         });
 
         // 手动点击刷新图标按钮
