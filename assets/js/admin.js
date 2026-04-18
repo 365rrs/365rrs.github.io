@@ -500,7 +500,7 @@ $(document).ready(function () {
 
         // 切换到分类管理时刷新
         if (panelId === 'panel-category') {
-            CategoryManager.init();
+            CategoryManager.render();
         }
         // 切换到书签管理时刷新
         if (panelId === 'panel-bookmark') {
@@ -522,9 +522,18 @@ $(document).ready(function () {
         }
     });
 
-    // 初始化 BookmarkManager（默认面板）
+    // 初始化默认激活面板（书签管理）
     BookmarkManager.render();
     BookmarkManager._bindEvents();
+
+    // 支持 URL hash 直接跳转到指定面板（如 admin.html#sync）
+    var hash = window.location.hash.replace('#', '');
+    if (hash) {
+        var $targetTab = $('.admin-tab[data-panel="panel-' + hash + '"]');
+        if ($targetTab.length) {
+            $targetTab.find('a').trigger('click');
+        }
+    }
 });
 
 /* ----------------------------------------------------------
@@ -690,6 +699,31 @@ var BookmarkManager = {
      * 绑定书签管理面板事件（在 panel-bookmark 激活时调用）
      */
     _bindEvents: function () {
+        // 快速添加：获取信息按钮
+        $('#quick-add-fetch-btn').off('click.qa').on('click.qa', function () {
+            var url = $.trim($('#quick-add-url').val());
+            if (!url) { alert('请输入网址'); return; }
+            if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+            $('#quick-add-url').val(url);
+            QuickAdd.fetchInfo(url);
+        });
+
+        // 快速添加：URL 输入框回车触发
+        $('#quick-add-url').off('keydown.qa').on('keydown.qa', function (e) {
+            if (e.keyCode === 13) $('#quick-add-fetch-btn').trigger('click');
+        });
+
+        // 快速添加：logo 输入框变化时更新预览
+        $('#quick-add-logo').off('input.qa').on('input.qa', function () {
+            var val = $.trim($(this).val());
+            QuickAdd.updateLogoPreview(val || './assets/images/favicon.png');
+        });
+
+        // 快速添加：保存按钮
+        $('#quick-add-save-btn').off('click.qa').on('click.qa', function () {
+            QuickAdd.save();
+        });
+
         // 切换数据源
         $('#bm-switch-source-btn').off('click.bm').on('click.bm', function () {
             var current = DataSourceManager.getActive();
@@ -1233,6 +1267,129 @@ var BookmarkManager = {
         img.onload = function () { $preview.attr('src', src); };
         img.onerror = function () { $preview.attr('src', DEFAULT_LOGO); };
         img.src = src;
+    }
+};
+
+/* ----------------------------------------------------------
+   QuickAdd 模块 — 快速添加书签
+   ---------------------------------------------------------- */
+var QuickAdd = {
+
+    /**
+     * 获取 URL 的页面信息（标题 + favicon）
+     * 由于跨域限制，标题通过 allorigins 代理获取，favicon 用 Google API
+     */
+    fetchInfo: function (url) {
+        var $preview = $('#quick-add-preview');
+        var $btn = $('#quick-add-fetch-btn');
+        var $result = $('#quick-add-result');
+
+        $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> 获取中...');
+        $preview.hide();
+        $result.hide();
+
+        // 提取域名用于 favicon
+        var domain = '';
+        try { domain = (new URL(url)).hostname; } catch(e) { domain = url.replace(/^https?:\/\//, '').split('/')[0]; }
+
+        var faviconUrl = 'https://www.google.com/s2/favicons?sz=64&domain=' + domain;
+
+        // 用 allorigins 代理获取页面 HTML，提取 <title>
+        var proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(url);
+
+        $.getJSON(proxyUrl).done(function (data) {
+            var title = '';
+            if (data && data.contents) {
+                var match = data.contents.match(/<title[^>]*>([^<]+)<\/title>/i);
+                if (match) title = match[1].trim();
+            }
+            if (!title) title = domain;
+
+            $('#quick-add-name').val(title);
+            $('#quick-add-logo').val(faviconUrl);
+            QuickAdd.updateLogoPreview(faviconUrl);
+            QuickAdd._fillCategorySelect();
+            $preview.show();
+        }).fail(function () {
+            // 代理失败时仍显示预览，只是标题为空
+            $('#quick-add-name').val(domain);
+            $('#quick-add-logo').val(faviconUrl);
+            QuickAdd.updateLogoPreview(faviconUrl);
+            QuickAdd._fillCategorySelect();
+            $preview.show();
+        }).always(function () {
+            $btn.prop('disabled', false).html('<i class="fa fa-search"></i> 获取信息');
+        });
+    },
+
+    /**
+     * 更新 logo 预览
+     */
+    updateLogoPreview: function (src) {
+        var $img = $('#quick-add-logo-preview');
+        var fallback = './assets/images/favicon.png';
+        var img = new Image();
+        img.onload = function () { $img.attr('src', src); };
+        img.onerror = function () { $img.attr('src', fallback); };
+        img.src = src;
+    },
+
+    /**
+     * 填充分类下拉（只显示叶子节点）
+     */
+    _fillCategorySelect: function () {
+        var $select = $('#quick-add-category');
+        $select.empty();
+        var source = DataSourceManager.getActive();
+        DataSourceManager.load(source).done(function (data) {
+            if (!data || !data.categories) return;
+            data.categories.forEach(function (cat) {
+                if (cat.children && cat.children.length) {
+                    cat.children.forEach(function (sub) {
+                        $select.append('<option value="' + cat.id + '::' + sub.id + '">' +
+                            cat.name + ' / ' + sub.name + '</option>');
+                    });
+                } else {
+                    $select.append('<option value="' + cat.id + '">' + cat.name + '</option>');
+                }
+            });
+        });
+    },
+
+    /**
+     * 保存书签
+     */
+    save: function () {
+        var name = $.trim($('#quick-add-name').val());
+        var url  = $.trim($('#quick-add-url').val());
+        var logo = $.trim($('#quick-add-logo').val());
+        var catVal = $('#quick-add-category').val();
+        var $result = $('#quick-add-result');
+
+        if (!name) { alert('请输入书签名称'); return; }
+        if (!url)  { alert('请输入网址'); return; }
+        if (!catVal) { alert('请选择分类'); return; }
+
+        var catId, parentId;
+        if (catVal.indexOf('::') !== -1) {
+            var parts = catVal.split('::');
+            parentId = parts[0];
+            catId    = parts[1];
+        } else {
+            catId    = catVal;
+            parentId = '';
+        }
+
+        BookmarkManager.addSite(catId, { name: name, url: url, logo: logo }, parentId);
+
+        // 重置表单
+        $('#quick-add-url').val('');
+        $('#quick-add-preview').hide();
+        $result.removeClass('ie-result-ok ie-result-err')
+               .addClass('ie-result-ok')
+               .text('✓ 已保存：' + name)
+               .show();
+        setTimeout(function () { $result.fadeOut(); }, 2500);
     }
 };
 

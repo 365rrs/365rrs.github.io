@@ -44,11 +44,11 @@
         <!-- 左侧标签页导航 -->
         <div class="admin-sidebar">
             <ul class="admin-tabs" id="admin-tabs">
-                <li class="admin-tab" data-panel="panel-category">
-                    <a href="#">&#128218; 分类管理</a>
-                </li>
                 <li class="admin-tab active" data-panel="panel-bookmark">
                     <a href="#">&#128278; 书签管理</a>
+                </li>
+                <li class="admin-tab" data-panel="panel-category">
+                    <a href="#">&#128218; 分类管理</a>
                 </li>
                 <li class="admin-tab" data-panel="panel-import-export">
                     <a href="#">&#128230; 导入/导出</a>
@@ -103,6 +103,36 @@
                 <div id="bm-readonly-tip" class="alert alert-warning" style="display:none;margin-bottom:16px;">
                     <i class="fa fa-lock" style="margin-right:6px;"></i>
                     默认数据源为只读，请切换至私有数据源后编辑。
+                </div>
+
+                <!-- 快速添加区域 -->
+                <div class="ie-block" id="quick-add-block">
+                    <div class="ie-block-title">⚡ 快速添加书签</div>
+                    <p class="ie-block-desc">粘贴网址，自动获取标题和图标，快速保存到指定分类</p>
+                    <div class="quick-add-row">
+                        <input type="text" id="quick-add-url" class="form-control" placeholder="粘贴网址，如 https://dribbble.com/">
+                        <button class="btn btn-primary" id="quick-add-fetch-btn">
+                            <i class="fa fa-search"></i> 获取信息
+                        </button>
+                    </div>
+                    <!-- 预览区 -->
+                    <div id="quick-add-preview" style="display:none;margin-top:12px;">
+                        <div class="quick-add-preview-row">
+                            <img id="quick-add-logo-preview" src="./assets/images/favicon.png" width="32" height="32" style="border-radius:50%;object-fit:cover;flex-shrink:0;">
+                            <div class="quick-add-preview-info">
+                                <input type="text" id="quick-add-name" class="form-control" placeholder="书签名称">
+                                <input type="text" id="quick-add-logo" class="form-control" placeholder="Logo 地址（可留空）" style="margin-top:6px;">
+                            </div>
+                        </div>
+                        <div class="quick-add-preview-row" style="margin-top:8px;">
+                            <label style="font-size:13px;color:#5a6a7a;margin-right:8px;white-space:nowrap;">保存到：</label>
+                            <select id="quick-add-category" class="form-control" style="flex:1;"></select>
+                            <button class="btn btn-primary" id="quick-add-save-btn" style="margin-left:8px;white-space:nowrap;">
+                                <i class="fa fa-save"></i> 保存
+                            </button>
+                        </div>
+                        <div id="quick-add-result" class="ie-result" style="display:none;margin-top:8px;"></div>
+                    </div>
                 </div>
 
                 <!-- 工具栏 -->

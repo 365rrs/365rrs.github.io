@@ -365,6 +365,12 @@ var DataSourceManager = {
     _updateLabel: function (source) {
         var label = source === 'private' ? '私有数据源' : '默认数据源';
         $('#datasource-label').text(label);
+        // 私有数据源时显示同步快捷链接
+        if (source === 'private') {
+            $('#sync-shortcut').css('display', '');
+        } else {
+            $('#sync-shortcut').css('display', 'none');
+        }
     }
 };
 

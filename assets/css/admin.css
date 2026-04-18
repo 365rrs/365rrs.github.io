@@ -945,3 +945,25 @@ html, body {
     -webkit-flex-shrink: 0;
     flex-shrink: 0;
 }
+
+/* 快速添加书签 */
+.quick-add-row {
+    display: -webkit-flex;
+    display: flex;
+    gap: 8px;
+}
+.quick-add-row .form-control {
+    -webkit-flex: 1;
+    flex: 1;
+}
+.quick-add-preview-row {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: center;
+    align-items: center;
+    gap: 10px;
+}
+.quick-add-preview-info {
+    -webkit-flex: 1;
+    flex: 1;
+}
