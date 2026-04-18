@@ -44,10 +44,10 @@
         <!-- 左侧标签页导航 -->
         <div class="admin-sidebar">
             <ul class="admin-tabs" id="admin-tabs">
-                <li class="admin-tab active" data-panel="panel-category">
+                <li class="admin-tab" data-panel="panel-category">
                     <a href="#">&#128218; 分类管理</a>
                 </li>
-                <li class="admin-tab" data-panel="panel-bookmark">
+                <li class="admin-tab active" data-panel="panel-bookmark">
                     <a href="#">&#128278; 书签管理</a>
                 </li>
                 <li class="admin-tab" data-panel="panel-import-export">
@@ -66,7 +66,7 @@
         <div class="admin-content">
 
             <!-- 分类管理面板 -->
-            <div class="admin-panel active" id="panel-category">
+            <div class="admin-panel" id="panel-category">
 
                 <!-- 只读提示（默认数据源时显示） -->
                 <div id="cat-readonly-tip" class="alert alert-warning" style="display:none;margin-bottom:16px;">
@@ -97,7 +97,7 @@
             </div>
 
             <!-- 书签管理面板 -->
-            <div class="admin-panel" id="panel-bookmark">
+            <div class="admin-panel active" id="panel-bookmark">
 
                 <!-- 只读提示 -->
                 <div id="bm-readonly-tip" class="alert alert-warning" style="display:none;margin-bottom:16px;">
@@ -419,7 +419,7 @@
                         <label>Logo 图片地址</label>
                         <div class="bm-logo-input-row">
                             <img id="modal-bm-logo-preview" src="./assets/images/favicon.png" width="32" height="32" style="border-radius:50%;object-fit:cover;flex-shrink:0;">
-                            <input type="text" class="form-control" id="modal-bm-logo" placeholder="留空则自动获取网站图标">
+                            <input type="text" class="form-control" id="modal-bm-logo" placeholder="留空则使用默认图标">
                             <button type="button" class="btn btn-default btn-sm" id="modal-bm-logo-fetch" title="从 URL 自动获取图标">
                                 <i class="fa fa-refresh"></i>
                             </button>

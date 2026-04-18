@@ -111,7 +111,7 @@ var Renderer = {
     _buildCard: function (site) {
         var name = site.name || '';
         var url = site.url || '#';
-        var logo = site.logo || '';
+        var logo = site.logo || './assets/images/logos/default.png';
 
         return '<div class="col-sm-3">' +
             '<div class="xe-widget xe-conversations box2 label-info"' +

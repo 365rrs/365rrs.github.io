@@ -500,7 +500,7 @@ $(document).ready(function () {
 
         // 切换到分类管理时刷新
         if (panelId === 'panel-category') {
-            CategoryManager.render();
+            CategoryManager.init();
         }
         // 切换到书签管理时刷新
         if (panelId === 'panel-bookmark') {
@@ -522,8 +522,9 @@ $(document).ready(function () {
         }
     });
 
-    // 初始化 CategoryManager
-    CategoryManager.init();
+    // 初始化 BookmarkManager（默认面板）
+    BookmarkManager.render();
+    BookmarkManager._bindEvents();
 });
 
 /* ----------------------------------------------------------
@@ -640,7 +641,7 @@ var BookmarkManager = {
     _buildSiteRow: function (site, index, total, catId, parentId, isDefault) {
         var disabledAttr = isDefault ? ' disabled' : '';
         var disabledClass = isDefault ? ' bm-btn-disabled' : '';
-        var logoSrc = site.logo || '';
+        var logoSrc = site.logo || './assets/images/logos/default.png';
         var name = site.name || '';
         var url = site.url || '';
 
@@ -784,7 +785,7 @@ var BookmarkManager = {
         // logo 输入框变化时实时更新预览
         $('#modal-bm-logo').off('input.bm').on('input.bm', function () {
             var val = $.trim($(this).val());
-            BookmarkManager._updateLogoPreview(val || './assets/images/favicon.png');
+            BookmarkManager._updateLogoPreview(val || './assets/images/logos/default.png');
         });
 
         // 从本地 logos 文件夹选择
@@ -837,7 +838,7 @@ var BookmarkManager = {
             $('#modal-bm-name').val('');
             $('#modal-bm-url').val('');
             $('#modal-bm-logo').val('');
-            BookmarkManager._updateLogoPreview('./assets/images/favicon.png');
+            BookmarkManager._updateLogoPreview('./assets/images/logos/default.png');
             $('#modal-bm-logo-hint').text('填写 URL 后可自动获取网站图标');
         } else {
             $('#modal-bm-title').text('编辑书签');
@@ -845,7 +846,7 @@ var BookmarkManager = {
                 $('#modal-bm-name').val(site.name || '');
                 $('#modal-bm-url').val(site.url || '');
                 $('#modal-bm-logo').val(site.logo || '');
-                BookmarkManager._updateLogoPreview(site.logo || './assets/images/favicon.png');
+                BookmarkManager._updateLogoPreview(site.logo || './assets/images/logos/default.png');
                 $('#modal-bm-logo-hint').text('可点击刷新按钮重新获取图标');
             }
         }
