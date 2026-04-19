@@ -147,8 +147,17 @@
                     <h4 class="modal-title">选择 Logo</h4>
                 </div>
                 <div class="modal-body">
+                    <!-- 常用 Logo 区域 -->
+                    <div id="logo-picker-used-section" style="display:none;margin-bottom:14px;">
+                        <div style="font-size:12px;color:#8a9bb0;font-weight:600;margin-bottom:6px;letter-spacing:.5px;">
+                            <i class="fa fa-star" style="margin-right:4px;color:#f0a500;"></i>常用 Logo（来自当前数据源）
+                        </div>
+                        <div id="logo-picker-used-grid" style="display:flex;flex-wrap:wrap;gap:8px;max-height:160px;overflow-y:auto;padding:4px 0;"></div>
+                        <hr style="margin:12px 0 10px;">
+                    </div>
+                    <!-- 全量搜索 -->
                     <input type="text" class="form-control" id="logo-picker-search" placeholder="搜索 logo 名称..." style="margin-bottom:12px;">
-                    <div id="logo-picker-grid" style="display:flex;flex-wrap:wrap;gap:8px;max-height:400px;overflow-y:auto;"></div>
+                    <div id="logo-picker-grid" style="display:flex;flex-wrap:wrap;gap:8px;max-height:340px;overflow-y:auto;"></div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>

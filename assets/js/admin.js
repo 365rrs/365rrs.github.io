@@ -1145,12 +1145,80 @@ var BookmarkManager = {
     },
 
     /**
+     * 从当前数据源提取所有已使用的 logo（去重）
+     * @param {Function} callback  callback(logos)，logos 为 [{path, label}] 数组
+     */
+    _getUsedLogos: function (callback) {
+        var source = DataSourceManager.getActive();
+        DataSourceManager.load(source).done(function (data) {
+            var seen = {};
+            var logos = [];
+            var cats = (data && data.categories) || [];
+            function collectSites(sites) {
+                for (var i = 0; i < sites.length; i++) {
+                    var rawLogo = sites[i].logo;
+                    if (!rawLogo) continue;
+                    var logo = normalizeLogo(rawLogo);
+                    if (!seen[logo]) {
+                        seen[logo] = true;
+                        var parts = logo.split('/');
+                        var fname = parts[parts.length - 1];
+                        logos.push({ path: logo, label: fname.replace(/\.png$/i, '') });
+                    }
+                }
+            }
+            for (var i = 0; i < cats.length; i++) {
+                var cat = cats[i];
+                if (cat.children && cat.children.length) {
+                    for (var j = 0; j < cat.children.length; j++) {
+                        collectSites(cat.children[j].sites || []);
+                    }
+                } else {
+                    collectSites(cat.sites || []);
+                }
+            }
+            callback(logos);
+        }).fail(function () { callback([]); });
+    },
+
+    /**
      * 打开本地 logos 选择器
      */
     _openLogoPicker: function () {
         var $grid = $('#logo-picker-grid');
         var $search = $('#logo-picker-search');
+        var $usedSection = $('#logo-picker-used-section');
+        var $usedGrid = $('#logo-picker-used-grid');
         $search.val('');
+
+        function onPickLogo(path) {
+            $('#modal-bm-logo').val(path);
+            BookmarkManager._updateLogoPreview(path);
+            $('#modal-bm-logo-hint').text('已选择本地图标 ✓');
+            $('#modal-logo-picker').modal('hide');
+        }
+
+        // 渲染常用 logo 区域
+        function renderUsed(usedLogos) {
+            if (!usedLogos || !usedLogos.length) {
+                $usedSection.hide();
+                return;
+            }
+            $usedSection.show();
+            $usedGrid.empty();
+            for (var i = 0; i < usedLogos.length; i++) {
+                var item = usedLogos[i];
+                $usedGrid.append(
+                    '<div class="logo-pick-item" data-path="' + item.path + '" title="' + item.label + '">' +
+                    '<img src="' + item.path + '" width="40" height="40" style="border-radius:6px;object-fit:cover;" onerror="this.style.opacity=0.3">' +
+                    '<span>' + item.label + '</span>' +
+                    '</div>'
+                );
+            }
+            $usedGrid.off('click.picker-used').on('click.picker-used', '.logo-pick-item', function () {
+                onPickLogo($(this).data('path'));
+            });
+        }
 
         // 加载 logos-list.json（缓存到 BookmarkManager._logosList）
         function renderGrid(files) {
@@ -1179,16 +1247,16 @@ var BookmarkManager = {
                 renderGrid(files);
             });
 
-            // 点击选择
+            // 点击选择（全量列表）
             $grid.off('click.picker').on('click.picker', '.logo-pick-item', function () {
-                var path = $(this).data('path');
-                $('#modal-bm-logo').val(path);
-                BookmarkManager._updateLogoPreview(path);
-                $('#modal-bm-logo-hint').text('已选择本地图标 ✓');
-                $('#modal-logo-picker').modal('hide');
+                onPickLogo($(this).data('path'));
             });
 
-            $('#modal-logo-picker').modal('show');
+            // 加载常用 logo
+            BookmarkManager._getUsedLogos(function (usedLogos) {
+                renderUsed(usedLogos);
+                $('#modal-logo-picker').modal('show');
+            });
         }
 
         if (BookmarkManager._logosList) {

@@ -973,3 +973,9 @@ html, body {
     -webkit-flex: 1;
     flex: 1;
 }
+
+/* 防止 Bootstrap Modal 开关时 body padding-right 导致页面抖动 */
+body.modal-open {
+    overflow: hidden;
+    padding-right: 0 !important;
+}
