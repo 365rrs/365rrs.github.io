@@ -379,6 +379,50 @@ var Renderer = {
 };
 
 /* ----------------------------------------------------------
+   ThemeManager 模块 - 主题切换
+   ---------------------------------------------------------- */
+var ThemeManager = {
+
+    /**
+     * 获取当前主题
+     * @returns {string} "dark" | "light"
+     */
+    getTheme: function () {
+        return localStorage.getItem(wsKey('theme')) || 'dark';
+    },
+
+    /**
+     * 应用主题
+     * @param {string} theme  "dark" | "light"
+     */
+    applyTheme: function (theme) {
+        var $body = $('body');
+        
+        if (theme === 'light') {
+            // 浅色主题：添加 skin-light 类（自定义样式，背景色与主内容区一致）
+            $body.removeClass('skin-white skin-navy skin-aero skin-facebook skin-turquoise skin-lime skin-green skin-purple skin-concrete skin-watermelon skin-lemonade');
+            $body.addClass('skin-light');
+            $('#theme-label').text('深色');
+        } else {
+            // 深色主题：移除所有 skin 类（使用默认深色）
+            $body.removeClass('skin-light skin-white skin-navy skin-aero skin-facebook skin-turquoise skin-lime skin-green skin-purple skin-concrete skin-watermelon skin-lemonade');
+            $('#theme-label').text('浅色');
+        }
+        
+        localStorage.setItem(wsKey('theme'), theme);
+    },
+
+    /**
+     * 切换主题
+     */
+    toggleTheme: function () {
+        var current = ThemeManager.getTheme();
+        var target = current === 'dark' ? 'light' : 'dark';
+        ThemeManager.applyTheme(target);
+    }
+};
+
+/* ----------------------------------------------------------
    DataSourceManager 模块
    ---------------------------------------------------------- */
 var DataSourceManager = {
@@ -595,6 +639,10 @@ $(document).ready(function () {
     // 记录当前应用版本到 localStorage
     localStorage.setItem('ws_app_version', APP_VERSION);
 
+    // 应用保存的主题
+    var savedTheme = ThemeManager.getTheme();
+    ThemeManager.applyTheme(savedTheme);
+
     var activeSource = DataSourceManager.getActive();
     DataSourceManager._updateLabel(activeSource);
 
@@ -617,6 +665,12 @@ $(document).ready(function () {
         var current = DataSourceManager.getActive();
         var target = current === 'default' ? 'private' : 'default';
         DataSourceManager.switchTo(target);
+    });
+
+    // 主题切换按钮
+    $('#theme-btn').on('click', function (e) {
+        e.preventDefault();
+        ThemeManager.toggleTheme();
     });
 
     // 自动同步：读取 ws_sync_config
