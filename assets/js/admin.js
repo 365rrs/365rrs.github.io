@@ -540,6 +540,7 @@ $(document).ready(function () {
         // 切换到导入/导出时初始化
         if (panelId === 'panel-import-export') {
             ImportExport.init();
+            BrowserExportManager.init();
         }
         // 切换到 OSS 配置时初始化
         if (panelId === 'panel-oss-config') {
@@ -2525,5 +2526,995 @@ var TabCopyImporter = {
         if (typeof BookmarkManager !== 'undefined' && BookmarkManager.render) {
             BookmarkManager.render();
         }
+    }
+};
+
+/* ----------------------------------------------------------
+   BrowserExportManager 模块
+   导出书签到浏览器（Netscape Bookmark File Format）
+   ---------------------------------------------------------- */
+var BrowserExportManager = {
+
+    /**
+     * 内部状态对象
+     */
+    _state: {
+        // 分类选择状态
+        // key: categoryId, value: { checked: boolean, indeterminate: boolean }
+        categoryStates: {},
+        
+        // 书签选择状态
+        // key: "categoryId:siteIndex", value: boolean
+        siteStates: {},
+        
+        // 分类展开状态
+        // key: categoryId, value: boolean
+        expandedStates: {}
+    },
+
+    /**
+     * 初始化：绑定事件，渲染初始界面
+     * 幂等操作，可重复调用
+     */
+    init: function () {
+        BrowserExportManager._bindEvents();
+        BrowserExportManager.render();
+    },
+
+    /**
+     * 渲染分类树和书签列表
+     * 从当前激活数据源加载数据
+     */
+    render: function () {
+        var $container = $('#be-tree-container');
+        var $sourceName = $('#be-source-name');
+        var $exportBtn = $('#be-export-btn');
+        
+        // 1. 获取当前数据源
+        var activeSource = DataSourceManager.getActive();
+        
+        // 2. 更新数据源名称显示
+        var sourceName = activeSource === 'private' ? '私有数据源' : '默认数据源';
+        $sourceName.text(sourceName);
+        
+        // 3. 显示加载中状态
+        $container.html('<div class="be-loading">加载中...</div>');
+        $exportBtn.prop('disabled', true);
+        
+        // 4. 调用 DataSourceManager.load() 加载数据
+        DataSourceManager.load(activeSource)
+            .done(function (data) {
+                // 处理加载成功
+                if (!data || !data.categories || data.categories.length === 0) {
+                    // 处理空数据
+                    $container.html('<div class="be-empty">暂无数据</div>');
+                    $exportBtn.prop('disabled', true);
+                    return;
+                }
+                
+                // 调用 _buildCategoryTree() 构建分类树 HTML
+                var treeHtml = BrowserExportManager._buildCategoryTree(data.categories);
+                $container.html(treeHtml);
+                $exportBtn.prop('disabled', false);
+            })
+            .fail(function (reason) {
+                // 处理加载失败
+                var errorMsg = '数据加载失败，请重试';
+                if (reason && typeof reason === 'string') {
+                    errorMsg = reason;
+                }
+                $container.html('<div class="be-empty" style="color:#e74c3c;">' + errorMsg + '</div>');
+                $exportBtn.prop('disabled', true);
+            });
+    },
+
+    /**
+     * 执行导出操作
+     * 验证选择 → 生成 HTML → 触发下载
+     */
+    exportToFile: function () {
+        try {
+            // 1. 调用 _collectSelectedData() 收集选中数据
+            var data = BrowserExportManager._collectSelectedData();
+            
+            // 2. 验证至少选择了一个书签,否则显示错误提示
+            if (data.totalSites === 0) {
+                BrowserExportManager._showResult(false, '请至少选择一个书签');
+                return;
+            }
+            
+            // 3. 调用 _generateHTML() 生成 HTML 内容
+            var html = BrowserExportManager._generateHTML(data);
+            
+            // 4. 生成文件名: webstack-bookmarks-YYYYMMDD_HHMMSS.html
+            var now = new Date();
+            var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+            var dateStr = '' + now.getFullYear() + 
+                         pad(now.getMonth() + 1) + 
+                         pad(now.getDate()) + '_' +
+                         pad(now.getHours()) + 
+                         pad(now.getMinutes()) + 
+                         pad(now.getSeconds());
+            var filename = 'webstack-bookmarks-' + dateStr + '.html';
+            
+            // 5. 调用 _downloadFile() 触发下载
+            BrowserExportManager._downloadFile(html, filename);
+            
+            // 6. 显示成功提示: "已导出 N 个书签到 M 个分类"
+            var categoryCount = data.categories.length;
+            BrowserExportManager._showResult(true, 
+                '已导出 ' + data.totalSites + ' 个书签到 ' + categoryCount + ' 个分类');
+            
+            // 7. 2.5 秒后自动隐藏提示
+            setTimeout(function () {
+                $('#be-result').fadeOut(300);
+            }, 2500);
+            
+        } catch (e) {
+            // 8. 使用 try-catch 包裹,捕获异常并显示错误提示
+            console.error('[BrowserExportManager] 导出失败:', e);
+            BrowserExportManager._showResult(false, '导出失败，请重试');
+        }
+    },
+
+    /**
+     * 绑定所有事件监听器（幂等）
+     */
+    _bindEvents: function () {
+        // 使用 .off().on() 模式确保幂等性
+        
+        // 1. 数据源切换按钮
+        $('#be-switch-source-btn').off('click.be').on('click.be', function () {
+            var current = DataSourceManager.getActive();
+            var target = (current === 'default') ? 'private' : 'default';
+            BrowserExportManager._switchSource(target);
+        });
+        
+        // 2. 全选按钮
+        $('#be-select-all-btn').off('click.be').on('click.be', function () {
+            BrowserExportManager._selectAll();
+        });
+        
+        // 3. 取消全选按钮
+        $('#be-deselect-all-btn').off('click.be').on('click.be', function () {
+            BrowserExportManager._deselectAll();
+        });
+        
+        // 4. 导出按钮
+        $('#be-export-btn').off('click.be').on('click.be', function () {
+            BrowserExportManager.exportToFile();
+        });
+        
+        // 5. 使用事件委托绑定分类复选框变化事件
+        $('#be-tree-container').off('change.be-cat').on('change.be-cat', '.be-category-checkbox', function () {
+            BrowserExportManager._handleCategoryCheckbox($(this));
+        });
+        
+        // 6. 使用事件委托绑定书签复选框变化事件
+        $('#be-tree-container').off('change.be-site').on('change.be-site', '.be-site-checkbox', function () {
+            BrowserExportManager._handleSiteCheckbox($(this));
+        });
+        
+        // 7. 使用事件委托绑定分类展开/折叠事件
+        $('#be-tree-container').off('click.be-toggle').on('click.be-toggle', '.be-toggle-icon', function (e) {
+            e.stopPropagation();
+            var $icon = $(this);
+            var categoryId = $icon.closest('.be-category-row').data('category-id');
+            var $siteList = $('#be-sites-' + categoryId);
+            
+            // 切换展开/折叠状态
+            $siteList.slideToggle(200);
+            $icon.toggleClass('collapsed');
+            
+            // 更新内部状态
+            BrowserExportManager._state.expandedStates[categoryId] = !$icon.hasClass('collapsed');
+        });
+    },
+
+    /**
+     * 切换数据源
+     * @param {string} target - "default" | "private"
+     */
+    _switchSource: function (target) {
+        // 1. 如果切换到私有数据源，检查是否存在
+        if (target === 'private') {
+            var raw = localStorage.getItem(wsKey('private_data'));
+            if (!raw) {
+                alert('私有数据源尚未创建，请前往书签管理或分类管理初始化私有数据。');
+                return;
+            }
+        }
+        
+        // 2. 更新 localStorage 中的 active_source
+        localStorage.setItem(wsKey('active_source'), target);
+        
+        // 3. 清空当前选择状态（切换数据源后重置所有选择）
+        BrowserExportManager._state.categoryStates = {};
+        BrowserExportManager._state.siteStates = {};
+        BrowserExportManager._state.expandedStates = {};
+        
+        // 4. 调用 render() 重新渲染界面
+        BrowserExportManager.render();
+    },
+
+    /**
+     * 构建分类树 HTML
+     * @param {Array} categories - 分类数组
+     * @returns {string} HTML 字符串
+     */
+    _buildCategoryTree: function (categories) {
+        var html = '';
+        
+        // 遍历所有一级分类
+        for (var i = 0; i < categories.length; i++) {
+            var category = categories[i];
+            // 为每个一级分类调用 _buildCategoryRow()
+            // parentId 为空字符串表示一级分类
+            html += BrowserExportManager._buildCategoryRow(category, '');
+        }
+        
+        return html;
+    },
+
+    /**
+     * 构建单个分类行 HTML
+     * @param {Object} category - 分类对象
+     * @param {string} parentId - 父分类 ID（空字符串表示一级分类）
+     * @returns {string} HTML 字符串
+     */
+    _buildCategoryRow: function (category, parentId) {
+        var categoryId = category.id || '';
+        var categoryName = BrowserExportManager._escapeHtml(category.name || '未命名分类');
+        var icon = category.icon || 'linecons-star';
+        var isLevel1 = (parentId === '');
+        var levelClass = isLevel1 ? 'be-level-1' : 'be-level-2';
+        
+        // 计算书签总数（包含所有子分类）
+        var totalCount = 0;
+        
+        // 如果有直接的 sites 数组
+        if (category.sites && category.sites.length > 0) {
+            totalCount += category.sites.length;
+        }
+        
+        // 如果有 children 数组，累加所有子分类的书签数
+        if (category.children && category.children.length > 0) {
+            for (var i = 0; i < category.children.length; i++) {
+                var child = category.children[i];
+                if (child.sites && child.sites.length > 0) {
+                    totalCount += child.sites.length;
+                }
+            }
+        }
+        
+        // 构建分类行 HTML
+        var html = '';
+        html += '<div class="be-category-row ' + levelClass + '" data-category-id="' + categoryId + '">';
+        
+        // 展开/折叠图标（仅当有内容时显示，放在最前面）
+        var hasContent = (category.sites && category.sites.length > 0) || 
+                         (category.children && category.children.length > 0);
+        if (hasContent) {
+            html += '<i class="fa fa-angle-down be-toggle-icon collapsed"></i>';
+        } else {
+            // 没有内容时添加占位符，保持对齐
+            html += '<span class="be-toggle-placeholder"></span>';
+        }
+        
+        // 复选框
+        html += '<input type="checkbox" class="be-category-checkbox" data-category-id="' + categoryId + '">';
+        
+        // 分类图标（仅一级分类显示）
+        if (isLevel1 && icon) {
+            html += '<i class="' + icon + '" style="margin-right:6px;color:#7a8fa8;"></i>';
+        }
+        
+        // 分类名称
+        html += '<span class="be-category-name">' + categoryName + '</span>';
+        
+        // 计数徽章
+        if (totalCount > 0) {
+            html += '<span class="be-category-count">' + totalCount + '</span>';
+        }
+        
+        html += '</div>';
+        
+        // 构建书签列表容器（默认隐藏）
+        if (hasContent) {
+            html += '<div id="be-sites-' + categoryId + '" style="display:none;">';
+            
+            // 如果有 children 数组，遍历子分类
+            if (category.children && category.children.length > 0) {
+                for (var j = 0; j < category.children.length; j++) {
+                    var child = category.children[j];
+                    // 递归调用 _buildCategoryRow 构建子分类行（包含其书签列表）
+                    html += BrowserExportManager._buildCategoryRow(child, categoryId);
+                }
+            }
+            
+            // 如果有 sites 数组，直接调用 _buildSiteList
+            if (category.sites && category.sites.length > 0) {
+                html += BrowserExportManager._buildSiteList(category.sites, categoryId);
+            }
+            
+            html += '</div>';
+        }
+        
+        return html;
+    },
+
+    /**
+     * 构建书签列表 HTML
+     * @param {Array} sites - 书签数组
+     * @param {string} categoryId - 所属分类 ID
+     * @returns {string} HTML 字符串
+     */
+    _buildSiteList: function (sites, categoryId) {
+        if (!sites || sites.length === 0) {
+            return '';
+        }
+        
+        var html = '<div class="be-site-list">';
+        
+        // 遍历所有书签
+        for (var i = 0; i < sites.length; i++) {
+            var site = sites[i];
+            var siteName = BrowserExportManager._escapeHtml(site.name || '未命名书签');
+            var siteUrl = BrowserExportManager._escapeHtml(site.url || '#');
+            var siteLogo = normalizeLogo(site.logo);
+            var siteKey = categoryId + ':' + i;
+            
+            html += '<div class="be-site-row" data-site-key="' + siteKey + '">';
+            
+            // 复选框
+            html += '<input type="checkbox" class="be-site-checkbox" data-site-key="' + siteKey + '" data-category-id="' + categoryId + '">';
+            
+            // Logo
+            html += '<img src="' + siteLogo + '" class="be-site-logo" alt="' + siteName + '">';
+            
+            // 书签名称
+            html += '<span class="be-site-name">' + siteName + '</span>';
+            
+            // URL（截断显示）
+            html += '<span class="be-site-url">' + siteUrl + '</span>';
+            
+            html += '</div>';
+        }
+        
+        html += '</div>';
+        
+        return html;
+    },
+
+    /**
+     * 处理分类复选框变化
+     * @param {jQuery} $checkbox - 复选框元素
+     */
+    _handleCategoryCheckbox: function ($checkbox) {
+        // 1. 获取分类复选框的选中状态
+        var isChecked = $checkbox.prop('checked');
+        var categoryId = $checkbox.data('category-id');
+        
+        // 2. 更新内部状态对象 categoryStates
+        BrowserExportManager._state.categoryStates[categoryId] = {
+            checked: isChecked,
+            indeterminate: false
+        };
+        
+        // 更新 DOM 中的复选框状态
+        $checkbox.prop('indeterminate', false);
+        
+        // 3. 同步该分类下所有子分类的复选框状态
+        var $siteContainer = $('#be-sites-' + categoryId);
+        if ($siteContainer.length > 0) {
+            // 查找该分类下的所有子分类复选框
+            $siteContainer.find('.be-category-checkbox').each(function () {
+                var $subCheckbox = $(this);
+                var subCategoryId = $subCheckbox.data('category-id');
+                
+                // 设置子分类复选框状态
+                $subCheckbox.prop('checked', isChecked);
+                $subCheckbox.prop('indeterminate', false);
+                
+                // 更新子分类的内部状态
+                BrowserExportManager._state.categoryStates[subCategoryId] = {
+                    checked: isChecked,
+                    indeterminate: false
+                };
+                
+                // 递归同步子分类下的书签
+                var $subSiteContainer = $('#be-sites-' + subCategoryId);
+                if ($subSiteContainer.length > 0) {
+                    $subSiteContainer.find('.be-site-checkbox').each(function () {
+                        var $siteCheckbox = $(this);
+                        var siteKey = $siteCheckbox.data('site-key');
+                        
+                        // 设置书签复选框状态
+                        $siteCheckbox.prop('checked', isChecked);
+                        
+                        // 更新书签的内部状态
+                        BrowserExportManager._state.siteStates[siteKey] = isChecked;
+                    });
+                }
+            });
+            
+            // 4. 同步该分类下所有书签的复选框状态
+            $siteContainer.find('.be-site-checkbox').each(function () {
+                var $siteCheckbox = $(this);
+                var siteKey = $siteCheckbox.data('site-key');
+                
+                // 设置书签复选框状态
+                $siteCheckbox.prop('checked', isChecked);
+                
+                // 更新书签的内部状态
+                BrowserExportManager._state.siteStates[siteKey] = isChecked;
+            });
+        }
+    },
+
+    /**
+     * 处理书签复选框变化
+     * @param {jQuery} $checkbox - 复选框元素
+     */
+    _handleSiteCheckbox: function ($checkbox) {
+        // 1. 获取书签复选框的选中状态
+        var isChecked = $checkbox.prop('checked');
+        var siteKey = $checkbox.data('site-key');
+        var categoryId = $checkbox.data('category-id');
+        
+        // 2. 更新内部状态对象 siteStates
+        BrowserExportManager._state.siteStates[siteKey] = isChecked;
+        
+        // 3. 调用 _updateCategoryCheckboxState() 更新父分类复选框状态
+        BrowserExportManager._updateCategoryCheckboxState(categoryId);
+    },
+
+    /**
+     * 更新分类复选框状态（全选/半选/未选）
+     * @param {string} categoryId - 分类 ID
+     */
+    _updateCategoryCheckboxState: function (categoryId) {
+        // 1. 获取该分类的复选框元素
+        var $categoryCheckbox = $('.be-category-checkbox[data-category-id="' + categoryId + '"]');
+        if ($categoryCheckbox.length === 0) {
+            return; // 分类复选框不存在，直接返回
+        }
+        
+        // 2. 统计该分类下所有书签的选中数量
+        var $siteContainer = $('#be-sites-' + categoryId);
+        if ($siteContainer.length === 0) {
+            return; // 没有书签容器，直接返回
+        }
+        
+        // 查找该分类下的所有书签复选框（不包括子分类的书签）
+        var $siteCheckboxes = $siteContainer.find('.be-site-checkbox').filter(function () {
+            // 只统计直接属于该分类的书签（通过 data-category-id 匹配）
+            return $(this).data('category-id') === categoryId;
+        });
+        
+        if ($siteCheckboxes.length === 0) {
+            // 如果没有直接的书签，可能只有子分类
+            // 检查是否有子分类
+            var $subCategoryCheckboxes = $siteContainer.find('.be-category-checkbox');
+            if ($subCategoryCheckboxes.length > 0) {
+                // 统计子分类的选中状态
+                var totalSubCategories = $subCategoryCheckboxes.length;
+                var checkedSubCategories = 0;
+                var indeterminateSubCategories = 0;
+                
+                $subCategoryCheckboxes.each(function () {
+                    var $subCheckbox = $(this);
+                    if ($subCheckbox.prop('checked')) {
+                        checkedSubCategories++;
+                    } else if ($subCheckbox.prop('indeterminate')) {
+                        indeterminateSubCategories++;
+                    }
+                });
+                
+                // 根据子分类状态更新父分类状态
+                if (checkedSubCategories === totalSubCategories) {
+                    // 所有子分类都选中
+                    $categoryCheckbox.prop('checked', true);
+                    $categoryCheckbox.prop('indeterminate', false);
+                    BrowserExportManager._state.categoryStates[categoryId] = {
+                        checked: true,
+                        indeterminate: false
+                    };
+                } else if (checkedSubCategories > 0 || indeterminateSubCategories > 0) {
+                    // 部分子分类选中或有半选状态
+                    $categoryCheckbox.prop('checked', false);
+                    $categoryCheckbox.prop('indeterminate', true);
+                    BrowserExportManager._state.categoryStates[categoryId] = {
+                        checked: false,
+                        indeterminate: true
+                    };
+                } else {
+                    // 所有子分类都未选中
+                    $categoryCheckbox.prop('checked', false);
+                    $categoryCheckbox.prop('indeterminate', false);
+                    BrowserExportManager._state.categoryStates[categoryId] = {
+                        checked: false,
+                        indeterminate: false
+                    };
+                }
+            }
+            return;
+        }
+        
+        // 3. 统计选中的书签数量
+        var totalSites = $siteCheckboxes.length;
+        var checkedSites = 0;
+        
+        $siteCheckboxes.each(function () {
+            if ($(this).prop('checked')) {
+                checkedSites++;
+            }
+        });
+        
+        // 4. 根据选中情况设置分类复选框状态
+        if (checkedSites === totalSites) {
+            // 全部选中: 设置分类复选框为 checked, indeterminate = false
+            $categoryCheckbox.prop('checked', true);
+            $categoryCheckbox.prop('indeterminate', false);
+            BrowserExportManager._state.categoryStates[categoryId] = {
+                checked: true,
+                indeterminate: false
+            };
+        } else if (checkedSites > 0) {
+            // 部分选中: 设置分类复选框 indeterminate = true
+            $categoryCheckbox.prop('checked', false);
+            $categoryCheckbox.prop('indeterminate', true);
+            BrowserExportManager._state.categoryStates[categoryId] = {
+                checked: false,
+                indeterminate: true
+            };
+        } else {
+            // 全部未选中: 设置分类复选框为 unchecked, indeterminate = false
+            $categoryCheckbox.prop('checked', false);
+            $categoryCheckbox.prop('indeterminate', false);
+            BrowserExportManager._state.categoryStates[categoryId] = {
+                checked: false,
+                indeterminate: false
+            };
+        }
+    },
+
+    /**
+     * 全选所有分类和书签
+     */
+    _selectAll: function () {
+        // 1. 遍历所有分类复选框
+        $('.be-category-checkbox').each(function () {
+            var $checkbox = $(this);
+            var categoryId = $checkbox.data('category-id');
+            
+            // 设置复选框为 checked
+            $checkbox.prop('checked', true);
+            $checkbox.prop('indeterminate', false);
+            
+            // 更新内部状态对象
+            BrowserExportManager._state.categoryStates[categoryId] = {
+                checked: true,
+                indeterminate: false
+            };
+        });
+        
+        // 2. 遍历所有书签复选框
+        $('.be-site-checkbox').each(function () {
+            var $checkbox = $(this);
+            var siteKey = $checkbox.data('site-key');
+            
+            // 设置复选框为 checked
+            $checkbox.prop('checked', true);
+            
+            // 更新内部状态对象
+            BrowserExportManager._state.siteStates[siteKey] = true;
+        });
+    },
+
+    /**
+     * 取消全选
+     */
+    _deselectAll: function () {
+        // 1. 遍历所有分类复选框
+        $('.be-category-checkbox').each(function () {
+            var $checkbox = $(this);
+            var categoryId = $checkbox.data('category-id');
+            
+            // 设置复选框为 unchecked
+            $checkbox.prop('checked', false);
+            $checkbox.prop('indeterminate', false);
+            
+            // 更新内部状态对象
+            BrowserExportManager._state.categoryStates[categoryId] = {
+                checked: false,
+                indeterminate: false
+            };
+        });
+        
+        // 2. 遍历所有书签复选框
+        $('.be-site-checkbox').each(function () {
+            var $checkbox = $(this);
+            var siteKey = $checkbox.data('site-key');
+            
+            // 设置复选框为 unchecked
+            $checkbox.prop('checked', false);
+            
+            // 更新内部状态对象
+            BrowserExportManager._state.siteStates[siteKey] = false;
+        });
+    },
+
+    /**
+     * 收集选中的书签数据
+     * @returns {Object} { categories: [...], totalSites: number }
+     */
+    _collectSelectedData: function () {
+        var result = {
+            categories: [],
+            totalSites: 0
+        };
+        
+        // 1. 获取当前数据源
+        var activeSource = DataSourceManager.getActive();
+        
+        // 2. 同步加载数据（从 localStorage 或已缓存的数据）
+        var sourceData = null;
+        if (activeSource === 'private') {
+            sourceData = DataSourceManager.getPrivateData();
+        } else {
+            // 对于默认数据源，我们需要从 DOM 中重建数据结构
+            // 因为无法同步加载 JSON 文件，我们从已渲染的 DOM 中提取数据
+            sourceData = BrowserExportManager._extractDataFromDOM();
+        }
+        
+        if (!sourceData || !sourceData.categories) {
+            return result;
+        }
+        
+        // 3. 遍历所有一级分类
+        for (var i = 0; i < sourceData.categories.length; i++) {
+            var category = sourceData.categories[i];
+            var categoryId = category.id || '';
+            
+            // 检查该分类是否被选中（checked 或 indeterminate）
+            var categoryState = BrowserExportManager._state.categoryStates[categoryId];
+            var isCategorySelected = categoryState && (categoryState.checked || categoryState.indeterminate);
+            
+            // 如果分类未被选中且不是半选状态，跳过
+            if (!isCategorySelected) {
+                continue;
+            }
+            
+            // 4. 处理该分类
+            var exportCategory = {
+                id: category.id,
+                name: category.name,
+                icon: category.icon
+            };
+            
+            // 5. 如果有子分类（children 数组）
+            if (category.children && category.children.length > 0) {
+                exportCategory.children = [];
+                
+                for (var j = 0; j < category.children.length; j++) {
+                    var child = category.children[j];
+                    var childId = child.id || '';
+                    
+                    // 检查子分类是否被选中
+                    var childState = BrowserExportManager._state.categoryStates[childId];
+                    var isChildSelected = childState && (childState.checked || childState.indeterminate);
+                    
+                    if (!isChildSelected) {
+                        continue;
+                    }
+                    
+                    // 收集子分类的选中书签
+                    var exportChild = {
+                        id: child.id,
+                        name: child.name,
+                        sites: []
+                    };
+                    
+                    if (child.sites && child.sites.length > 0) {
+                        for (var k = 0; k < child.sites.length; k++) {
+                            var site = child.sites[k];
+                            var siteKey = childId + ':' + k;
+                            
+                            // 检查书签是否被选中
+                            if (BrowserExportManager._state.siteStates[siteKey]) {
+                                exportChild.sites.push({
+                                    name: site.name,
+                                    url: site.url,
+                                    logo: site.logo
+                                });
+                                result.totalSites++;
+                            }
+                        }
+                    }
+                    
+                    // 只有当子分类有选中的书签时才添加
+                    if (exportChild.sites.length > 0) {
+                        exportCategory.children.push(exportChild);
+                    }
+                }
+            }
+            
+            // 6. 如果有直接的 sites 数组
+            if (category.sites && category.sites.length > 0) {
+                exportCategory.sites = [];
+                
+                for (var m = 0; m < category.sites.length; m++) {
+                    var site = category.sites[m];
+                    var siteKey = categoryId + ':' + m;
+                    
+                    // 检查书签是否被选中
+                    if (BrowserExportManager._state.siteStates[siteKey]) {
+                        exportCategory.sites.push({
+                            name: site.name,
+                            url: site.url,
+                            logo: site.logo
+                        });
+                        result.totalSites++;
+                    }
+                }
+            }
+            
+            // 7. 只有当分类有选中的内容时才添加到结果中
+            var hasContent = (exportCategory.sites && exportCategory.sites.length > 0) ||
+                            (exportCategory.children && exportCategory.children.length > 0);
+            
+            if (hasContent) {
+                result.categories.push(exportCategory);
+            }
+        }
+        
+        return result;
+    },
+    
+    /**
+     * 从 DOM 中提取数据结构（用于默认数据源）
+     * @returns {Object} 数据对象
+     */
+    _extractDataFromDOM: function () {
+        var data = { categories: [] };
+        
+        // 遍历所有一级分类行
+        $('.be-category-row.be-level-1').each(function () {
+            var $row = $(this);
+            var categoryId = $row.data('category-id');
+            var categoryName = $row.find('.be-category-name').text();
+            var $icon = $row.find('i[class*="linecons-"]');
+            var icon = '';
+            
+            if ($icon.length > 0) {
+                var classes = $icon.attr('class').split(' ');
+                for (var i = 0; i < classes.length; i++) {
+                    if (classes[i].indexOf('linecons-') === 0) {
+                        icon = classes[i];
+                        break;
+                    }
+                }
+            }
+            
+            var category = {
+                id: categoryId,
+                name: categoryName,
+                icon: icon
+            };
+            
+            // 查找该分类的内容容器
+            var $container = $('#be-sites-' + categoryId);
+            if ($container.length > 0) {
+                // 检查是否有子分类
+                var $subCategories = $container.find('.be-category-row.be-level-2');
+                if ($subCategories.length > 0) {
+                    category.children = [];
+                    
+                    $subCategories.each(function () {
+                        var $subRow = $(this);
+                        var subCategoryId = $subRow.data('category-id');
+                        var subCategoryName = $subRow.find('.be-category-name').text();
+                        
+                        var subCategory = {
+                            id: subCategoryId,
+                            name: subCategoryName,
+                            sites: []
+                        };
+                        
+                        // 提取子分类的书签
+                        var $subContainer = $('#be-sites-' + subCategoryId);
+                        if ($subContainer.length > 0) {
+                            $subContainer.find('.be-site-row').each(function () {
+                                var $siteRow = $(this);
+                                var siteName = $siteRow.find('.be-site-name').text();
+                                var siteUrl = $siteRow.find('.be-site-url').text();
+                                var siteLogo = $siteRow.find('.be-site-logo').attr('src');
+                                
+                                subCategory.sites.push({
+                                    name: siteName,
+                                    url: siteUrl,
+                                    logo: siteLogo
+                                });
+                            });
+                        }
+                        
+                        category.children.push(subCategory);
+                    });
+                }
+                
+                // 提取直接属于该分类的书签（不在子分类中的）
+                var $directSites = $container.find('> .be-site-list .be-site-row');
+                if ($directSites.length > 0) {
+                    category.sites = [];
+                    
+                    $directSites.each(function () {
+                        var $siteRow = $(this);
+                        var siteName = $siteRow.find('.be-site-name').text();
+                        var siteUrl = $siteRow.find('.be-site-url').text();
+                        var siteLogo = $siteRow.find('.be-site-logo').attr('src');
+                        
+                        category.sites.push({
+                            name: siteName,
+                            url: siteUrl,
+                            logo: siteLogo
+                        });
+                    });
+                }
+            }
+            
+            data.categories.push(category);
+        });
+        
+        return data;
+    },
+
+    /**
+     * 生成 Netscape Bookmark File Format HTML
+     * @param {Object} data - 选中的数据
+     * @returns {string} HTML 字符串
+     */
+    _generateHTML: function (data) {
+        var html = [];
+        
+        // DOCTYPE 声明
+        html.push('<!DOCTYPE NETSCAPE-Bookmark-file-1>');
+        
+        // 注释说明
+        html.push('<!-- This is an automatically generated file.');
+        html.push('     It will be read and overwritten.');
+        html.push('     DO NOT EDIT! -->');
+        
+        // META 标签
+        html.push('<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">');
+        
+        // TITLE 标签
+        html.push('<TITLE>Bookmarks</TITLE>');
+        
+        // H1 标签
+        html.push('<H1>Bookmarks</H1>');
+        
+        // 开始书签列表
+        html.push('<DL><p>');
+        
+        // 遍历选中的分类
+        for (var i = 0; i < data.categories.length; i++) {
+            var category = data.categories[i];
+            var level = category.level || 1;
+            html.push(BrowserExportManager._generateCategoryHTML(category, level));
+        }
+        
+        // 结束书签列表
+        html.push('</DL><p>');
+        
+        return html.join('\n');
+    },
+
+    /**
+     * 生成分类 HTML 片段（递归）
+     * @param {Object} category - 分类对象
+     * @param {number} level - 层级（1 或 2）
+     * @returns {string} HTML 字符串
+     */
+    _generateCategoryHTML: function (category, level) {
+        var html = [];
+        var timestamp = Math.floor(Date.now() / 1000);
+        var escapedName = BrowserExportManager._escapeHtml(category.name);
+        
+        // 生成分类 H3 标签
+        html.push('    <DT><H3 ADD_DATE="' + timestamp + '">' + escapedName + '</H3>');
+        
+        // 生成 DL 开始标签
+        html.push('    <DL><p>');
+        
+        // 遍历书签
+        if (category.sites && category.sites.length > 0) {
+            for (var i = 0; i < category.sites.length; i++) {
+                html.push(BrowserExportManager._generateSiteHTML(category.sites[i]));
+            }
+        }
+        
+        // 如果有子分类，递归调用
+        if (category.children && category.children.length > 0) {
+            for (var j = 0; j < category.children.length; j++) {
+                html.push(BrowserExportManager._generateCategoryHTML(category.children[j], 2));
+            }
+        }
+        
+        // 生成 DL 结束标签
+        html.push('    </DL><p>');
+        
+        return html.join('\n');
+    },
+
+    /**
+     * 生成书签 HTML 片段
+     * @param {Object} site - 书签对象
+     * @returns {string} HTML 字符串
+     */
+    _generateSiteHTML: function (site) {
+        var timestamp = Math.floor(Date.now() / 1000);
+        var escapedName = BrowserExportManager._escapeHtml(site.name);
+        var escapedUrl = BrowserExportManager._escapeHtml(site.url);
+        
+        return '        <DT><A HREF="' + escapedUrl + '" ADD_DATE="' + timestamp + '">' + escapedName + '</A>';
+    },
+
+    /**
+     * HTML 转义
+     * @param {string} str - 原始字符串
+     * @returns {string} 转义后的字符串
+     */
+    _escapeHtml: function (str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    },
+
+    /**
+     * 触发文件下载
+     * @param {string} content - 文件内容
+     * @param {string} filename - 文件名
+     */
+    _downloadFile: function (content, filename) {
+        // 创建 Blob 对象
+        var blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+        
+        // 生成临时 URL
+        var url = URL.createObjectURL(blob);
+        
+        // 创建隐藏的 <a> 标签
+        var $link = $('<a></a>')
+            .attr('href', url)
+            .attr('download', filename)
+            .css('display', 'none');
+        
+        // 添加到 DOM
+        $('body').append($link);
+        
+        // 触发点击事件
+        $link[0].click();
+        
+        // 延迟清理临时 URL 和 DOM 元素
+        setTimeout(function () {
+            URL.revokeObjectURL(url);
+            $link.remove();
+        }, 100);
+    },
+
+    /**
+     * 显示结果提示
+     * @param {boolean} success - 是否成功
+     * @param {string} message - 提示信息
+     */
+    _showResult: function (success, message) {
+        var $el = $('#be-result');
+        $el.removeClass('ie-result-ok ie-result-err')
+           .addClass(success ? 'ie-result-ok' : 'ie-result-err')
+           .text(message)
+           .show();
     }
 };

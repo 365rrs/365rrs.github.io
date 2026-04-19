@@ -84,6 +84,41 @@
                     <div id="ie-paste-result" class="ie-result" style="display:none;"></div>
                 </div>
 
+                <!-- 区块5：导出到浏览器 -->
+                <div class="ie-block">
+                    <div class="ie-block-title">导出到浏览器</div>
+                    <p class="ie-block-desc">将书签导出为 HTML 格式，可导入到 Chrome/Firefox/Edge/Safari 等浏览器</p>
+                    
+                    <!-- 数据源选择 -->
+                    <div class="be-source-row">
+                        <span>当前数据源：<strong id="be-source-name">默认数据源</strong></span>
+                        <button class="btn btn-xs btn-default" id="be-switch-source-btn">
+                            <i class="fa fa-exchange"></i> 切换数据源
+                        </button>
+                    </div>
+                    
+                    <!-- 操作按钮行 -->
+                    <div class="be-action-row">
+                        <button class="btn btn-xs btn-default" id="be-select-all-btn">
+                            <i class="fa fa-check-square-o"></i> 全选
+                        </button>
+                        <button class="btn btn-xs btn-default" id="be-deselect-all-btn">
+                            <i class="fa fa-square-o"></i> 取消全选
+                        </button>
+                        <button class="btn btn-primary" id="be-export-btn">
+                            <i class="fa fa-download"></i> 导出选中书签
+                        </button>
+                    </div>
+                    
+                    <!-- 分类和书签选择树 -->
+                    <div class="be-tree-container" id="be-tree-container">
+                        <div class="be-loading">加载中...</div>
+                    </div>
+                    
+                    <!-- 结果提示 -->
+                    <div id="be-result" class="ie-result" style="display:none;"></div>
+                </div>
+
             </div>
 
         </div>
@@ -95,6 +130,7 @@
     <script>
         $(document).ready(function () {
             ImportExport.init();
+            BrowserExportManager.init();
         });
     </script>
 </body>
