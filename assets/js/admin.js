@@ -1753,6 +1753,10 @@ var OSSConfig = {
                 $(this).val('');
             }
         });
+
+        $('#oss-clear-btn').on('click', function () {
+            OSSConfig.clearConfig();
+        });
     },
 
     /**
@@ -1891,6 +1895,20 @@ var OSSConfig = {
             OSSConfig._showResult(false, '文件读取失败，请重试');
         };
         reader.readAsText(file);
+    },
+
+    /**
+     * 清空 OSS 配置：删除 localStorage 中的配置并清空表单
+     */
+    clearConfig: function () {
+        if (!confirm('确定要清空 OSS 配置吗？此操作不可恢复。')) return;
+        localStorage.removeItem(wsKey('oss_config'));
+        $('#oss-ak').val('');
+        $('#oss-sk').val('');
+        $('#oss-bucket').val('');
+        $('#oss-region').val('');
+        $('#oss-prefix').val('');
+        OSSConfig._showResult(true, '配置已清空 ✓');
     },
 
     /**
