@@ -2189,3 +2189,292 @@ var SyncManager = {
            .show();
     }
 };
+
+
+/* ============================================================
+ * TabCopyImporter — Tab Copy 批量导入模块
+ * 依赖：jQuery 1.11.1, DataSourceManager, BookmarkManager
+ * ============================================================ */
+var TabCopyImporter = {
+
+    /**
+     * 初始化：绑定按钮事件，更新只读状态
+     */
+    init: function () {
+        var self = this;
+        $('#tab-copy-parse-btn').on('click', function () {
+            self._parse();
+        });
+        $('#tab-copy-import-btn').on('click', function () {
+            self._doImport();
+        });
+        this._updateReadonlyState();
+    },
+
+    /**
+     * 根据当前数据源启用/禁用导入区域
+     */
+    _updateReadonlyState: function () {
+        var isDefault = (DataSourceManager.getActive() === 'default');
+        if (isDefault) {
+            $('#tab-copy-textarea').prop('disabled', true);
+            $('#tab-copy-parse-btn').prop('disabled', true);
+            $('#tab-copy-import-btn').prop('disabled', true);
+            $('#tab-copy-readonly-tip').show();
+        } else {
+            $('#tab-copy-textarea').prop('disabled', false);
+            $('#tab-copy-parse-btn').prop('disabled', false);
+            $('#tab-copy-import-btn').prop('disabled', false);
+            $('#tab-copy-readonly-tip').hide();
+        }
+    },
+
+    /**
+     * HTML 转义工具函数
+     * @param {string} str
+     * @returns {string}
+     */
+    _escHtml: function (str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    },
+
+    /**
+     * 在 #tab-copy-result 显示成功/错误提示
+     * @param {boolean} ok
+     * @param {string} msg
+     */
+    _showResult: function (ok, msg) {
+        var $el = $('#tab-copy-result');
+        $el.removeClass('ie-result-ok ie-result-err')
+           .addClass(ok ? 'ie-result-ok' : 'ie-result-err')
+           .text(msg)
+           .show();
+    },
+
+    /**
+     * 校验输入文本
+     * @param {string} text
+     * @returns {{ error: boolean, message?: string, data?: Array }}
+     */
+    _validateInput: function (text) {
+        if (!text || text.trim() === '') {
+            return { error: true, message: '请粘贴 Tab Copy JSON 数据' };
+        }
+        var parsed;
+        try {
+            parsed = JSON.parse(text);
+        } catch (e) {
+            return { error: true, message: 'JSON 格式错误，请检查输入内容' };
+        }
+        if (!Array.isArray(parsed)) {
+            return { error: true, message: '数据格式错误，需要 JSON 数组格式' };
+        }
+        if (parsed.length === 0) {
+            return { error: true, message: '数组为空，没有可导入的书签' };
+        }
+        return { error: false, data: parsed };
+    },
+
+    /**
+     * 将 Tab Copy 数组转换为 Bookmark 数组
+     * 无效项（缺少 url）返回 { skipped: true, originalTitle: '' }
+     * @param {Array} arr
+     * @returns {Array}
+     */
+    _parseItems: function (arr) {
+        var results = [];
+        for (var i = 0; i < arr.length; i++) {
+            var item = arr[i];
+            var url = item.url || '';
+            if (!url) {
+                results.push({ skipped: true, originalTitle: item.title || '' });
+                continue;
+            }
+            var name = (item.title && item.title !== '') ? item.title : url;
+            results.push({ name: name, url: url, logo: '' });
+        }
+        return results;
+    },
+
+    /**
+     * 渲染预览列表 HTML 并显示预览区
+     * @param {Array} items  _parseItems 返回的数组
+     */
+    _renderPreview: function (items) {
+        var self = this;
+        var html = '';
+        for (var i = 0; i < items.length; i++) {
+            var item = items[i];
+            if (item.skipped) {
+                html += '<div class="tab-copy-preview-item skipped">' +
+                    '<span class="tab-copy-preview-name">' + self._escHtml(item.originalTitle || '（无标题）') + '</span>' +
+                    '<span class="tab-copy-preview-skip-label">已跳过（缺少 URL）</span>' +
+                    '</div>';
+            } else {
+                html += '<div class="tab-copy-preview-item">' +
+                    '<span class="tab-copy-preview-name">' + self._escHtml(item.name) + '</span>' +
+                    '<span class="tab-copy-preview-url">' + self._escHtml(item.url) + '</span>' +
+                    '</div>';
+            }
+        }
+        $('#tab-copy-preview-list').html(html);
+        $('#tab-copy-preview').show();
+    },
+
+    /**
+     * 格式化二级分类标签
+     * @param {string} parentName
+     * @param {string} subName
+     * @returns {string}
+     */
+    _formatCategoryLabel: function (parentName, subName) {
+        return parentName + ' / ' + subName;
+    },
+
+    /**
+     * 填充目标分类下拉框
+     */
+    _fillCategorySelect: function () {
+        var self = this;
+        var $select = $('#tab-copy-category');
+        $select.empty();
+
+        var data = DataSourceManager.getPrivateData();
+        if (!data || !data.categories || data.categories.length === 0) {
+            $select.append('<option value="">请先创建私有数据源</option>');
+            $('#tab-copy-import-btn').prop('disabled', true);
+            return;
+        }
+
+        $('#tab-copy-import-btn').prop('disabled', false);
+        $select.append('<option value="">— 请选择分类 —</option>');
+
+        var cats = data.categories;
+        for (var i = 0; i < cats.length; i++) {
+            var cat = cats[i];
+            if (cat.sites) {
+                // 一级分类（直接含 sites）
+                $select.append('<option value="' + self._escHtml(cat.id) + '">' + self._escHtml(cat.name) + '</option>');
+            } else if (cat.children && cat.children.length > 0) {
+                // 含子分类
+                for (var j = 0; j < cat.children.length; j++) {
+                    var sub = cat.children[j];
+                    if (sub.sites) {
+                        var label = self._formatCategoryLabel(cat.name, sub.name);
+                        var value = cat.id + '::' + sub.id;
+                        $select.append('<option value="' + self._escHtml(value) + '">' + self._escHtml(label) + '</option>');
+                    }
+                }
+            }
+        }
+    },
+
+    /**
+     * 串联校验、解析、预览、填充分类
+     */
+    _parse: function () {
+        var text = $('#tab-copy-textarea').val();
+        var validation = this._validateInput(text);
+        if (validation.error) {
+            this._showResult(false, validation.message);
+            $('#tab-copy-preview').hide();
+            return;
+        }
+        var items = this._parseItems(validation.data);
+        this._renderPreview(items);
+        this._fillCategorySelect();
+        $('#tab-copy-result').hide();
+        // 缓存解析结果供导入使用
+        this._parsedItems = items;
+    },
+
+    /**
+     * 将书签追加到目标分类 sites 数组末尾
+     * @param {Object} data       私有数据对象
+     * @param {string} catId      目标分类 id
+     * @param {string} parentId   父分类 id（二级分类时非空）
+     * @param {Array}  bookmarks  有效书签数组
+     */
+    _appendToCategory: function (data, catId, parentId, bookmarks) {
+        var cats = data.categories;
+        for (var i = 0; i < cats.length; i++) {
+            var cat = cats[i];
+            if (!parentId) {
+                // 一级分类
+                if (cat.id === catId && cat.sites) {
+                    for (var k = 0; k < bookmarks.length; k++) {
+                        cat.sites.push(bookmarks[k]);
+                    }
+                    return;
+                }
+            } else {
+                // 二级分类
+                if (cat.id === parentId && cat.children) {
+                    for (var j = 0; j < cat.children.length; j++) {
+                        var sub = cat.children[j];
+                        if (sub.id === catId && sub.sites) {
+                            for (var m = 0; m < bookmarks.length; m++) {
+                                sub.sites.push(bookmarks[m]);
+                            }
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    },
+
+    /**
+     * 构建成功提示文本
+     * @param {number} n
+     * @returns {string}
+     */
+    _buildSuccessMessage: function (n) {
+        return '成功导入 ' + n + ' 个书签';
+    },
+
+    /**
+     * 执行导入流程
+     */
+    _doImport: function () {
+        var catValue = $('#tab-copy-category').val();
+        if (!catValue) {
+            this._showResult(false, '请选择目标分类');
+            return;
+        }
+
+        var items = this._parsedItems || [];
+        var validBookmarks = [];
+        for (var i = 0; i < items.length; i++) {
+            if (!items[i].skipped) {
+                validBookmarks.push({ name: items[i].name, url: items[i].url, logo: items[i].logo });
+            }
+        }
+
+        // 拆分 parentId 和 catId
+        var parts = catValue.split('::');
+        var parentId = parts.length > 1 ? parts[0] : '';
+        var catId    = parts.length > 1 ? parts[1] : parts[0];
+
+        var data = DataSourceManager.getPrivateData();
+        this._appendToCategory(data, catId, parentId, validBookmarks);
+        DataSourceManager.savePrivateData(data);
+
+        var msg = this._buildSuccessMessage(validBookmarks.length);
+        this._showResult(true, msg);
+
+        // 清空输入区域，隐藏预览
+        $('#tab-copy-textarea').val('');
+        $('#tab-copy-preview').hide();
+        this._parsedItems = [];
+
+        // 刷新书签列表
+        if (typeof BookmarkManager !== 'undefined' && BookmarkManager.render) {
+            BookmarkManager.render();
+        }
+    }
+};

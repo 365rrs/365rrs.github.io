@@ -68,6 +68,44 @@
                     </div>
                 </div>
 
+                <!-- Tab Copy 导入区块 -->
+                <div class="ie-block" id="tab-copy-block">
+                    <div class="ie-block-title">📋 Tab Copy 批量导入</div>
+                    <p class="ie-block-desc">粘贴 Tab Copy 插件复制的 JSON 数据，批量导入标签页为书签</p>
+
+                    <!-- 只读提示（默认数据源时显示） -->
+                    <div id="tab-copy-readonly-tip" class="alert alert-warning" style="display:none;margin-bottom:10px;">
+                        <i class="fa fa-lock" style="margin-right:6px;"></i>
+                        当前为默认数据源（只读），请先切换至私有数据源
+                    </div>
+
+                    <!-- 输入区域 -->
+                    <textarea id="tab-copy-textarea" class="ie-textarea" rows="5"
+                        placeholder='粘贴 Tab Copy JSON，例如：[{"title":"Dribbble","url":"https://dribbble.com/"}]'></textarea>
+
+                    <div style="margin-bottom:10px;">
+                        <button class="btn btn-default" id="tab-copy-parse-btn">
+                            <i class="fa fa-search"></i> 解析
+                        </button>
+                    </div>
+
+                    <!-- 预览区（解析成功后显示） -->
+                    <div id="tab-copy-preview" style="display:none;">
+                        <div id="tab-copy-preview-list" class="tab-copy-preview-list"></div>
+
+                        <div class="tab-copy-import-row">
+                            <label style="font-size:13px;color:#5a6a7a;margin-right:8px;white-space:nowrap;">导入到：</label>
+                            <select id="tab-copy-category" class="form-control" style="flex:1;"></select>
+                            <button class="btn btn-primary" id="tab-copy-import-btn" style="margin-left:8px;white-space:nowrap;">
+                                <i class="fa fa-download"></i> 确认导入
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 结果提示 -->
+                    <div id="tab-copy-result" class="ie-result" style="display:none;margin-top:8px;"></div>
+                </div>
+
                 <!-- 工具栏 -->
                 <div class="cat-toolbar">
                     <div class="cat-toolbar-left">
@@ -173,6 +211,7 @@
         $(document).ready(function () {
             BookmarkManager.render();
             BookmarkManager._bindEvents();
+            TabCopyImporter.init();
         });
     </script>
 </body>

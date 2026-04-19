@@ -979,3 +979,70 @@ body.modal-open {
     overflow: hidden;
     padding-right: 0 !important;
 }
+
+/* ----------------------------------------------------------
+   Tab Copy 导入 — 预览列表
+   ---------------------------------------------------------- */
+.tab-copy-preview-list {
+    max-height: 240px;
+    overflow-y: auto;
+    border: 1px solid #e4ecf3;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    background: #f8fafc;
+}
+
+.tab-copy-preview-item {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: center;
+    align-items: center;
+    padding: 6px 12px;
+    border-bottom: 1px solid #f0f4f8;
+    font-size: 13px;
+}
+
+.tab-copy-preview-item:last-child {
+    border-bottom: none;
+}
+
+.tab-copy-preview-item.skipped {
+    color: #a0aab4;
+    font-style: italic;
+}
+
+.tab-copy-preview-name {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #2c3e50;
+    margin-right: 8px;
+}
+
+.tab-copy-preview-url {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #7a8fa8;
+    font-size: 12px;
+}
+
+.tab-copy-preview-skip-label {
+    color: #e67e22;
+    font-size: 11px;
+    white-space: nowrap;
+    margin-left: 8px;
+}
+
+/* Tab Copy 导入 — 分类选择行 */
+.tab-copy-import-row {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: center;
+    align-items: center;
+    margin-top: 8px;
+}
