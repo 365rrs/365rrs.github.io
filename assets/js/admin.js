@@ -259,7 +259,7 @@ var CategoryManager = {
             if (!privateData) {
                 var confirmed = confirm('私有数据源为空，是否以默认数据源内容初始化私有数据源？');
                 if (confirmed) {
-                    $.getJSON('./assets/data/default.json').done(function (defaultData) {
+                    $.getJSON('../assets/data/default.json').done(function (defaultData) {
                         var copy = JSON.parse(JSON.stringify(defaultData));
                         DataSourceManager.savePrivateData(copy);
                         localStorage.setItem(wsKey('active_source'), 'private');
@@ -652,7 +652,7 @@ var BookmarkManager = {
     _buildSiteRow: function (site, index, total, catId, parentId, isDefault) {
         var disabledAttr = isDefault ? ' disabled' : '';
         var disabledClass = isDefault ? ' bm-btn-disabled' : '';
-        var logoSrc = site.logo || './assets/images/logos/default.png';
+        var logoSrc = site.logo || '../assets/images/logos/default.png';
         var name = site.name || '';
         var url = site.url || '';
 
@@ -718,7 +718,7 @@ var BookmarkManager = {
         // 快速添加：logo 输入框变化时更新预览
         $('#quick-add-logo').off('input.qa').on('input.qa', function () {
             var val = $.trim($(this).val());
-            QuickAdd.updateLogoPreview(val || './assets/images/favicon.png');
+            QuickAdd.updateLogoPreview(val || '../assets/images/favicon.png');
         });
 
         // 快速添加：保存按钮
@@ -813,7 +813,7 @@ var BookmarkManager = {
         // logo 输入框变化时实时更新预览
         $('#modal-bm-logo').off('input.bm').on('input.bm', function () {
             var val = $.trim($(this).val());
-            BookmarkManager._updateLogoPreview(val || './assets/images/logos/default.png');
+            BookmarkManager._updateLogoPreview(val || '../assets/images/logos/default.png');
         });
 
         // 从本地 logos 文件夹选择
@@ -831,7 +831,7 @@ var BookmarkManager = {
             if (!privateData) {
                 var confirmed = confirm('私有数据源为空，是否以默认数据源内容初始化私有数据源？');
                 if (confirmed) {
-                    $.getJSON('./assets/data/default.json').done(function (defaultData) {
+                    $.getJSON('../assets/data/default.json').done(function (defaultData) {
                         var copy = JSON.parse(JSON.stringify(defaultData));
                         DataSourceManager.savePrivateData(copy);
                         localStorage.setItem(wsKey('active_source'), 'private');
@@ -866,7 +866,7 @@ var BookmarkManager = {
             $('#modal-bm-name').val('');
             $('#modal-bm-url').val('');
             $('#modal-bm-logo').val('');
-            BookmarkManager._updateLogoPreview('./assets/images/logos/default.png');
+            BookmarkManager._updateLogoPreview('../assets/images/logos/default.png');
             $('#modal-bm-logo-hint').text('填写 URL 后可自动获取网站图标');
         } else {
             $('#modal-bm-title').text('编辑书签');
@@ -874,7 +874,7 @@ var BookmarkManager = {
                 $('#modal-bm-name').val(site.name || '');
                 $('#modal-bm-url').val(site.url || '');
                 $('#modal-bm-logo').val(site.logo || '');
-                BookmarkManager._updateLogoPreview(site.logo || './assets/images/logos/default.png');
+                BookmarkManager._updateLogoPreview(site.logo || '../assets/images/logos/default.png');
                 $('#modal-bm-logo-hint').text('可点击刷新按钮重新获取图标');
             }
         }
@@ -1159,7 +1159,7 @@ var BookmarkManager = {
             var filtered = kw ? files.filter(function(f){ return f.toLowerCase().indexOf(kw) !== -1; }) : files;
             for (var i = 0; i < filtered.length; i++) {
                 var fname = filtered[i];
-                var path = './assets/images/logos/' + fname;
+                var path = '../assets/images/logos/' + fname;
                 var label = fname.replace(/\.png$/i, '');
                 $grid.append(
                     '<div class="logo-pick-item" data-path="' + path + '" title="' + label + '">' +
@@ -1194,7 +1194,7 @@ var BookmarkManager = {
         if (BookmarkManager._logosList) {
             openModal(BookmarkManager._logosList);
         } else {
-            $.getJSON('./assets/data/logos-list.json')
+            $.getJSON('../assets/data/logos-list.json')
                 .done(function (files) { openModal(files); })
                 .fail(function () { alert('加载 logos 列表失败，请确认 assets/data/logos-list.json 存在。'); });
         }
@@ -1206,7 +1206,7 @@ var BookmarkManager = {
      * @param {string} url
      */
     _fetchFavicon: function (url) {
-        var DEFAULT_LOGO = './assets/images/favicon.png';
+        var DEFAULT_LOGO = '../assets/images/favicon.png';
         var $hint = $('#modal-bm-logo-hint');
 
         var domain = '';
@@ -1255,7 +1255,7 @@ var BookmarkManager = {
      * @param {string} src
      */
     _updateLogoPreview: function (src) {
-        var DEFAULT_LOGO = './assets/images/favicon.png';
+        var DEFAULT_LOGO = '../assets/images/favicon.png';
         var $preview = $('#modal-bm-logo-preview');
         var img = new Image();
         img.onload = function () { $preview.attr('src', src); };
@@ -1321,7 +1321,7 @@ var QuickAdd = {
      */
     updateLogoPreview: function (src) {
         var $img = $('#quick-add-logo-preview');
-        var fallback = './assets/images/favicon.png';
+        var fallback = '../assets/images/favicon.png';
         var img = new Image();
         img.onload = function () { $img.attr('src', src); };
         img.onerror = function () { $img.attr('src', fallback); };

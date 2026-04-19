@@ -114,6 +114,8 @@ html, body {
     display: flex;
     margin-top: 50px;
     min-height: calc(100vh - 50px);
+    -webkit-align-items: flex-start;
+    align-items: flex-start;
 }
 
 /* ----------------------------------------------------------
@@ -124,16 +126,15 @@ html, body {
     min-width: 180px;
     background: #fff;
     border-right: 1px solid #e4ecf3;
-    min-height: calc(100vh - 50px);
     -webkit-flex-shrink: 0;
     flex-shrink: 0;
-    position: -webkit-sticky;
-    position: sticky;
+    position: fixed;
     top: 50px;
+    left: 0;
+    bottom: 0;
     height: calc(100vh - 50px);
     overflow-y: auto;
-    -webkit-align-self: flex-start;
-    align-self: flex-start;
+    z-index: 999;
 }
 
 .admin-tabs {
@@ -185,6 +186,7 @@ html, body {
     padding: 24px;
     background: #f5f7fa;
     min-width: 0;
+    margin-left: 180px;
 }
 
 /* 面板默认隐藏 */
@@ -223,13 +225,21 @@ html, body {
     }
 
     .admin-sidebar {
+        position: static;
         width: 100%;
         min-width: 0;
-        min-height: auto;
+        height: auto;
         border-right: none;
         border-bottom: 1px solid #e4ecf3;
         overflow-x: auto;
+        overflow-y: visible;
         -webkit-overflow-scrolling: touch;
+        z-index: auto;
+    }
+
+    .admin-content {
+        margin-left: 0;
+        padding: 16px;
     }
 
     .admin-tabs {
@@ -257,10 +267,6 @@ html, body {
     .admin-tab.active a {
         border-left-color: transparent;
         border-bottom-color: #2980b9;
-    }
-
-    .admin-content {
-        padding: 16px;
     }
 }
 
