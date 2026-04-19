@@ -19,7 +19,7 @@
 
 **特别鸣谢：**
 - 原项目作者：[Viggo](https://www.viggoz.com)
-- 二开工具：[Kiro](https://kiro.ai) - 一款强大的 AI 辅助开发工具，全程使用 Kiro 完成本次二次开发
+- 二开工具：[Kiro](https://kiro.dev/) - 一款强大的 AI 辅助开发工具，全程使用 Kiro 完成本次二次开发
 
 > Kiro 是一款优秀的 AI 编程助手，能够显著提升开发效率，强烈推荐！
 
@@ -359,7 +359,7 @@ Released under the **MIT License**.
 - 原项目仓库：[WebStackPage/WebStackPage.github.io](https://github.com/WebStackPage/WebStackPage.github.io)
 
 **二开工具推荐：**
-- [Kiro](https://kiro.ai) - AI 辅助开发工具，本项目全程使用 Kiro 完成二次开发
+- [Kiro](https://kiro.dev/) - AI 辅助开发工具，本项目全程使用 Kiro 完成二次开发
 
 ---
 
@@ -372,5 +372,5 @@ Released under the **MIT License**.
 ## 🙏 致谢
 
 - 感谢 [Viggo](https://www.viggoz.com) 创建了优秀的 WebStack 项目
-- 感谢 [Kiro](https://kiro.ai) 提供的强大 AI 开发工具支持
+- 感谢 [Kiro](https://kiro.dev/) 提供的强大 AI 开发工具支持
 - 感谢所有为开源社区做出贡献的开发者们
