@@ -652,7 +652,7 @@ var BookmarkManager = {
     _buildSiteRow: function (site, index, total, catId, parentId, isDefault) {
         var disabledAttr = isDefault ? ' disabled' : '';
         var disabledClass = isDefault ? ' bm-btn-disabled' : '';
-        var logoSrc = site.logo || '../assets/images/logos/default.png';
+        var logoSrc = normalizeLogo(site.logo);
         var name = site.name || '';
         var url = site.url || '';
 

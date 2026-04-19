@@ -8,6 +8,32 @@
 var APP_VERSION = 'v20260418';
 
 /**
+ * 规范化 logo 路径，统一转为绝对路径
+ * 支持以下输入格式：
+ *   - 纯文件名：       "dribbble.png"         → "/assets/images/logos/dribbble.png"
+ *   - 相对根目录：     "./assets/images/logos/dribbble.png" → "/assets/images/logos/dribbble.png"
+ *   - 相对父目录：     "../assets/images/logos/dribbble.png" → "/assets/images/logos/dribbble.png"
+ *   - 已是绝对路径：   "/assets/images/logos/dribbble.png"  → 原样返回
+ *   - 外部 URL（http/https）：原样返回
+ * @param {string} logo
+ * @returns {string}
+ */
+function normalizeLogo(logo) {
+    if (!logo) return '/assets/images/logos/default.png';
+    // 外部 URL 原样返回
+    if (/^https?:\/\//i.test(logo)) return logo;
+    // 已是绝对路径原样返回
+    if (logo.charAt(0) === '/') return logo;
+    // 去掉 ./ 或 ../ 前缀，提取 assets/ 之后的部分
+    var cleaned = logo.replace(/^(\.\.\/|\.\/)+/, '');
+    // 如果不含路径分隔符，视为纯文件名
+    if (cleaned.indexOf('/') === -1) {
+        return '/assets/images/logos/' + cleaned;
+    }
+    return '/' + cleaned;
+}
+
+/**
  * 生成带版本后缀的 localStorage key
  * 例如：wsKey('private_data') → 'ws_private_data_v20260418'
  * @param {string} name
@@ -111,7 +137,7 @@ var Renderer = {
     _buildCard: function (site) {
         var name = site.name || '';
         var url = site.url || '#';
-        var logo = site.logo || './assets/images/logos/default.png';
+        var logo = normalizeLogo(site.logo);
 
         return '<div class="col-sm-3">' +
             '<div class="xe-widget xe-conversations box2 label-info"' +
