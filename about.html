@@ -68,23 +68,212 @@
                 <div class="col-md-12">
                     <div class="panel panel-default">
                         <!-- 关于网站 -->
-                        <h4 class="text-gray">关于网站</h4>
+                        <h4 class="text-gray">关于 WebStack</h4>
                         <div class="panel-body">
                             <div class="row">
                                 <div class="col-sm-12">
                                     <blockquote>
+                                        <p><strong>WebStack</strong> 是一个专为设计师打造的网址导航站点，致力于收集和整理国内外优秀的设计资源、灵感创意网站、UI 素材资源以及设计工具。</p>
+                                        <br>
                                         <p>有一段时间我发现我的收藏夹越来越多，很难找到某个不常用的网站。所以就有了这个网站，这里收集的基本都是我自己浏览器收藏夹里的网站，我平时用的相对比较多的一些都在这里。</p>
-                                        </br>
+                                        <br>
                                         <p>如果你也是设计师，如果你也正好喜欢设计，那希望这个网站能给你带来一些作用。</p>
-                                        <p>闲聊或者有任何建议都可以加QQ群交流，一群：<strong>304584722</strong>  二群：<strong>740911918</strong></p>
                                     </blockquote>
                                 </div>
                             </div>
+
+                            <!-- 项目起源 -->
+                            <h4 class="text-gray">项目起源与二次开发</h4>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <p>本项目基于 <a href="https://github.com/WebStackPage/WebStackPage.github.io" target="_blank"><strong>WebStackPage</strong></a> 进行二次开发，使用 <strong>Kiro AI</strong> 辅助开发工具进行功能增强和优化。</p>
+                                    <blockquote>
+                                        <p><i class="fa fa-code-fork"></i> <strong>原始项目：</strong><a href="https://github.com/WebStackPage/WebStackPage.github.io" target="_blank">WebStackPage/WebStackPage.github.io</a></p>
+                                        <p><i class="fa fa-wrench"></i> <strong>开发工具：</strong>Kiro AI - 智能代码助手，提供代码生成、重构、优化等功能</p>
+                                        <p><i class="fa fa-rocket"></i> <strong>二开目标：</strong>数据与视图分离、增强管理功能、支持私有数据源、实现云端同步</p>
+                                    </blockquote>
+                                    <p class="text-muted">
+                                        感谢 WebStackPage 原作者提供的优秀开源项目基础，也感谢 Kiro AI 在开发过程中提供的智能辅助。
+                                        本项目继承了原项目的 MIT 开源协议，所有改进和新增功能同样开源共享。
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- 二次开发亮点 -->
+                            <h4 class="text-gray">二次开发亮点</h4>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <p>相比原始项目，本版本进行了以下重大改进：</p>
+                                    
+                                    <h5><i class="fa fa-database"></i> 数据 JSON 化</h5>
+                                    <ul style="line-height: 1.8;">
+                                        <li>将硬编码在 HTML 中的网站数据提取为独立的 JSON 文件（<code>assets/data/default.json</code>）</li>
+                                        <li>实现数据与视图完全分离，便于程序化管理和批量更新</li>
+                                        <li>支持两级分类结构：纯一级分类或一级+二级分类</li>
+                                    </ul>
+
+                                    <h5><i class="fa fa-search"></i> 站内搜索</h5>
+                                    <ul style="line-height: 1.8;">
+                                        <li>顶部导航栏集成实时搜索框，支持中文、拼音全拼、拼音首字母多种搜索方式</li>
+                                        <li>实时过滤显示匹配结果，自动隐藏无匹配内容的分类</li>
+                                        <li>搜索结果为空时显示友好提示信息</li>
+                                    </ul>
+
+                                    <h5><i class="fa fa-exchange"></i> 双数据源支持</h5>
+                                    <ul style="line-height: 1.8;">
+                                        <li><strong>默认数据源：</strong>项目内置的官方推荐网站列表（只读）</li>
+                                        <li><strong>私有数据源：</strong>用户自定义的个人书签数据（可编辑）</li>
+                                        <li>一键切换数据源，自动记忆用户选择</li>
+                                        <li>支持从默认数据源初始化私有数据源</li>
+                                    </ul>
+
+                                    <h5><i class="fa fa-cogs"></i> 可视化管理面板</h5>
+                                    <ul style="line-height: 1.8;">
+                                        <li><strong>书签管理：</strong>可视化增删改查网站卡片，支持 Logo 图标选择</li>
+                                        <li><strong>分类管理：</strong>创建、编辑、删除分类，支持两级分类结构和 emoji 图标</li>
+                                        <li><strong>手动排序：</strong>拖拽或按钮调整分类和书签的显示顺序</li>
+                                        <li><strong>数据导入导出：</strong>支持 JSON 文件导入导出、复制粘贴 JSON 文本</li>
+                                        <li><strong>OSS 配置：</strong>配置阿里云 OSS 连接信息，支持配置导入导出</li>
+                                    </ul>
+
+                                    <h5><i class="fa fa-cloud-upload"></i> 云端同步</h5>
+                                    <ul style="line-height: 1.8;">
+                                        <li><strong>手动同步：</strong>一键上传私有数据至阿里云 OSS 或从 OSS 下载</li>
+                                        <li><strong>自动同步：</strong>支持页面加载时自动同步、定时自动同步（30分钟/1小时/2小时）</li>
+                                        <li><strong>版本管理：</strong>基于版本号的增量同步，避免不必要的数据传输</li>
+                                        <li><strong>离线可用：</strong>本地 localStorage 持久化，网络断开时仍可正常使用</li>
+                                        <li><strong>多端同步：</strong>在不同设备间自动同步最新数据</li>
+                                    </ul>
+
+                                    <h5><i class="fa fa-language"></i> 单语言优化</h5>
+                                    <ul style="line-height: 1.8;">
+                                        <li>移除多语言支持，统一为中文版本</li>
+                                        <li>降低维护成本，避免双语内容不同步问题</li>
+                                        <li>简化项目结构，提升加载速度</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- 核心特性 -->
+                            <h4 class="text-gray">核心特性</h4>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <ul style="line-height: 2;">
+                                        <li><strong>精选资源：</strong>收录超过 200+ 优质设计网站，涵盖灵感采集、素材资源、设计工具、社区资讯等多个分类</li>
+                                        <li><strong>智能搜索：</strong>支持中文、拼音全拼、拼音首字母多种搜索方式，快速定位目标网站</li>
+                                        <li><strong>双数据源：</strong>默认数据源 + 私有数据源，支持自定义书签管理，打造专属导航</li>
+                                        <li><strong>云端同步：</strong>支持阿里云 OSS 云端备份，多设备数据同步，随时随地访问你的书签</li>
+                                        <li><strong>管理面板：</strong>可视化管理界面，支持书签/分类的增删改查、导入导出 JSON 数据</li>
+                                        <li><strong>纯前端架构：</strong>无需后端服务器，部署简单，访问速度快</li>
+                                        <li><strong>开源免费：</strong>完全开源，可自由定制和部署属于自己的导航站</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- 内容分类 -->
+                            <h4 class="text-gray">内容分类</h4>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h5><i class="linecons-star"></i> 常用推荐</h5>
+                                    <p class="text-muted">Dribbble、Behance、UI中国、站酷等设计师常用平台</p>
+                                    
+                                    <h5><i class="linecons-doc"></i> 社区资讯</h5>
+                                    <p class="text-muted">36kr、人人都是产品经理、优设等行业资讯平台</p>
+                                    
+                                    <h5><i class="linecons-lightbulb"></i> 灵感采集</h5>
+                                    <p class="text-muted">
+                                        <strong>发现产品：</strong>Producthunt、少数派、利器<br>
+                                        <strong>界面灵感：</strong>Pttrns、Collect UI、Android Niceties<br>
+                                        <strong>网页灵感：</strong>Awwwards、CSS Design Awards、The FWA
+                                    </p>
+                                </div>
+                                <div class="col-sm-6">
+                                    <h5><i class="linecons-thumbs-up"></i> 素材资源</h5>
+                                    <p class="text-muted">
+                                        <strong>图标素材：</strong>Iconfinder、iconfont、flaticon<br>
+                                        <strong>UI资源：</strong>咕噜素材、Freebiesbug、uplabs<br>
+                                        <strong>字体资源：</strong>Google Font、方正字库、字体传奇网<br>
+                                        <strong>摄影图库：</strong>Unsplash、Pixabay、visualhunt<br>
+                                        <strong>Mockup：</strong>MockupZone、Dunnnk、Mockup World
+                                    </p>
+                                    
+                                    <h5><i class="linecons-diamond"></i> 常用工具</h5>
+                                    <p class="text-muted">
+                                        <strong>图形创意：</strong>Photoshop、Illustrator、Blender<br>
+                                        <strong>界面设计：</strong>Sketch、Figma、Adobe XD<br>
+                                        <strong>原型交互：</strong>Axure、Principle、Framer
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- 使用指南 -->
+                            <h4 class="text-gray">使用指南</h4>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <ol style="line-height: 2;">
+                                        <li><strong>浏览网站：</strong>点击左侧侧边栏分类，快速跳转到对应内容区域</li>
+                                        <li><strong>搜索功能：</strong>使用顶部搜索框，输入关键词即可实时过滤网站</li>
+                                        <li><strong>切换数据源：</strong>点击右上角"默认数据源"按钮，可切换到私有数据源</li>
+                                        <li><strong>管理书签：</strong>点击右上角"管理面板"，进入后台管理界面
+                                            <ul>
+                                                <li>书签管理：添加、编辑、删除书签，支持 Logo 选择</li>
+                                                <li>分类管理：创建、编辑分类，支持两级分类结构</li>
+                                                <li>导入导出：支持 JSON 格式数据导入导出</li>
+                                                <li>云端同步：配置阿里云 OSS，实现多端数据同步</li>
+                                            </ul>
+                                        </li>
+                                        <li><strong>自定义部署：</strong>Fork GitHub 仓库，修改 <code>assets/data/default.json</code> 文件，即可定制专属导航</li>
+                                    </ol>
+                                </div>
+                            </div>
+
+                            <!-- 技术栈 -->
+                            <h4 class="text-gray">技术实现</h4>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <p>WebStack 采用纯前端架构，无需后端服务器，部署简单高效：</p>
+                                    <ul style="line-height: 2;">
+                                        <li><strong>前端框架：</strong>jQuery 1.11.1 + Bootstrap 3.x</li>
+                                        <li><strong>UI 主题：</strong>Xenon Admin Theme（侧边栏、卡片组件）</li>
+                                        <li><strong>图标字体：</strong>Font Awesome、Linecons、Elusive Icons</li>
+                                        <li><strong>动画效果：</strong>TweenMax（侧边栏展开/收起动画）</li>
+                                        <li><strong>图片懒加载：</strong>lozad.js（提升页面加载速度）</li>
+                                        <li><strong>拼音搜索：</strong>pinyin-pro（支持中文拼音搜索）</li>
+                                        <li><strong>云端存储：</strong>阿里云 OSS SDK（可选，用于数据同步）</li>
+                                        <li><strong>数据存储：</strong>JSON 文件 + localStorage（本地存储）</li>
+                                        <li><strong>开发工具：</strong>Kiro AI（智能代码助手，辅助二次开发）</li>
+                                    </ul>
+                                    <div class="alert alert-info" style="margin-top: 15px;">
+                                        <i class="fa fa-info-circle"></i> 
+                                        <strong>关于 Kiro AI：</strong>本项目的二次开发过程中使用了 Kiro AI 智能开发助手，它帮助我们快速实现了管理面板的功能增强、代码重构优化、以及新特性的开发。Kiro 提供了代码生成、智能补全、重构建议等功能，大大提升了开发效率。
+                                    </div>
+                                    <p class="text-muted">
+                                        <i class="fa fa-github"></i> 
+                                        原始项目：<a href="https://github.com/WebStackPage/WebStackPage.github.io" target="_blank">WebStackPage/WebStackPage.github.io</a>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- 交流反馈 -->
+                            <h4 class="text-gray">交流反馈</h4>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <blockquote>
+                                        <p>如果你有任何建议、发现了 Bug，或者想要分享优质设计资源，欢迎通过以下方式联系我们：</p>
+                                        <ul>
+                                            <li><strong>QQ 交流群：</strong>一群 304584722 / 二群 740911918</li>
+                                            <li><strong>GitHub Issues：</strong><a href="https://github.com/WebStackPage/WebStackPage.github.io/issues" target="_blank">提交问题或建议</a></li>
+                                            <li><strong>个人网站：</strong><a href="https://www.viggoz.com" target="_blank">viggoz.com</a></li>
+                                        </ul>
+                                    </blockquote>
+                                </div>
+                            </div>
+
                             <!-- 关于站长 -->
                             <h4 class="text-gray">关于站长</h4>
                             <div class="row">
                                 <div class="col-sm-4">
-                                    <div class="xe-widget xe-conversations box2 label-info" onclick="window.open('http://www.viggoz.com/', '_blank')" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="http://www.viggoz.com/">
+                                    <div class="xe-widget xe-conversations box2 label-info" onclick="window.open('https://www.viggoz.com/', '_blank')" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="https://www.viggoz.com/">
                                         <div class="xe-comment-entry">
                                             <a class="xe-user-img">
                                                 <img src="./assets/images/logos/viggoz.png" class="img-circle" width="40">
@@ -93,7 +282,7 @@
                                                 <a href="#" class="xe-user-name overflowClip_1">
                                                     <strong>Designer. Viggo.</strong>
                                                 </a>
-                                                <p class="overflowClip_2"> Full-time UI designer with an enduring interest in Coding.</p>
+                                                <p class="overflowClip_2">Full-time UI designer with an enduring interest in Coding.</p>
                                             </div>
                                         </div>
                                     </div>
@@ -104,12 +293,29 @@
                                             <br />
                                             <blockquote>
                                                 <p>
-                                                    这是一个公益项目，而且是<a href="https://github.com/WebStackPage/WebStackPage.github.io"> 开源 </a>的。你也可以拿来制作自己的网址导航。如果你有更好的想法，可以通过个人网站<a href="http://www.viggoz.com"><span class="label label-info" data-toggle="tooltip" data-placement="left" title="" data-original-title="Hello I am a Tooltip">viggoz.com</span></a>中的联系方式找到我，欢迎与我交流分享。
+                                                    这是一个公益项目，而且是<a href="https://github.com/WebStackPage/WebStackPage.github.io" target="_blank"> 开源 </a>的。你也可以拿来制作自己的网址导航。
+                                                </p>
+                                                <p>
+                                                    如果你有更好的想法，可以通过个人网站 <a href="https://www.viggoz.com" target="_blank"><span class="label label-info" data-toggle="tooltip" data-placement="left" title="" data-original-title="访问个人网站">viggoz.com</span></a> 中的联系方式找到我，欢迎与我交流分享。
                                                 </p>
                                             </blockquote>
                                         </div>
                                     </div>
                                     <br>
+                                </div>
+                            </div>
+
+                            <!-- 许可协议 -->
+                            <h4 class="text-gray">开源协议</h4>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <p>本项目采用 MIT 开源协议，你可以自由地：</p>
+                                    <ul>
+                                        <li>使用、复制、修改、合并、发布、分发本软件</li>
+                                        <li>将本软件用于商业或非商业用途</li>
+                                        <li>在遵守协议的前提下，自由定制和部署</li>
+                                    </ul>
+                                    <p class="text-muted">唯一的要求是在软件和软件的所有副本中都必须包含版权声明和许可声明。</p>
                                 </div>
                             </div>
                         </div>
@@ -120,8 +326,8 @@
             <footer class="main-footer sticky footer-type-1 fixed">
                 <div class="footer-inner">
                     <div class="footer-text">
-                        &copy; 2017 - 2020
-                        <a href="about.html"><strong>WebStack</strong></a> design by <a href="http://viggoz.com" target="_blank"><strong>Viggo</strong></a>
+                        &copy; 2017 - 2026
+                        <a href="about.html"><strong>WebStack</strong></a> design by <a href="https://www.viggoz.com" target="_blank"><strong>Viggo</strong></a>
                     </div>
                     <div class="go-up">
                         <a href="#" rel="go-top">
