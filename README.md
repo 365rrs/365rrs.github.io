@@ -56,8 +56,8 @@
 
 1. **克隆或下载项目**
    ```bash
-   git clone https://github.com/WebStackPage/WebStackPage.github.io.git
-   cd WebStackPage.github.io
+   git clone https://github.com/365rrs/365rrs.github.io.git
+   cd 365rrs.github.io
    ```
 
 2. **修改书签数据**
