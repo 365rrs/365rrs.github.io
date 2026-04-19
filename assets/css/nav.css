@@ -104,3 +104,38 @@
     -o-transition: all 0.3s ease;
     transition: all 0.3s ease;
 }
+
+/* 书签卡片容器 — 相对定位，用于删除按钮绝对定位 */
+.bookmark-card {
+    position: relative;
+}
+
+/* 删除按钮 — 默认隐藏，悬浮时显示 */
+.bookmark-delete-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 20px;
+    height: 20px;
+    line-height: 18px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    background-color: rgba(231, 76, 60, 0.9);
+    border-radius: 50%;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.bookmark-card:hover .bookmark-delete-btn {
+    opacity: 1;
+}
+
+.bookmark-delete-btn:hover {
+    background-color: rgba(192, 57, 43, 1);
+    transform: scale(1.1);
+}

@@ -131,33 +131,131 @@ var Renderer = {
     },
 
     /**
+     * 删除书签（公开方法，供内联 onclick 调用）
+     * @param {Event} event  事件对象
+     * @param {string} categoryId  分类 ID
+     * @param {string} siteUrl  站点 URL
+     */
+    deleteBookmark: function (event, categoryId, siteUrl) {
+        // 阻止事件冒泡到卡片的 onclick
+        if (event) {
+            event.stopPropagation();
+            event.preventDefault();
+        }
+
+        if (!confirm('确定要删除此书签吗？')) {
+            return;
+        }
+
+        // 从私有数据源中删除
+        var data = DataSourceManager.getPrivateData();
+        if (!data || !data.categories) {
+            alert('私有数据源不存在');
+            return;
+        }
+
+        var deleted = Renderer._deleteSiteFromData(data, categoryId, siteUrl);
+        if (!deleted) {
+            alert('未找到要删除的书签');
+            return;
+        }
+
+        // 保存并重新渲染
+        DataSourceManager.savePrivateData(data);
+        Renderer.render(data);
+        Searcher.init();
+    },
+
+    /**
+     * 绑定删除按钮事件（已废弃，改用内联 onclick）
+     */
+    _bindDeleteButtons: function () {
+        // 不再需要，删除功能通过内联 onclick 实现
+    },
+
+    /**
+     * 从数据对象中删除指定书签
+     * @param {Object} data  完整数据对象
+     * @param {string} categoryId  分类 ID
+     * @param {string} siteUrl  站点 URL
+     * @returns {boolean}  是否成功删除
+     */
+    _deleteSiteFromData: function (data, categoryId, siteUrl) {
+        for (var i = 0; i < data.categories.length; i++) {
+            var cat = data.categories[i];
+
+            // 一级分类直接包含 sites
+            if (cat.id === categoryId && cat.sites) {
+                for (var j = 0; j < cat.sites.length; j++) {
+                    if (cat.sites[j].url === siteUrl) {
+                        cat.sites.splice(j, 1);
+                        return true;
+                    }
+                }
+            }
+
+            // 二级分类（children）
+            if (cat.children) {
+                for (var k = 0; k < cat.children.length; k++) {
+                    var child = cat.children[k];
+                    if (child.id === categoryId && child.sites) {
+                        for (var m = 0; m < child.sites.length; m++) {
+                            if (child.sites[m].url === siteUrl) {
+                                child.sites.splice(m, 1);
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    },
+
+    /**
      * 生成单个卡片 HTML
      * @param {Object} site  { name, url, logo }
+     * @param {string} categoryId  分类 ID（用于删除时定位）
+     * @param {string} siteUrl  站点 URL（用作唯一标识）
      * @returns {string}
      */
-    _buildCard: function (site) {
+    _buildCard: function (site, categoryId, siteUrl) {
         var name = site.name || '';
         var url = site.url || '#';
         var logo = normalizeLogo(site.logo);
+        var isPrivate = DataSourceManager.getActive() === 'private';
+
+        // 删除按钮（仅私有数据源显示）
+        // 使用内联 onclick 直接调用删除函数，并阻止冒泡
+        var deleteBtn = isPrivate
+            ? '<span class="bookmark-delete-btn" ' +
+              'onclick="Renderer.deleteBookmark(event, \'' + 
+              (categoryId || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\', \'' + 
+              url.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\')" ' +
+              'data-category-id="' + (categoryId || '').replace(/"/g, '&quot;') + '" ' +
+              'data-site-url="' + url.replace(/"/g, '&quot;') + '" ' +
+              'title="删除此书签">&times;</span>'
+            : '';
 
         return '<div class="col-sm-3">' +
-            '<div class="xe-widget xe-conversations box2 label-info"' +
+            '<div class="xe-widget xe-conversations box2 label-info bookmark-card"' +
             ' onclick="window.open(\'' + url.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\', \'_blank\')"' +
             ' data-toggle="tooltip"' +
             ' data-placement="bottom"' +
             ' title=""' +
             ' data-original-title="' + url.replace(/"/g, '&quot;') + '">' +
+            deleteBtn +
             '<div class="xe-comment-entry">' +
-            '<a class="xe-user-img">' +
+            '<span class="xe-user-img">' +
             '<img data-src="' + logo.replace(/"/g, '&quot;') + '"' +
             ' class="lozad img-circle"' +
             ' width="40"' +
             ' alt="' + name.replace(/"/g, '&quot;') + '">' +
-            '</a>' +
+            '</span>' +
             '<div class="xe-comment">' +
-            '<a href="#" class="xe-user-name overflowClip_1">' +
+            '<span class="xe-user-name overflowClip_1">' +
             '<strong>' + name + '</strong>' +
-            '</a>' +
+            '</span>' +
             '</div>' +
             '</div>' +
             '</div>' +
@@ -221,7 +319,7 @@ var Renderer = {
                 var childCards = '';
                 if (child.sites && child.sites.length) {
                     for (var j = 0; j < child.sites.length; j++) {
-                        childCards += Renderer._buildCard(child.sites[j]);
+                        childCards += Renderer._buildCard(child.sites[j], child.id, child.sites[j].url);
                     }
                 }
                 innerHtml += '<h4 class="text-gray">' +
@@ -242,7 +340,7 @@ var Renderer = {
             var cards = '';
             if (category.sites && category.sites.length) {
                 for (var k = 0; k < category.sites.length; k++) {
-                    cards += Renderer._buildCard(category.sites[k]);
+                    cards += Renderer._buildCard(category.sites[k], id, category.sites[k].url);
                 }
             }
             return '<div class="category-section" id="section-' + id + '">' +
