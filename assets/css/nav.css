@@ -64,31 +64,48 @@
     padding: 0;
 }
 
-/* 搜索框 */
-#search-li {
-    padding: 0 10px;
-    display: flex;
-    align-items: center;
+/* 搜索框 - 居中显示 */
+.navbar-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 50%;
+    transform: translate(-50%, -50%);
 }
+
 #search-input {
-    height: 30px;
-    width: 280px;
-    padding: 0 14px;
-    font-size: 13px;
+    height: 36px;
+    width: 400px;
+    padding: 0 16px;
+    font-size: 14px;
     color: #555;
-    background: #f5f7fa;
+    background: #fff;
     border: 1px solid #dde3ec;
-    border-radius: 15px;
+    border-radius: 18px;
     outline: none;
-    transition: border-color 0.2s, background 0.2s;
-    vertical-align: middle;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
+
 #search-input:focus {
     background: #fff;
     border-color: #a0b4c8;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 500px;
 }
-#search-input::-webkit-input-placeholder { color: #aab; }
-#search-input::-moz-placeholder { color: #aab; }
+
+#search-input::-webkit-input-placeholder { 
+    color: #aab; 
+}
+
+#search-input::-moz-placeholder { 
+    color: #aab; 
+}
+
+/* 移除旧的搜索框样式 */
+#search-li {
+    display: none;
+}
 
 /* 书签卡片 — 降低高度，只展示名称 */
 .box2 {
