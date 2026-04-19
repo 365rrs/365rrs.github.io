@@ -59,16 +59,23 @@ var public_vars = public_vars || {};
 		// Setup Sidebar Menu
 		setup_sidebar_menu();
 
-		// 恢复侧边栏折叠/展开状态
-		var sidebarCollapsed = localStorage.getItem('ws_sidebar_collapsed');
-		if(sidebarCollapsed === 'true')
+		// 恢复侧边栏状态（支持三种模式：expanded, collapsed, hidden）
+		var sidebarState = localStorage.getItem('ws_sidebar_state');
+		if (sidebarState === 'collapsed')
 		{
 			public_vars.$sidebarMenu.addClass('collapsed');
 			ps_destroy();
 		}
-		else if(sidebarCollapsed === 'false')
+		else if (sidebarState === 'hidden')
 		{
-			public_vars.$sidebarMenu.removeClass('collapsed');
+			public_vars.$sidebarMenu.addClass('hidden');
+			$('body').addClass('sidebar-hidden');
+			ps_destroy();
+		}
+		else // expanded 或未设置
+		{
+			public_vars.$sidebarMenu.removeClass('collapsed hidden');
+			$('body').removeClass('sidebar-hidden');
 			if(public_vars.$sidebarMenu.hasClass('fixed'))
 				ps_init();
 		}

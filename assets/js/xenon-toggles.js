@@ -108,27 +108,36 @@
 
 
 
-		// Sidebar Toggle
+		// Sidebar Toggle - 支持三种模式：展开 → 收起 → 隐藏 → 展开
 		$('a[data-toggle="sidebar"]').each(function(i, el)
 		{
 			$(el).on('click', function(ev)
 			{
 				ev.preventDefault();
 
+				var $sidebar = public_vars.$sidebarMenu;
+				var $body = $('body');
 
-				if(public_vars.$sidebarMenu.hasClass('collapsed'))
-				{
-					public_vars.$sidebarMenu.removeClass('collapsed');
+				// 获取当前状态
+				if ($sidebar.hasClass('hidden')) {
+					// 隐藏 → 展开
+					$sidebar.removeClass('hidden');
+					$body.removeClass('sidebar-hidden');
 					ps_init();
-					// 保存展开状态到 localStorage
-					localStorage.setItem('ws_sidebar_collapsed', 'false');
+					localStorage.setItem('ws_sidebar_state', 'expanded');
 				}
-				else
-				{
-					public_vars.$sidebarMenu.addClass('collapsed');
+				else if ($sidebar.hasClass('collapsed')) {
+					// 收起 → 隐藏
+					$sidebar.removeClass('collapsed').addClass('hidden');
+					$body.addClass('sidebar-hidden');
 					ps_destroy();
-					// 保存折叠状态到 localStorage
-					localStorage.setItem('ws_sidebar_collapsed', 'true');
+					localStorage.setItem('ws_sidebar_state', 'hidden');
+				}
+				else {
+					// 展开 → 收起
+					$sidebar.addClass('collapsed');
+					ps_destroy();
+					localStorage.setItem('ws_sidebar_state', 'collapsed');
 				}
 
 				$(window).trigger('xenon.resize');

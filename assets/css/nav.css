@@ -182,3 +182,18 @@
         width: 100%;
     }
 }
+
+
+/* 侧边栏完全隐藏模式 */
+.sidebar-menu.hidden {
+    display: none !important;
+}
+
+.sidebar-menu.hidden + .main-content {
+    margin-left: 0 !important;
+}
+
+/* 隐藏模式下的切换按钮样式优化 */
+.sidebar-hidden .user-info-navbar .user-info-menu a[data-toggle=sidebar] i {
+    transform: rotate(180deg);
+}
