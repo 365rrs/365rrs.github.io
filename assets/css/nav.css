@@ -92,7 +92,7 @@
 
 /* 书签卡片 — 降低高度，只展示名称 */
 .box2 {
-    height: 56px;
+    height: 64px;
     cursor: pointer;
     border-radius: 4px;
     padding: 0 16px;
