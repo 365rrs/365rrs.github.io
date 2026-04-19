@@ -185,7 +185,9 @@ var CategoryManager = {
             } else if (mode === 'add-sub') {
                 CategoryManager.addSubCategory(parentId, name);
             } else if (mode === 'rename') {
-                CategoryManager.renameCategory(id, name, '');
+                // 编辑一级分类：同时更新名称和图标
+                var icon = $('input[name="cat-icon"]:checked').val() || 'linecons-star';
+                CategoryManager.renameCategory(id, name, '', icon);
             } else if (mode === 'rename-sub') {
                 CategoryManager.renameCategory(id, name, parentId);
             }
@@ -214,14 +216,26 @@ var CategoryManager = {
             $('#modal-cat-title').text('添加子分类');
             $('#modal-cat-icon-group').hide();
         } else if (mode === 'rename' || mode === 'rename-sub') {
-            $('#modal-cat-title').text('重命名分类');
-            $('#modal-cat-icon-group').hide();
-            // 预填当前名称
+            var isTopLevel = (mode === 'rename');
+            $('#modal-cat-title').text(isTopLevel ? '编辑分类' : '重命名子分类');
+            
+            // 一级分类显示图标选择器，子分类隐藏
+            if (isTopLevel) {
+                $('#modal-cat-icon-group').show();
+            } else {
+                $('#modal-cat-icon-group').hide();
+            }
+            
+            // 预填当前名称和图标
             var data = DataSourceManager.getPrivateData();
             if (data) {
-                var currentName = CategoryManager._findName(data, id, parentId);
-                if (currentName) {
-                    $('#modal-cat-name').val(currentName);
+                var category = CategoryManager._findCategory(data, id, parentId);
+                if (category) {
+                    $('#modal-cat-name').val(category.name);
+                    // 一级分类预填图标
+                    if (isTopLevel && category.icon) {
+                        $('input[name="cat-icon"][value="' + category.icon + '"]').prop('checked', true);
+                    }
                 }
             }
         }
@@ -230,24 +244,34 @@ var CategoryManager = {
     },
 
     /**
-     * 在数据中查找分类名称
+     * 在数据中查找分类对象
      */
-    _findName: function (data, id, parentId) {
+    _findCategory: function (data, id, parentId) {
         var cats = data.categories || [];
         if (!parentId) {
+            // 查找一级分类
             for (var i = 0; i < cats.length; i++) {
-                if (cats[i].id === id) return cats[i].name;
+                if (cats[i].id === id) return cats[i];
             }
         } else {
+            // 查找子分类
             for (var j = 0; j < cats.length; j++) {
                 if (cats[j].id === parentId && cats[j].children) {
                     for (var k = 0; k < cats[j].children.length; k++) {
-                        if (cats[j].children[k].id === id) return cats[j].children[k].name;
+                        if (cats[j].children[k].id === id) return cats[j].children[k];
                     }
                 }
             }
         }
-        return '';
+        return null;
+    },
+
+    /**
+     * 在数据中查找分类名称
+     */
+    _findName: function (data, id, parentId) {
+        var category = CategoryManager._findCategory(data, id, parentId);
+        return category ? category.name : '';
     },
 
     /**
@@ -343,20 +367,27 @@ var CategoryManager = {
      * @param {string} id
      * @param {string} newName
      * @param {string} parentId  空字符串表示一级分类
+     * @param {string} newIcon  新图标（可选，仅一级分类使用）
      */
-    renameCategory: function (id, newName, parentId) {
+    renameCategory: function (id, newName, parentId, newIcon) {
         var data = DataSourceManager.getPrivateData();
         if (!data) return;
 
         var cats = data.categories;
         if (!parentId) {
+            // 更新一级分类
             for (var i = 0; i < cats.length; i++) {
                 if (cats[i].id === id) {
                     cats[i].name = newName;
+                    // 如果提供了新图标，则更新图标
+                    if (newIcon) {
+                        cats[i].icon = newIcon;
+                    }
                     break;
                 }
             }
         } else {
+            // 更新子分类
             for (var j = 0; j < cats.length; j++) {
                 if (cats[j].id === parentId && cats[j].children) {
                     for (var k = 0; k < cats[j].children.length; k++) {
