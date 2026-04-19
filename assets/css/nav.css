@@ -17,7 +17,7 @@
     margin-right: 10px;
     width: 32px;
     height: 32px;
-    border-radius: 50%;
+    border-radius: 0; /* 改这里，0 = 直角，50% = 圆形 */
     object-fit: cover;
 }
 /* 卡片内容区用 flex 垂直居中，替代原来的 absolute+translateY */
