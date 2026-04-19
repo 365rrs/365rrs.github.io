@@ -225,6 +225,10 @@ var Renderer = {
         var logo = normalizeLogo(site.logo);
         var isPrivate = DataSourceManager.getActive() === 'private';
 
+        // 获取当前列数配置对应的栅格类
+        var columns = ColumnsManager.getColumns();
+        var colClass = ColumnsManager.getColumnClass(columns);
+
         // 删除按钮（仅私有数据源显示）
         // 使用内联 onclick 直接调用删除函数，并阻止冒泡
         var deleteBtn = isPrivate
@@ -237,7 +241,7 @@ var Renderer = {
               'title="删除此书签">&times;</span>'
             : '';
 
-        return '<div class="col-sm-3">' +
+        return '<div class="' + colClass + '">' +
             '<div class="xe-widget xe-conversations box2 label-info bookmark-card"' +
             ' onclick="window.open(\'' + url.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\', \'_blank\')"' +
             ' data-toggle="tooltip"' +
@@ -379,46 +383,92 @@ var Renderer = {
 };
 
 /* ----------------------------------------------------------
-   ThemeManager 模块 - 主题切换
+   ColumnsManager 模块 - 每行显示数量配置
    ---------------------------------------------------------- */
-var ThemeManager = {
+var ColumnsManager = {
+
+    // 列数配置：4列(col-sm-3), 6列(col-sm-2), 12列(col-sm-1)
+    // Bootstrap 栅格系统：12列总宽度，col-sm-3 = 12/4 = 3份宽度
+    configs: [
+        { columns: 4, class: 'col-sm-3', label: '4列' },
+        { columns: 6, class: 'col-sm-2', label: '6列' },
+        { columns: 12, class: 'col-sm-1', label: '12列' }
+    ],
 
     /**
-     * 获取当前主题
-     * @returns {string} "dark" | "light"
+     * 获取当前列数配置
+     * @returns {number} 4 | 6 | 12
      */
-    getTheme: function () {
-        return localStorage.getItem(wsKey('theme')) || 'dark';
+    getColumns: function () {
+        var saved = localStorage.getItem(wsKey('columns'));
+        return saved ? parseInt(saved, 10) : 4;
     },
 
     /**
-     * 应用主题
-     * @param {string} theme  "dark" | "light"
+     * 获取列数对应的 Bootstrap 栅格类
+     * @param {number} columns
+     * @returns {string}
      */
-    applyTheme: function (theme) {
-        var $body = $('body');
+    getColumnClass: function (columns) {
+        for (var i = 0; i < ColumnsManager.configs.length; i++) {
+            if (ColumnsManager.configs[i].columns === columns) {
+                return ColumnsManager.configs[i].class;
+            }
+        }
+        return 'col-sm-3'; // 默认 4 列
+    },
+
+    /**
+     * 获取列数对应的标签文字
+     * @param {number} columns
+     * @returns {string}
+     */
+    getColumnLabel: function (columns) {
+        for (var i = 0; i < ColumnsManager.configs.length; i++) {
+            if (ColumnsManager.configs[i].columns === columns) {
+                return ColumnsManager.configs[i].label;
+            }
+        }
+        return '4列';
+    },
+
+    /**
+     * 应用列数配置
+     * @param {number} columns
+     */
+    applyColumns: function (columns) {
+        localStorage.setItem(wsKey('columns'), columns);
+        $('#columns-label').text(ColumnsManager.getColumnLabel(columns));
         
-        if (theme === 'light') {
-            // 浅色主题：添加 skin-light 类（自定义样式，背景色与主内容区一致）
-            $body.removeClass('skin-white skin-navy skin-aero skin-facebook skin-turquoise skin-lime skin-green skin-purple skin-concrete skin-watermelon skin-lemonade');
-            $body.addClass('skin-light');
-            $('#theme-label').text('深色');
-        } else {
-            // 深色主题：移除所有 skin 类（使用默认深色）
-            $body.removeClass('skin-light skin-white skin-navy skin-aero skin-facebook skin-turquoise skin-lime skin-green skin-purple skin-concrete skin-watermelon skin-lemonade');
-            $('#theme-label').text('浅色');
+        // 重新渲染页面以应用新的列数
+        var activeSource = DataSourceManager.getActive();
+        DataSourceManager.load(activeSource)
+            .done(function (data) {
+                Renderer.render(data);
+                Searcher.init();
+            });
+    },
+
+    /**
+     * 切换到下一个列数配置
+     */
+    toggleColumns: function () {
+        var current = ColumnsManager.getColumns();
+        var currentIndex = -1;
+        
+        // 找到当前配置的索引
+        for (var i = 0; i < ColumnsManager.configs.length; i++) {
+            if (ColumnsManager.configs[i].columns === current) {
+                currentIndex = i;
+                break;
+            }
         }
         
-        localStorage.setItem(wsKey('theme'), theme);
-    },
-
-    /**
-     * 切换主题
-     */
-    toggleTheme: function () {
-        var current = ThemeManager.getTheme();
-        var target = current === 'dark' ? 'light' : 'dark';
-        ThemeManager.applyTheme(target);
+        // 切换到下一个配置（循环）
+        var nextIndex = (currentIndex + 1) % ColumnsManager.configs.length;
+        var nextColumns = ColumnsManager.configs[nextIndex].columns;
+        
+        ColumnsManager.applyColumns(nextColumns);
     }
 };
 
@@ -582,7 +632,7 @@ var Searcher = {
      */
     filter: function (keyword) {
         if (!keyword) {
-            $('.xe-widget').closest('.col-sm-3').show();
+            $('.xe-widget').parent().show();
             $('.category-section').show();
             $('#no-results').hide();
             return;
@@ -616,15 +666,15 @@ var Searcher = {
             }
 
             if (matched) {
-                $widget.closest('.col-sm-3').show();
+                $widget.parent().show();
                 totalVisible++;
             } else {
-                $widget.closest('.col-sm-3').hide();
+                $widget.parent().hide();
             }
         });
 
         $('.category-section').each(function () {
-            var hasVisible = $(this).find('.col-sm-3:visible').length > 0;
+            var hasVisible = $(this).find('.xe-widget:visible').length > 0;
             $(this).toggle(hasVisible);
         });
 
@@ -639,9 +689,9 @@ $(document).ready(function () {
     // 记录当前应用版本到 localStorage
     localStorage.setItem('ws_app_version', APP_VERSION);
 
-    // 应用保存的主题
-    var savedTheme = ThemeManager.getTheme();
-    ThemeManager.applyTheme(savedTheme);
+    // 应用保存的列数配置
+    var savedColumns = ColumnsManager.getColumns();
+    $('#columns-label').text(ColumnsManager.getColumnLabel(savedColumns));
 
     var activeSource = DataSourceManager.getActive();
     DataSourceManager._updateLabel(activeSource);
@@ -667,10 +717,10 @@ $(document).ready(function () {
         DataSourceManager.switchTo(target);
     });
 
-    // 主题切换按钮
-    $('#theme-btn').on('click', function (e) {
+    // 列数切换按钮
+    $('#columns-btn').on('click', function (e) {
         e.preventDefault();
-        ThemeManager.toggleTheme();
+        ColumnsManager.toggleColumns();
     });
 
     // 自动同步：读取 ws_sync_config
