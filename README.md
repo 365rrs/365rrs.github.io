@@ -1,193 +1,376 @@
-Webstack网址导航
-===
-### Demo: [➡️ www.webstack.cc](https://webstack.cc)
+# Webstack 网址导航
 
-QQ群交流：304584722 ; QQ交流群2：740911918
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/WebStackPage/WebStackPage.github.io.svg?style=social&label=Star)](https://github.com/WebStackPage/WebStackPage.github.io)
 
-本项目这是一个网址导航网站，内容均由[viggo](https://www.viggoz.com)收集并整理。本项目前端基于bootstrap前端框架开发，各后台及主题版本由广大网友提供。
+### 在线演示: [➡️ https://365rrs.top/](https://365rrs.top/)
 
-下面提供了多种主题及后台版本供大家选择，感谢各位GitHub网友无私贡献🙏，具体各版本后台使用方法请查看对应的开源说明文档！
+一个面向设计师的静态网址导航/书签目录站点，收录 UI 设计资源、灵感画廊、设计工具、字体、Mockup、教程及 UED 团队博客等优质链接。
 
-注意⚠️：以下webstack所有项目均为开源项目，webstack没有任何Pro版本或专业版本！
+**纯前端实现，无需后端，开箱即用！**
 
 ![](http://www.webstack.cc/assets/images/preview.gif)
 
-这是一个开源的公益项目，你可以拿来制作自己的网址导航，也可以做与导航无关的网站。如果你有任何疑问，可以通过个人网站[viggoz.com](https://www.viggoz.com)中的联系方式找到我，欢迎与我交流分享。
-
-声明
-===
-"一导航"未经允许推出的“Webstack Pro 版本”付费导航主题，跟本项目没有任何关系，在此解答[类似 Issues](https://github.com/WebStackPage/WebStackPage.github.io/issues/89)，已经和该公司多次沟通，该公司始终没有移除所有“Webstack Pro”相关名称，在这里郑重声明。
-目前 Webstack 已经有数十种完全免费开源后端版本，数十位共建者在维护本项目，本项目尊重各位共建者劳动成果实现盈利，但不鼓励任何盗用 **WebstackPro** 名义盈利的行为。
-
-![](https://github.com/WebStackPage/WebStackPage.github.io/blob/master/assets/images/webstack_no_pro.png)
-
-欢迎加群一起学习交流技术
 ---
-|Q群(304584722)|Q群2(740911918)|
-|--|--|
-|![](http://www.webstack.cc/assets/images/qqgroup_webstack.jpg)|![](http://www.webstack.cc/assets/images/qqgroup_webstack2.jpg)|
 
-怎么用?
+## 📢 关于本项目
+
+本项目基于 [WebStackPage/WebStackPage.github.io](https://github.com/WebStackPage/WebStackPage.github.io) 进行二次开发。
+
+**特别鸣谢：**
+- 原项目作者：[Viggo](https://www.viggoz.com)
+- 二开工具：[Kiro](https://kiro.ai) - 一款强大的 AI 辅助开发工具，全程使用 Kiro 完成本次二次开发
+
+> Kiro 是一款优秀的 AI 编程助手，能够显著提升开发效率，强烈推荐！
+
 ---
-你可以像我一样直接使用静态托管形式，如果你需要一个后台系统方便管理，可以参考下面的第二第三种解决方案：
-#### 方法1. 使用静态托管
-最简单快速上线自己的导航网站，你可以直接**下载**本项目修改内容既可部署上线。
 
-#### 方法2. 使用 Wordpress 主题搭建系统🔥(感谢[@owen0o0](https://github.com/hui-ho)提供)
-开源地址：https://github.com/owen0o0/WebStack
+## ✨ 核心特性
 
-**注意：付费版本和本项目没任何关系，售后问题请找作者** 
+- 🚀 **纯静态部署** - 无构建系统、无包管理器、无编译步骤，直接编辑推送即可部署
+- 📊 **数据驱动** - 书签数据存储在 JSON 文件，通过 JavaScript 动态渲染页面
+- 🔄 **双数据源** - 支持默认数据源（只读 JSON）+ 私有数据源（localStorage）
+- 🎨 **管理面板** - 内置书签/分类管理、导入/导出、阿里云 OSS 云端同步
+- 🔍 **智能搜索** - 支持中文名称、拼音全拼、拼音首字母匹配
+- 📱 **响应式设计** - 基于 Bootstrap 3.x，完美适配各种设备
+- ☁️ **云端同步** - 支持阿里云 OSS 自动同步，多端数据共享
 
-#### 方法3. 使用基于 Laravel 搭建的后台系统🔥(感谢[@hui-ho](https://github.com/hui-ho)提供)
-开源地址：https://github.com/hui-ho/WebStack-Laravel
-
-Docker部署版本:https://hub.docker.com/r/arvon2014/webstack-laravel
-
-#### 方法4. Hexo主题  
-开源地址： https://github.com/HCLonely/hexo-theme-webstack
-
-#### 方法5.1 Hugo主题一🔥
-开源地址：https://github.com/shenweiyan/WebStack-Hugo
-
-安装说明：https://www.yuque.com/shenweiyan/cookbook/webstack-hugo
-
-#### 方法5.2 Hugo主题二
-开源地址： https://github.com/iplaycode/webstack-hugo
-
-主题演示： https://iplaycode.github.io/nav/
-
-#### 方法6. 基于Java开发的后台系统🔥(感谢[@jsnjfz](https://github.com/jsnjfz)提供)
-开源地址：https://github.com/jsnjfz/WebStack-Guns
-
-#### 方法7. springboot后台 Nikati-WebStack-Guns ❤️ (感谢[Nikati \(Nikati\)](https://github.com/Nikati)提供)
-开源地址：https://github.com/Nikati/WebStack-Guns-NKT
-
-#### 方法8.1 使用 Jekyll 版本的后台🔥(感谢[@0xl2oot](https://github.com/0xl2oot)提供)
-开源地址：[https://github.com/0xl2oot/webstack-jekyll](https://github.com/0xl2oot/webstack-jekyll)
-
-#### 方法8.2 从Chrome书签生成Jekyll版本配置的工具
-体验网址： https://w.hanxi.info/convert.html
-
-开源地址： https://github.com/hanxi/webstack-jekyll
-
-#### 方法9.1 钻芒二开Typecho主题
-开源地址：https://www.zmki.cn/5366.html
-
-比较详细的安装教程：https://www.waoww.com/typecho-theme/zmki-webstack.html
-
-预览地址：https://tool.zmki.cn/
-
-#### 方法9.2 SEOGO二开Typecho主题
-开源地址：[https://www.seogo.me/muban/webstack.html](https://www.seogo.me/muban/webstack.html)
-
-#### 方法10. 静态博客Gridea主题 
-开源地址: https://github.com/lmm214/gridea-theme-webstack
-
-在线预览: https://edui.fun/
-
-#### 方法11. VUE版本
-开源地址: https://github.com/Anjaxs/WebStack-vue/tree/master
-
-#### 方法12. flask-blog-platform
-开源地址: https://github.com/shitianfang/flask-blog-platform/tree/master
-
-#### 方法13. 基于 Golang 开发的后台系统🔥 Webstack-Go (感谢[@ch3nnn](https://github.com/ch3nnn)提供)
-开源地址: https://github.com/ch3nnn/webstack-go
-
-#### 方法14. 自己写后台系统
-可以按照自己的喜好和框架搭建后台系统，也可以参考我设计好的后台框架自行搭建。本站设计开发过程在我的博客文章有详细讲到[《webstack \| viggo》](http://blog.viggoz.com/2018/01/03/2018-01-03-webstack/)。静态源码（半成品）：[https://github.com/WebStackPage/webstack-Admin](https://github.com/WebStackPage/webstack-Admin)
-
-如果你有更好的解决方案，并且能够开源供大家使用，可以在本项目提Issus，或者直接通过我个人网站中的联系方式联系我。
-
-JUST DOWNLOAD AND DO WHAT THE FUCK YOU WANT TO.
-
-
-
-关于图片资源
 ---
-```/assets/images/logos/default.png``` 这是网站标签的默认图标
 
-```/assets/images/logos``` 这里是所有网站内的图标切图，尺寸均为120px*120px
+## 📦 技术栈
 
-```/assets/webstack_logos.sketch``` 这是网站标签收录的所有图标设计源文件，你可以在这里[下载](https://WebStackPage.github.io/assets/webstack_logos.sketch) 。打开前请确认Sketch版本高于50.2(55047)
+| 技术 | 版本 | 说明 |
+|------|------|------|
+| jQuery | 1.11.1 | DOM 操作、事件处理、AJAX |
+| Bootstrap | 3.x | 栅格系统、组件、Modal |
+| TweenMax | - | 侧边栏动画、滚动效果 |
+| lozad.js | - | 图片懒加载 |
+| pinyin-pro | 3.x | 中文拼音搜索支持 |
+| Xenon Theme | - | 管理后台 UI 主题 |
 
-优秀项目示例
 ---
-本项目开源已经有一年多，陆续有很多小伙伴使用这个主题制作了自己的导航网站，下面列出了一些我知道的基于webstack或者使用webstack主题开发的项目，都是做的比较好的一些小伙伴，供大家借鉴。也欢迎各位开发者把自己的项目加进来~ 发 Pull Request 或 Issue 即可 
-（入选标准：必须是webstack项目相关的网站）
 
-| 状态 | 网站名 | 网址 |
-| --- | --- | --- |
-| ✅已上线 | 狼牌工作网址导航 | [https://www.volf.club/](https://www.volf.club/) |
-| ✅已上线 | 广告人导航 - 广告没门 | [https://adnodoor.com/nav/](https://adnodoor.com/nav/) |
-| ✅已上线 | 互联网资源库房 | [库房369-互联网资源库房](https://kf369.cn/) |
-| ✅已上线 | ShareHub - 资源和工具的集合 | [https://www.gezhipu.com/cn/index.html](https://www.gezhipu.com/cn/index.html) |
-| ✅已上线 | 程序员网址导航 | [https://web.hujiangtao.cn/](https://web.hujiangtao.cn/) |
-| 🕗开发中 | PMGEEK | [http://pmgeek.net/](http://pmgeek.net/) |
-| ❌已下线 | 造作家 | [造作家](https://www.hitsz.top/) |
-| ❌已下线 | 谢週五の导航站 | [谢週五の导航站 - 5nav.ml](https://5nav.ml/) |
-| ❌已下线 | 码灵导航 - 一个帮助开发者成长的程序员网址导航 | [https://nav.imaring.com/](https://nav.imaring.com/) |
-| ❌已下线 | 币门 | [币门 通向加密货币之门](https://www.bimen.com/) |
-| ❌已下线 | 聚BT - 聚合最优质的BT、磁力资源 | [聚BT - 聚合最优质的BT、磁力资源](https://www.jubt.net/cn/index.html) |
-| ❌已下线 | Azt's 导航网站 | [Azt's 导航网站](https://bookmark.cwenyu.net/) |
-| ❌已下线 | moshuxv | [moshuxv.xyz](https://moshuxv.xyz/) |
-| ❌已下线 | 高效搜罗 - 精准的职业导航 | [http://gaoxiaosouluo.cn/](http://gaoxiaosouluo.cn/) |
-| ❌已下线 | 卖家大全 - 最全卖家导航 | [http://maijiadaquan.com/](http://maijiadaquan.com/) |
-| ❌已下线 | 魔米导航 | [魔米导航 - 精品网址导航](http://www.nmomi.com/) |
-| ❌已下线 | 电力行业的网站导航 | [万家灯火，有你有我](http://zhiliaopower.cn/) |
-| ❌已下线 | 域名购买&域名商场&行业导航 | [http://www.yichushou.com/](http://www.yichushou.com/) |
-| ❌已下线 | 杏map | [http://xx-map.com/](http://xx-map.com/) |
-| ❌已下线 | DreamThere - 梦想导航 | [https://nav.dreamthere.com/](https://nav.dreamthere.com/) |
-| ❌已下线 | JKnear导航 - 建筑结构设计导航 | [http://jk.jknear.com:777/](http://jk.jknear.com:777/) |
-| ❌已下线 | site navigation – QAOZEN | [https://qaozen.com/nav/](https://qaozen.com/nav/) |
-| ❌已下线 | 我的收藏夹 - 个人网址导航站 | [https://www.kukiliao.com/](https://www.kukiliao.com/) |
-| ❌已下线 | vv.lc - 网址导航 | [http://vv.lc/](http://vv.lc/) |
-| ❌已下线 |Pandaroll.cn 网址导航 | [Pandaroll\.cn 网址导航](http://pandaroll.cn/cn/index.html) |
-| ❌已下线 | Link - 我的网址收藏夹 | [Link - 我的网址收藏夹](https://link.jianrry.com) |
-| ❌已下线 | 77导航 | [77导航](https://nav.dig77.com/) |
-| ❌已下线 | 牛导航 - 实用工具导航 | [http://ziliao6.com/](http://ziliao6.com/) |
-| ❌已下线 | QAdoc - 测试工作者导航 | [http://nav.qadoc.org/cn/index.html](http://nav.qadoc.org/cn/index.html) |
-| ❌已下线 | t.hiihi | [http://t.hiihi.cn/](http://t.hiihi.cn/) |
-| ❌已下线 | hytale导航 | [https://www.hytale-nav.com/](https://www.hytale-nav.com/) |
-| ❌已下线 |英阅导航 | [英阅网址导航](http://enreading.ishare20.net/) |
-| ❌已下线 |小猪猪导航 | [小猪猪导航](http://xzz11.xyz/cn/index.html) |
-| ❌已下线 |有钱导航 | [有钱导航](http://www.youqiandaohang.com/) |
-| ❌已下线 |创意探手导航 | [创意探手导航](http://tans119.com/) |
-| ❌已下线 |126云导航 | [126云导航 \- 最好用的浏览器主页](http://www.126yun.cn//) |
-| ❌已下线 |qiqijiavip | [http://www.qiqijiavip.com](http://www.qiqijiavip.com) |
-| ❌已下线 | zou0 | [http://www.zou0.com/cn/index.html](http://www.zou0.com/cn/index.html) |
-| ❌已下线 | Matrix Navigation | [Matrix Navigation \-](https://navi.sh-oo.com/) |
-| ❌已下线 | lerso.cn | [http://lerso.cn/](http://lerso.cn/) |
-| ❌已下线 | dh.wdj.pw | [WebStack\.cc \- 设计师网址导航](https://dh.wdj.pw/cn/index.html) |
-| ❌已下线 | wukandy.cn | [https://wukandy.cn/](https://wukandy.cn/) |
-| ❌已下线 | 奇客数码导航 - 专注IT自媒体导航网站 | [https://nav.qikepai.cn/](https://nav.qikepai.cn/) |
-| ❌已下线 | 7299导航 | [https://www.mmbbao.com/](https://www.mmbbao.com/) |
-| ❌已下线 | 东莞理工学习导航 | [http://gd.dgut.top/cn/index2.html](http://gd.dgut.top/cn/index2.html) |
-| ❌已下线 | Dapp公园 | [http://xdapp.pw/](http://xdapp.pw/) |
-| ❌已下线 | zero-null | [https://zero-null.github.io/works/cn/index.html](https://zero-null.github.io/works/cn/index.html) |
-| ❌已下线 | alabom.top | [http://alabom.top/cn/index.html](http://alabom.top/cn/index.html) |
-| ❌已下线 | 水木清华 | [水木清华](https://www.open985.com/) |
-| ❌已下线 | 新媒体百宝箱 | [新媒体百宝箱](https://www.xmtbbx.com/) |
-| ❌已下线 | 酸奶 - 广告运营从业者类别导航 | [酸奶 \- 专注广告运营从业者类别导航](http://about.edu233.cn/) |
-| ❌已下线 | AVI导航 - 一键到达好去处 | [https://www.avi101.com/](https://www.avi101.com/) |
-| ❌已下线 | 京东运营网址导航 | [http://miyue1980.com/](http://miyue1980.com/) |
-| ❌已下线 | 快导航 - 简单的网址导航大全 | [https://wukandy.cn/](https://wukandy.cn/) |
-| ❌已下线 | 喵帕斯 - 喵帕斯导航页 | [http://naspro.cc/](http://naspro.cc/) |
-| ❌已下线 | tool - wxuegao | [http://tool.wxuegao.com/](http://tool.wxuegao.com/) |
-| ❌已下线 | 浮生论坛 \- 念念不忘，必有回响 | [浮生论坛 \- 念念不忘，必有回响](https://fusfun.club/cn/index.html) |
-## License
+## 🚀 快速开始
 
-Copyright © 2017-2023 **[webstack.cc](https://webstack.cc)** Released under the **MIT License**.
+### 方法 1：直接使用（推荐）
 
-> 注：本站开源的目的是大家能够在本站的基础之上有所启发，做出更多新的东西。并不是让大家照搬所有代码。
-> 如果你使用这个开源项目，请**注明**本项目开源地址。
+1. **克隆或下载项目**
+   ```bash
+   git clone https://github.com/WebStackPage/WebStackPage.github.io.git
+   cd WebStackPage.github.io
+   ```
 
-Screenshot 📷
+2. **修改书签数据**
+   
+   编辑 `assets/data/default.json`，添加你的网站：
+   ```json
+   {
+     "name": "站点名称",
+     "url": "https://example.com/",
+     "logo": "./assets/images/logos/example.png"
+   }
+   ```
+
+3. **添加 Logo 图标**
+   
+   将站点 Logo（建议 120×120px PNG）放入 `assets/images/logos/` 目录
+
+4. **部署上线**
+   
+   - **GitHub Pages**: 推送到 GitHub 仓库，启用 Pages 功能
+   - **Vercel/Netlify**: 导入仓库，自动部署
+   - **静态服务器**: 直接上传所有文件到服务器
+
+### 方法 2：使用管理面板
+
+项目内置了完整的管理面板，无需后端即可管理书签：
+
+1. 访问 `admin.html` 进入管理面板
+2. 在"书签管理"中添加/编辑/删除书签
+3. 在"分类管理"中管理分类结构
+4. 使用"导入/导出"功能备份数据
+5. 配置"OSS 同步"实现云端备份
+
 ---
+
+## 📁 项目结构
+
+```
+/
+├── index.html              # 主导航页
+├── about.html              # 关于页
+├── admin.html              # 管理面板入口
+├── 404.html                # 自定义 404 页
+├── CNAME                   # 自定义域名配置
+│
+├── admin/                  # 管理面板页面
+│   ├── bookmarks.html      # 书签管理
+│   ├── categories.html     # 分类管理
+│   ├── import-export.html  # 导入导出
+│   ├── oss-config.html     # OSS 配置
+│   └── sync.html           # 数据同步
+│
+└── assets/
+    ├── css/                # 样式文件
+    │   ├── nav.css         # 自定义样式
+    │   ├── admin.css       # 管理面板样式
+    │   └── xenon-*.css     # Xenon 主题样式
+    │
+    ├── js/                 # JavaScript 文件
+    │   ├── app.js          # 核心应用逻辑
+    │   ├── admin.js        # 管理面板逻辑
+    │   └── xenon-*.js      # Xenon 主题脚本
+    │
+    ├── data/               # 数据文件
+    │   ├── default.json    # 默认书签数据
+    │   └── logos-list.json # Logo 文件列表
+    │
+    ├── html/               # 工具页面
+    │   ├── json-formatter.html
+    │   ├── mybatis-sql-parser.html
+    │   └── ...
+    │
+    └── images/             # 图片资源
+        └── logos/          # 站点 Logo（258+ 个）
+```
+
+---
+
+## 📝 数据结构
+
+`assets/data/default.json` 数据格式：
+
+```json
+{
+  "categories": [
+    {
+      "id": "cat-recommend",
+      "name": "常用推荐",
+      "icon": "linecons-star",
+      "sites": [
+        {
+          "name": "Dribbble",
+          "url": "https://dribbble.com/",
+          "logo": "./assets/images/logos/dribbble.png"
+        }
+      ]
+    },
+    {
+      "id": "cat-inspiration",
+      "name": "灵感采集",
+      "icon": "linecons-lightbulb",
+      "children": [
+        {
+          "id": "cat-product",
+          "name": "发现产品",
+          "sites": [...]
+        }
+      ]
+    }
+  ]
+}
+```
+
+**支持两级分类：**
+- 一级分类直接包含 `sites` 数组
+- 或包含 `children` 数组（子分类，每个子分类包含 `sites`）
+
+---
+
+## 🎨 自定义配置
+
+### 修改应用版本
+
+编辑 `assets/js/app.js`，更新版本号（用于 localStorage 隔离）：
+
+```javascript
+var APP_VERSION = 'v20260418';  // 格式：vYYYYMMDD
+```
+
+### 添加新分类
+
+在 `default.json` 的 `categories` 数组中添加：
+
+```json
+{
+  "id": "cat-new",
+  "name": "新分类",
+  "icon": "linecons-star",  // 使用 Linecons 图标类名
+  "sites": [...]
+}
+```
+
+### 可用图标字体
+
+- **Font Awesome** - 前缀 `fa-`（如 `fa-star`）
+- **Linecons** - 前缀 `linecons-`（如 `linecons-star`）
+- **Elusive Icons** - 前缀 `el-`
+- **Meteocons** - 前缀 `meteocons-`
+- **Glyphicons** - 前缀 `glyphicon-`
+
+### 自定义样式
+
+编辑 `assets/css/nav.css`：
+
+```css
+.box2 {
+  /* 书签卡片样式 */
+  height: 56px;
+  border-radius: 4px;
+}
+
+.box2:hover {
+  /* 悬浮效果 */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+```
+
+---
+
+## 🔧 核心功能
+
+### 1. 双数据源系统
+
+- **默认数据源**: `assets/data/default.json`（只读）
+- **私有数据源**: 存储在 `localStorage`（可编辑）
+- 通过顶部导航栏切换数据源
+
+### 2. 智能搜索
+
+支持三种搜索方式：
+- 中文名称匹配：`花瓣`
+- 拼音全拼匹配：`huaban`
+- 拼音首字母匹配：`hb`
+
+### 3. 云端同步
+
+配置阿里云 OSS 后，支持：
+- 自动版本比较
+- 增量数据同步
+- 多端数据共享
+- 定时自动同步
+
+### 4. 图片懒加载
+
+使用 lozad.js 实现：
+```html
+<img data-src="./assets/images/logos/xxx.png" class="lozad" />
+```
+
+---
+
+## 🌐 部署指南
+
+### GitHub Pages
+
+1. Fork 本仓库
+2. 在仓库设置中启用 GitHub Pages
+3. 选择 `main` 分支作为源
+4. 访问 `https://your-username.github.io/repo-name`
+
+### 自定义域名
+
+1. 在项目根目录创建 `CNAME` 文件
+2. 写入你的域名：`example.com`
+3. 在域名 DNS 设置中添加 CNAME 记录指向 GitHub Pages
+
+### Vercel 部署
+
+1. 导入 GitHub 仓库到 Vercel
+2. 无需配置，自动部署
+3. 获得 `.vercel.app` 域名或绑定自定义域名
+
+### Netlify 部署
+
+1. 连接 GitHub 仓库到 Netlify
+2. 构建命令留空（纯静态项目）
+3. 发布目录设置为 `/`（根目录）
+
+---
+
+## 📷 截图展示
+
 ![](http://www.webstack.cc/assets/images/webstack_banner_cn.png)
 ![](http://7xnb6x.com1.z0.glb.clouddn.com/webstack-03-Introduction.png)
 ![](http://7xnb6x.com1.z0.glb.clouddn.com/webstack-04-infomation.png)
 ![](http://7xnb6x.com1.z0.glb.clouddn.com/webstack-05-production.png)
 ![](http://7xnb6x.com1.z0.glb.clouddn.com/webstack-06-production2.png)
 
+---
 
+## 🖼️ 图片资源说明
+
+- `/assets/images/logos/default.png` - 网站标签的默认图标
+- `/assets/images/logos/` - 所有网站图标切图，尺寸均为 120px×120px
+- `/assets/webstack_logos.sketch` - 图标设计源文件（[下载](https://WebStackPage.github.io/assets/webstack_logos.sketch)）
+
+> 打开 Sketch 文件需要 Sketch 版本 ≥ 50.2 (55047)
+
+---
+
+## ⚠️ 重要声明
+
+**关于 "Webstack Pro" 付费版本：**
+
+"一导航"未经允许推出的 "Webstack Pro 版本" 付费导航主题，**与本项目没有任何关系**。已经和该公司多次沟通，该公司始终没有移除所有 "Webstack Pro" 相关名称，在此郑重声明。
+
+![](https://github.com/WebStackPage/WebStackPage.github.io/blob/master/assets/images/webstack_no_pro.png)
+
+**本项目立场：**
+- ✅ WebStack 所有项目均为**完全免费开源**
+- ✅ WebStack **没有任何 Pro 版本或专业版本**
+- ✅ 尊重各位共建者劳动成果实现盈利
+- ❌ 不鼓励任何盗用 "WebstackPro" 名义盈利的行为
+
+---
+
+## 📄 开源协议
+
+Copyright © 2017-2026 **[webstack.cc](https://webstack.cc)** 
+
+Released under the **MIT License**.
+
+> **注意事项：**
+> 
+> 本站开源的目的是大家能够在本站的基础之上有所启发，做出更多新的东西。并不是让大家照搬所有代码。
+> 
+> 如果你使用这个开源项目，请**注明**本项目开源地址。
+
+---
+
+## 🤝 贡献指南
+
+欢迎贡献代码、提交 Issue 或 Pull Request！
+
+1. Fork 本仓库
+2. 创建你的特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交你的修改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 开启一个 Pull Request
+
+---
+
+## 📮 联系方式
+
+- 原项目作者：[Viggo](https://www.viggoz.com)
+- 原项目博客：[blog.viggoz.com](http://blog.viggoz.com)
+- 原项目主页：[webstack.cc](https://webstack.cc)
+- 原项目仓库：[WebStackPage/WebStackPage.github.io](https://github.com/WebStackPage/WebStackPage.github.io)
+
+**二开工具推荐：**
+- [Kiro](https://kiro.ai) - AI 辅助开发工具，本项目全程使用 Kiro 完成二次开发
+
+---
+
+**JUST DOWNLOAD AND DO WHAT THE FUCK YOU WANT TO.**
+
+⭐ 如果这个项目对你有帮助，请给个 Star 支持一下！
+
+---
+
+## 🙏 致谢
+
+- 感谢 [Viggo](https://www.viggoz.com) 创建了优秀的 WebStack 项目
+- 感谢 [Kiro](https://kiro.ai) 提供的强大 AI 开发工具支持
+- 感谢所有为开源社区做出贡献的开发者们
