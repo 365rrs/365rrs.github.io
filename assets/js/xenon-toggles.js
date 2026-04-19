@@ -120,11 +120,15 @@
 				{
 					public_vars.$sidebarMenu.removeClass('collapsed');
 					ps_init();
+					// 保存展开状态到 localStorage
+					localStorage.setItem('ws_sidebar_collapsed', 'false');
 				}
 				else
 				{
 					public_vars.$sidebarMenu.addClass('collapsed');
 					ps_destroy();
+					// 保存折叠状态到 localStorage
+					localStorage.setItem('ws_sidebar_collapsed', 'true');
 				}
 
 				$(window).trigger('xenon.resize');

@@ -40,7 +40,8 @@ function normalizeLogo(logo) {
  * @returns {string}
  */
 function wsKey(name) {
-    return 'ws_' + name + '_' + APP_VERSION;
+    // return 'ws_' + name + '_' + APP_VERSION;
+    return 'ws_' + name;
 }
 
 /* ----------------------------------------------------------

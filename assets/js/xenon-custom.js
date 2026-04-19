@@ -59,6 +59,19 @@ var public_vars = public_vars || {};
 		// Setup Sidebar Menu
 		setup_sidebar_menu();
 
+		// 恢复侧边栏折叠/展开状态
+		var sidebarCollapsed = localStorage.getItem('ws_sidebar_collapsed');
+		if(sidebarCollapsed === 'true')
+		{
+			public_vars.$sidebarMenu.addClass('collapsed');
+			ps_destroy();
+		}
+		else if(sidebarCollapsed === 'false')
+		{
+			public_vars.$sidebarMenu.removeClass('collapsed');
+			if(public_vars.$sidebarMenu.hasClass('fixed'))
+				ps_init();
+		}
 
 		// Setup Horizontal Menu
 		setup_horizontal_menu();
