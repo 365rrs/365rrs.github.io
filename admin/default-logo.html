@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="author" content="viggo" />
+    <title>WebStack 管理面板 - 默认 Logo</title>
+    <link rel="shortcut icon" href="../assets/images/favicon.png">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Arimo:400,700,400italic">
+    <link rel="stylesheet" href="../assets/css/fonts/linecons/css/linecons.css">
+    <link rel="stylesheet" href="../assets/css/fonts/fontawesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../assets/css/bootstrap.css">
+    <link rel="stylesheet" href="../assets/css/admin.css">
+    <script src="../assets/js/jquery-1.11.1.min.js"></script>
+    <script src="../assets/js/admin-nav.js"></script>
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+        <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body class="admin-body">
+
+    <!-- 主体布局 -->
+    <div class="admin-container">
+
+        <!-- 右侧内容区 -->
+        <div class="admin-content">
+
+            <!-- 默认 Logo 管理面板 -->
+            <div class="admin-panel active" id="panel-default-logo">
+
+                <!-- 说明区块 -->
+                <div class="ie-block">
+                    <div class="ie-block-title">🖼️ 默认 Logo 设置</div>
+                    <p class="ie-block-desc">
+                        当书签没有指定 logo 图片时，将使用此默认 logo 作为占位图标。<br>
+                        设置保存在浏览器本地存储（localStorage）中，仅对当前浏览器生效。
+                    </p>
+                </div>
+
+                <!-- 当前默认 Logo 预览 -->
+                <div class="ie-block">
+                    <div class="ie-block-title">当前默认 Logo</div>
+                    <div style="display:flex;align-items:center;gap:16px;padding:12px 0;">
+                        <div style="width:80px;height:80px;border:2px solid #e4ecf3;border-radius:8px;display:flex;align-items:center;justify-content:center;background:#f8fafc;flex-shrink:0;">
+                            <img id="current-logo-preview" src="../assets/images/favicon.png" style="max-width:64px;max-height:64px;object-fit:contain;">
+                        </div>
+                        <div style="flex:1;">
+                            <div style="font-size:13px;color:#7a8fa8;margin-bottom:4px;">Logo 路径：</div>
+                            <div id="current-logo-path" style="font-size:14px;color:#2c3e50;font-family:'Courier New',monospace;word-break:break-all;">
+                                ./assets/images/favicon.png
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 修改默认 Logo -->
+                <div class="ie-block">
+                    <div class="ie-block-title">修改默认 Logo</div>
+                    
+                    <!-- 方式 1：从本地 logos 文件夹选择 -->
+                    <div style="margin-bottom:20px;">
+                        <div style="font-size:13px;font-weight:600;color:#2c3e50;margin-bottom:8px;">
+                            <i class="fa fa-folder-open" style="margin-right:6px;color:#5a7fa8;"></i>
+                            方式 1：从本地 logos 文件夹选择
+                        </div>
+                        <button class="btn btn-primary" id="btn-pick-from-logos">
+                            <i class="fa fa-folder-open"></i> 打开 Logo 选择器
+                        </button>
+                    </div>
+
+                    <!-- 方式 2：手动输入路径 -->
+                    <div>
+                        <div style="font-size:13px;font-weight:600;color:#2c3e50;margin-bottom:8px;">
+                            <i class="fa fa-pencil" style="margin-right:6px;color:#5a7fa8;"></i>
+                            方式 2：手动输入图片路径
+                        </div>
+                        <div style="display:flex;gap:8px;align-items:flex-start;">
+                            <div style="flex:1;">
+                                <input type="text" class="form-control" id="input-logo-path" placeholder="例如：./assets/images/logos/dribbble.png">
+                                <p class="help-block" style="margin:4px 0 0;font-size:12px;color:#a0aab4;">
+                                    支持相对路径或绝对 URL
+                                </p>
+                            </div>
+                            <button class="btn btn-primary" id="btn-save-custom-path">
+                                <i class="fa fa-save"></i> 保存
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 操作结果提示 -->
+                    <div id="logo-result" class="ie-result" style="display:none;margin-top:12px;"></div>
+                </div>
+
+                <!-- 重置为系统默认 -->
+                <div class="ie-block">
+                    <div class="ie-block-title">重置为系统默认</div>
+                    <p class="ie-block-desc">
+                        将默认 logo 恢复为系统初始值（favicon.png）
+                    </p>
+                    <button class="btn btn-default" id="btn-reset-logo">
+                        <i class="fa fa-undo"></i> 重置为系统默认
+                    </button>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Logo 选择器 Modal（复用书签管理的 Modal） -->
+    <div class="modal fade" id="modal-logo-picker" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    <h4 class="modal-title">选择默认 Logo</h4>
+                </div>
+                <div class="modal-body">
+                    <!-- 搜索框 -->
+                    <input type="text" class="form-control" id="logo-picker-search" placeholder="搜索 logo 名称..." style="margin-bottom:12px;">
+                    <!-- Logo 网格 -->
+                    <div id="logo-picker-grid" style="display:flex;flex-wrap:wrap;gap:8px;max-height:400px;overflow-y:auto;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/bootstrap.min.js"></script>
+    <script src="../assets/js/app.js"></script>
+    <script src="../assets/js/admin.js"></script>
+    <script>
+        $(document).ready(function () {
+            DefaultLogoManager.init();
+        });
+    </script>
+</body>
+
+</html>

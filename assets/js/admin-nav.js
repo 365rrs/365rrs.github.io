@@ -9,6 +9,7 @@ var AdminNav = (function ($) {
         { href: './bookmarks.html',     label: '&#128278; 书签管理' },
         { href: './categories.html',    label: '&#128218; 分类管理' },
         { href: './import-export.html', label: '&#128230; 导入/导出' },
+        { href: './default-logo.html',  label: '&#128444; 默认 Logo' },
         { href: './oss-config.html',    label: '&#9729;&#65039; OSS 配置' },
         { href: './sync.html',          label: '&#128260; 同步状态' }
     ];

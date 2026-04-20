@@ -19,7 +19,16 @@ var APP_VERSION = 'v20260418';
  * @returns {string}
  */
 function normalizeLogo(logo) {
-    if (!logo) return '/assets/images/logos/default.png';
+    if (!logo) {
+        // 从 localStorage 读取用户设置的默认 logo
+        var customDefault = localStorage.getItem('ws_default_logo');
+        if (customDefault) {
+            // 递归调用自身，规范化用户设置的路径
+            return normalizeLogo(customDefault);
+        }
+        // 若无自定义设置，使用系统默认（已规范化的绝对路径）
+        return '/assets/images/favicon.png';
+    }
     // 外部 URL 原样返回
     if (/^https?:\/\//i.test(logo)) return logo;
     // 已是绝对路径原样返回

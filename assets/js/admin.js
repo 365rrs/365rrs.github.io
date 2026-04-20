@@ -3826,3 +3826,232 @@ var BrowserExportManager = {
            .show();
     }
 };
+
+/* ----------------------------------------------------------
+   DefaultLogoManager 模块 — 默认 Logo 管理
+   ---------------------------------------------------------- */
+var DefaultLogoManager = {
+
+    /**
+     * 默认 logo 路径（系统初始值）
+     * 使用相对于根目录的路径，与主页保持一致
+     */
+    SYSTEM_DEFAULT_LOGO: './assets/images/favicon.png',
+
+    /**
+     * localStorage key
+     */
+    STORAGE_KEY: 'ws_default_logo',
+
+    /**
+     * 初始化
+     */
+    init: function () {
+        DefaultLogoManager._render();
+        DefaultLogoManager._bindEvents();
+    },
+
+    /**
+     * 渲染当前默认 logo
+     */
+    _render: function () {
+        var currentLogo = DefaultLogoManager.getDefaultLogo();
+        // 转换路径以适应管理面板的位置（admin/ 子目录）
+        var displayPath = DefaultLogoManager._adjustPathForAdmin(currentLogo);
+        $('#current-logo-preview').attr('src', displayPath);
+        $('#current-logo-path').text(currentLogo);
+    },
+
+    /**
+     * 调整路径以适应管理面板位置
+     * 管理面板在 admin/ 子目录下，需要将 ./assets 转换为 ../assets
+     * @param {string} path
+     * @returns {string}
+     */
+    _adjustPathForAdmin: function (path) {
+        if (!path) return path;
+        // 外部 URL 不需要调整
+        if (/^https?:\/\//i.test(path)) return path;
+        // 绝对路径不需要调整
+        if (path.charAt(0) === '/') return path;
+        // 将 ./assets 转换为 ../assets
+        if (path.indexOf('./assets') === 0) {
+            return path.replace('./assets', '../assets');
+        }
+        // 其他相对路径，添加 ../ 前缀
+        return '../' + path;
+    },
+
+    /**
+     * 绑定事件
+     */
+    _bindEvents: function () {
+        // 打开 Logo 选择器
+        $('#btn-pick-from-logos').off('click.dlogo').on('click.dlogo', function () {
+            DefaultLogoManager._openLogoPicker();
+        });
+
+        // 保存自定义路径
+        $('#btn-save-custom-path').off('click.dlogo').on('click.dlogo', function () {
+            var path = $.trim($('#input-logo-path').val());
+            if (!path) {
+                DefaultLogoManager._showResult(false, '请输入图片路径');
+                return;
+            }
+            DefaultLogoManager.setDefaultLogo(path);
+            DefaultLogoManager._showResult(true, '默认 Logo 已保存');
+            DefaultLogoManager._render();
+        });
+
+        // 重置为系统默认
+        $('#btn-reset-logo').off('click.dlogo').on('click.dlogo', function () {
+            var confirmed = confirm('确定要重置为系统默认 Logo（favicon.png）吗？');
+            if (!confirmed) return;
+            DefaultLogoManager.resetToSystemDefault();
+            DefaultLogoManager._showResult(true, '已重置为系统默认 Logo');
+            DefaultLogoManager._render();
+            $('#input-logo-path').val('');
+        });
+    },
+
+    /**
+     * 打开 Logo 选择器 Modal
+     */
+    _openLogoPicker: function () {
+        var $modal = $('#modal-logo-picker');
+        var $grid = $('#logo-picker-grid');
+        var $search = $('#logo-picker-search');
+
+        // 清空搜索框
+        $search.val('');
+
+        // 加载 logos-list.json
+        $.getJSON('../assets/data/logos-list.json').done(function (logosList) {
+            DefaultLogoManager._renderLogoGrid(logosList, $grid);
+
+            // 绑定搜索事件
+            $search.off('input.dlogo').on('input.dlogo', function () {
+                var keyword = $.trim($(this).val()).toLowerCase();
+                if (!keyword) {
+                    DefaultLogoManager._renderLogoGrid(logosList, $grid);
+                } else {
+                    var filtered = logosList.filter(function (filename) {
+                        return filename.toLowerCase().indexOf(keyword) !== -1;
+                    });
+                    DefaultLogoManager._renderLogoGrid(filtered, $grid);
+                }
+            });
+
+            // 打开 Modal
+            $modal.modal('show');
+        }).fail(function () {
+            alert('加载 Logo 列表失败，请重试。');
+        });
+    },
+
+    /**
+     * 渲染 Logo 网格
+     * @param {Array} logosList - logo 文件名数组
+     * @param {jQuery} $grid - 网格容器
+     */
+    _renderLogoGrid: function (logosList, $grid) {
+        if (!logosList || !logosList.length) {
+            $grid.html('<div style="padding:40px;text-align:center;color:#a0aab4;">未找到匹配的 Logo</div>');
+            return;
+        }
+
+        var html = '';
+        for (var i = 0; i < logosList.length; i++) {
+            var filename = logosList[i];
+            // 存储时使用相对于根目录的路径（与主页一致）
+            var logoPath = './assets/images/logos/' + filename;
+            // 显示时调整为相对于 admin/ 目录的路径
+            var displayPath = DefaultLogoManager._adjustPathForAdmin(logoPath);
+            var displayName = filename.replace(/\.(png|jpg|jpeg|gif|svg)$/i, '');
+
+            html += '<div class="logo-pick-item" data-logo-path="' + 
+                    DefaultLogoManager._escAttr(logoPath) + '">' +
+                    '<img src="' + DefaultLogoManager._escAttr(displayPath) + '" ' +
+                    'width="48" height="48" style="object-fit:contain;border-radius:4px;" ' +
+                    'alt="' + DefaultLogoManager._escAttr(displayName) + '">' +
+                    '<span>' + DefaultLogoManager._escHtml(displayName) + '</span>' +
+                    '</div>';
+        }
+        $grid.html(html);
+
+        // 绑定点击事件（事件委托）
+        $grid.off('click.dlogo').on('click.dlogo', '.logo-pick-item', function () {
+            var logoPath = $(this).data('logo-path');
+            DefaultLogoManager.setDefaultLogo(logoPath);
+            $('#modal-logo-picker').modal('hide');
+            DefaultLogoManager._showResult(true, '默认 Logo 已更新');
+            DefaultLogoManager._render();
+            $('#input-logo-path').val(logoPath);
+        });
+    },
+
+    /**
+     * 显示操作结果
+     * @param {boolean} success
+     * @param {string} message
+     */
+    _showResult: function (success, message) {
+        var $el = $('#logo-result');
+        $el.removeClass('ie-result-ok ie-result-err')
+           .addClass(success ? 'ie-result-ok' : 'ie-result-err')
+           .text(message)
+           .show();
+
+        // 3 秒后自动隐藏
+        setTimeout(function () {
+            $el.fadeOut();
+        }, 3000);
+    },
+
+    /**
+     * 获取当前默认 logo 路径
+     * @returns {string}
+     */
+    getDefaultLogo: function () {
+        var stored = localStorage.getItem(DefaultLogoManager.STORAGE_KEY);
+        return stored || DefaultLogoManager.SYSTEM_DEFAULT_LOGO;
+    },
+
+    /**
+     * 设置默认 logo 路径
+     * @param {string} logoPath
+     */
+    setDefaultLogo: function (logoPath) {
+        localStorage.setItem(DefaultLogoManager.STORAGE_KEY, logoPath);
+    },
+
+    /**
+     * 重置为系统默认
+     */
+    resetToSystemDefault: function () {
+        localStorage.removeItem(DefaultLogoManager.STORAGE_KEY);
+    },
+
+    /**
+     * HTML 转义
+     */
+    _escHtml: function (str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    },
+
+    /**
+     * 属性值转义
+     */
+    _escAttr: function (str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+};
