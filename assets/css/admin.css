@@ -631,7 +631,13 @@ html, body {
     background: #f8fafc;
 }
 
-/* logo 图片：32px 圆形 */
+/* logo 图片：32px 轻微圆角（4px）
+   圆角选项：border-radius
+   - 50% = 圆形
+   - 0 = 完全直角（无圆角）
+   - 4px/6px = 轻微圆角（推荐）
+   - 8px = 中等圆角
+*/
 .bm-site-logo {
     width: 36px;
     -webkit-flex-shrink: 0;
@@ -647,7 +653,7 @@ html, body {
 .bm-site-logo img {
     width: 32px;
     height: 32px;
-    border-radius: 50%;
+    border-radius: 0;
     object-fit: cover;
     background: #f0f4f8;
 }
@@ -1204,10 +1210,11 @@ body.modal-open {
     cursor: pointer;
 }
 
+/* 导出到浏览器 — logo 圆角选项：50%=圆形 / 0=直角 / 4px-6px=轻微 / 8px=中等 */
 .be-site-logo {
     width: 20px;
     height: 20px;
-    border-radius: 50%;
+    border-radius: 4px; /* 当前：轻微圆角 */
     object-fit: cover;
     margin-right: 8px;
     background: #f0f4f8;
