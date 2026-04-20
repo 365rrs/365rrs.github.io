@@ -172,7 +172,7 @@ var CategoryManager = {
             var mode = $('#modal-cat-mode').val();
             var name = $.trim($('#modal-cat-name').val());
             var id = $('#modal-cat-id').val();
-            var parentId = $('#modal-cat-parent-id').val();
+            var oldParentId = $('#modal-cat-parent-id').val();
 
             if (!name) {
                 alert('请输入分类名称');
@@ -183,13 +183,22 @@ var CategoryManager = {
                 var icon = $('input[name="cat-icon"]:checked').val() || 'linecons-star';
                 CategoryManager.addCategory(name, icon);
             } else if (mode === 'add-sub') {
-                CategoryManager.addSubCategory(parentId, name);
+                CategoryManager.addSubCategory(oldParentId, name);
             } else if (mode === 'rename') {
                 // 编辑一级分类：同时更新名称和图标
                 var icon = $('input[name="cat-icon"]:checked').val() || 'linecons-star';
                 CategoryManager.renameCategory(id, name, '', icon);
             } else if (mode === 'rename-sub') {
-                CategoryManager.renameCategory(id, name, parentId);
+                // 编辑子分类：检查父分类是否变更
+                var newParentId = $('#modal-cat-parent-select').val();
+                
+                if (newParentId === oldParentId) {
+                    // 父分类未变更，只重命名
+                    CategoryManager.renameCategory(id, name, oldParentId);
+                } else {
+                    // 父分类已变更，需要移动子分类
+                    CategoryManager.moveSubCategoryToParent(id, oldParentId, newParentId, name);
+                }
             }
 
             $('#modal-category').modal('hide');
@@ -211,19 +220,25 @@ var CategoryManager = {
         if (mode === 'add-top') {
             $('#modal-cat-title').text('添加一级分类');
             $('#modal-cat-icon-group').show();
+            $('#modal-cat-parent-group').hide();
             $('input[name="cat-icon"][value="linecons-star"]').prop('checked', true);
         } else if (mode === 'add-sub') {
             $('#modal-cat-title').text('添加子分类');
             $('#modal-cat-icon-group').hide();
+            $('#modal-cat-parent-group').hide();
         } else if (mode === 'rename' || mode === 'rename-sub') {
             var isTopLevel = (mode === 'rename');
-            $('#modal-cat-title').text(isTopLevel ? '编辑分类' : '重命名子分类');
+            $('#modal-cat-title').text(isTopLevel ? '编辑分类' : '编辑子分类');
             
             // 一级分类显示图标选择器，子分类隐藏
             if (isTopLevel) {
                 $('#modal-cat-icon-group').show();
+                $('#modal-cat-parent-group').hide();
             } else {
                 $('#modal-cat-icon-group').hide();
+                $('#modal-cat-parent-group').show();
+                // 填充父分类下拉框
+                CategoryManager._fillParentSelect(parentId);
             }
             
             // 预填当前名称和图标
@@ -264,6 +279,34 @@ var CategoryManager = {
             }
         }
         return null;
+    },
+
+    /**
+     * 填充父分类下拉框（编辑子分类时使用）
+     * @param {string} currentParentId  当前父分类 id
+     */
+    _fillParentSelect: function (currentParentId) {
+        var data = DataSourceManager.getPrivateData();
+        if (!data) return;
+
+        var $select = $('#modal-cat-parent-select');
+        $select.empty();
+
+        var cats = data.categories || [];
+        for (var i = 0; i < cats.length; i++) {
+            var cat = cats[i];
+            // 只列出一级分类（可以有 children 或 sites）
+            $select.append(
+                '<option value="' + CategoryManager._escAttr(cat.id) + '">' +
+                CategoryManager._escHtml(cat.name) +
+                '</option>'
+            );
+        }
+
+        // 设置当前选中值
+        if (currentParentId) {
+            $select.val(currentParentId);
+        }
     },
 
     /**
@@ -422,7 +465,10 @@ var CategoryManager = {
         if (!data) return;
 
         var cats = data.categories;
+        var parentCategory = null;
+
         if (!parentId) {
+            // 删除一级分类
             for (var i = 0; i < cats.length; i++) {
                 if (cats[i].id === id) {
                     cats.splice(i, 1);
@@ -430,13 +476,49 @@ var CategoryManager = {
                 }
             }
         } else {
+            // 删除子分类
             for (var j = 0; j < cats.length; j++) {
                 if (cats[j].id === parentId && cats[j].children) {
+                    parentCategory = cats[j];
                     for (var k = 0; k < cats[j].children.length; k++) {
                         if (cats[j].children[k].id === id) {
                             cats[j].children.splice(k, 1);
                             break;
                         }
+                    }
+                    break;
+                }
+            }
+
+            // 检查父分类的剩余子分类数量
+            if (parentCategory && parentCategory.children) {
+                if (parentCategory.children.length === 0) {
+                    // 没有子分类了，转换回纯一级结构（空书签列表）
+                    delete parentCategory.children;
+                    parentCategory.sites = [];
+                } else if (parentCategory.children.length === 1) {
+                    // 只剩 1 个子分类，提示用户是否将书签提升到一级分类
+                    var lastSub = parentCategory.children[0];
+                    var bookmarkCount = (lastSub.sites || []).length;
+                    
+                    if (bookmarkCount > 0) {
+                        var doPromote = confirm(
+                            '分类"' + parentCategory.name + '"下现在只剩 1 个子分类"' + lastSub.name + 
+                            '"（含 ' + bookmarkCount + ' 个书签），是否将这些书签直接挂到一级分类"' + 
+                            parentCategory.name + '"下？\n\n' +
+                            '点击"确定"：书签提升到一级分类，删除子分类结构\n' +
+                            '点击"取消"：保持当前的二级分类结构'
+                        );
+                        
+                        if (doPromote) {
+                            // 将唯一子分类的书签提升到一级分类
+                            parentCategory.sites = lastSub.sites || [];
+                            delete parentCategory.children;
+                        }
+                    } else {
+                        // 子分类没有书签，直接转换为纯一级结构
+                        parentCategory.sites = [];
+                        delete parentCategory.children;
                     }
                 }
             }
@@ -500,6 +582,123 @@ var CategoryManager = {
     },
 
     /**
+     * 将子分类移动到新的父分类下（编辑子分类时父分类变更）
+     * @param {string} subId        子分类 id
+     * @param {string} oldParentId  原父分类 id
+     * @param {string} newParentId  新父分类 id
+     * @param {string} newName      更新后的子分类名称
+     */
+    moveSubCategoryToParent: function (subId, oldParentId, newParentId, newName) {
+        var data = DataSourceManager.getPrivateData();
+        if (!data) return;
+
+        var cats = data.categories;
+        var subCategory = null;
+        var oldParentCategory = null;
+
+        // 1. 从原父分类中找到并删除子分类
+        for (var i = 0; i < cats.length; i++) {
+            if (cats[i].id === oldParentId && cats[i].children) {
+                oldParentCategory = cats[i];
+                for (var j = 0; j < cats[i].children.length; j++) {
+                    if (cats[i].children[j].id === subId) {
+                        // 保存子分类对象（包含所有书签）
+                        subCategory = cats[i].children[j];
+                        // 更新名称
+                        subCategory.name = newName;
+                        // 从原父分类删除
+                        cats[i].children.splice(j, 1);
+                        break;
+                    }
+                }
+                if (subCategory) break;
+            }
+        }
+
+        if (!subCategory) {
+            alert('未找到要移动的子分类');
+            return;
+        }
+
+        // 2. 检查原父分类的剩余子分类数量
+        if (oldParentCategory && oldParentCategory.children) {
+            if (oldParentCategory.children.length === 0) {
+                // 没有子分类了，转换回纯一级结构（空书签列表）
+                delete oldParentCategory.children;
+                oldParentCategory.sites = [];
+            } else if (oldParentCategory.children.length === 1) {
+                // 只剩 1 个子分类，提示用户是否将书签提升到一级分类
+                var lastSub = oldParentCategory.children[0];
+                var bookmarkCount = (lastSub.sites || []).length;
+                
+                if (bookmarkCount > 0) {
+                    var doPromote = confirm(
+                        '原分类"' + oldParentCategory.name + '"下现在只剩 1 个子分类"' + lastSub.name + 
+                        '"（含 ' + bookmarkCount + ' 个书签），是否将这些书签直接挂到一级分类"' + 
+                        oldParentCategory.name + '"下？\n\n' +
+                        '点击"确定"：书签提升到一级分类，删除子分类结构\n' +
+                        '点击"取消"：保持当前的二级分类结构'
+                    );
+                    
+                    if (doPromote) {
+                        // 将唯一子分类的书签提升到一级分类
+                        oldParentCategory.sites = lastSub.sites || [];
+                        delete oldParentCategory.children;
+                    }
+                } else {
+                    // 子分类没有书签，直接转换为纯一级结构
+                    oldParentCategory.sites = [];
+                    delete oldParentCategory.children;
+                }
+            }
+        }
+
+        // 3. 添加到新父分类
+        for (var k = 0; k < cats.length; k++) {
+            if (cats[k].id === newParentId) {
+                // 如果新父分类有 sites（纯一级），需要转换结构
+                if (cats[k].sites && cats[k].sites.length > 0) {
+                    var doConvert = confirm(
+                        '目标分类"' + cats[k].name + '"下已有 ' + cats[k].sites.length + 
+                        ' 个书签，移动子分类后这些书签将被移至新子分类"未分类"中，是否继续？'
+                    );
+                    if (!doConvert) {
+                        // 用户取消，恢复原状态（将子分类放回原父分类）
+                        for (var m = 0; m < cats.length; m++) {
+                            if (cats[m].id === oldParentId) {
+                                if (!cats[m].children) cats[m].children = [];
+                                cats[m].children.push(subCategory);
+                                break;
+                            }
+                        }
+                        return;
+                    }
+                    
+                    // 创建"未分类"子分类存放原有书签
+                    var uncategorized = {
+                        id: 'cat-' + Date.now() + '-uncategorized',
+                        name: '未分类',
+                        sites: cats[k].sites
+                    };
+                    cats[k].children = [uncategorized, subCategory];
+                    delete cats[k].sites;
+                } else if (cats[k].children) {
+                    // 已有子分类，直接追加
+                    cats[k].children.push(subCategory);
+                } else {
+                    // sites 为空，直接转换
+                    cats[k].children = [subCategory];
+                    delete cats[k].sites;
+                }
+                break;
+            }
+        }
+
+        DataSourceManager.savePrivateData(data);
+        CategoryManager.render();
+    },
+
+    /**
      * HTML 转义
      */
     _escHtml: function (str) {
@@ -508,6 +707,18 @@ var CategoryManager = {
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;');
+    },
+
+    /**
+     * 属性值转义
+     */
+    _escAttr: function (str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 };
 
@@ -808,8 +1019,8 @@ var BookmarkManager = {
         // Modal 保存按钮
         $('#modal-bm-save').off('click.bm').on('click.bm', function () {
             var mode = $('#modal-bm-mode').val();
-            var catId = $('#modal-bm-cat-id').val();
-            var parentId = $('#modal-bm-parent-id').val();
+            var oldCatId = $('#modal-bm-cat-id').val();
+            var oldParentId = $('#modal-bm-parent-id').val();
             var index = parseInt($('#modal-bm-index').val(), 10);
 
             var name = $.trim($('#modal-bm-name').val());
@@ -822,9 +1033,39 @@ var BookmarkManager = {
             var site = { name: name, url: url, logo: logo };
 
             if (mode === 'add') {
-                BookmarkManager.addSite(catId, site, parentId);
+                // 添加模式：读取用户选择的分类
+                var selectedCat = $('#modal-bm-category').val();
+                var newCatId, newParentId;
+                if (selectedCat.indexOf('::') > -1) {
+                    var parts = selectedCat.split('::');
+                    newParentId = parts[0];
+                    newCatId = parts[1];
+                } else {
+                    newCatId = selectedCat;
+                    newParentId = '';
+                }
+                BookmarkManager.addSite(newCatId, site, newParentId);
             } else if (mode === 'edit') {
-                BookmarkManager.editSite(catId, index, site, parentId);
+                // 编辑模式：读取用户选择的分类，判断是否变更
+                var selectedCat = $('#modal-bm-category').val();
+                var newCatId, newParentId;
+                if (selectedCat.indexOf('::') > -1) {
+                    var parts = selectedCat.split('::');
+                    newParentId = parts[0];
+                    newCatId = parts[1];
+                } else {
+                    newCatId = selectedCat;
+                    newParentId = '';
+                }
+
+                // 判断分类是否变更
+                if (newCatId === oldCatId && newParentId === oldParentId) {
+                    // 分类未变更，直接更新
+                    BookmarkManager.editSite(oldCatId, index, site, oldParentId);
+                } else {
+                    // 分类已变更，先删除再添加
+                    BookmarkManager.moveSiteToCategory(oldCatId, index, oldParentId, newCatId, newParentId, site);
+                }
             }
 
             $('#modal-bookmark').modal('hide');
@@ -1060,6 +1301,73 @@ var BookmarkManager = {
                             if (siteIndex >= 0 && siteIndex < cats[j].children[k].sites.length) {
                                 cats[j].children[k].sites[siteIndex] = site;
                             }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        DataSourceManager.savePrivateData(data);
+        BookmarkManager.render();
+    },
+
+    /**
+     * 将书签移动到新分类（编辑时分类变更）
+     * @param {string} oldCatId     原分类 id
+     * @param {number} siteIndex    书签索引
+     * @param {string} oldParentId  原父分类 id
+     * @param {string} newCatId     新分类 id
+     * @param {string} newParentId  新父分类 id
+     * @param {Object} site         更新后的书签数据 { name, url, logo }
+     */
+    moveSiteToCategory: function (oldCatId, siteIndex, oldParentId, newCatId, newParentId, site) {
+        var data = DataSourceManager.getPrivateData();
+        if (!data) return;
+
+        var cats = data.categories;
+
+        // 1. 从原分类删除书签
+        if (!oldParentId) {
+            for (var i = 0; i < cats.length; i++) {
+                if (cats[i].id === oldCatId && cats[i].sites) {
+                    if (siteIndex >= 0 && siteIndex < cats[i].sites.length) {
+                        cats[i].sites.splice(siteIndex, 1);
+                    }
+                    break;
+                }
+            }
+        } else {
+            for (var j = 0; j < cats.length; j++) {
+                if (cats[j].id === oldParentId && cats[j].children) {
+                    for (var k = 0; k < cats[j].children.length; k++) {
+                        if (cats[j].children[k].id === oldCatId && cats[j].children[k].sites) {
+                            if (siteIndex >= 0 && siteIndex < cats[j].children[k].sites.length) {
+                                cats[j].children[k].sites.splice(siteIndex, 1);
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // 2. 添加到新分类
+        if (!newParentId) {
+            for (var m = 0; m < cats.length; m++) {
+                if (cats[m].id === newCatId) {
+                    if (!cats[m].sites) cats[m].sites = [];
+                    cats[m].sites.push(site);
+                    break;
+                }
+            }
+        } else {
+            for (var n = 0; n < cats.length; n++) {
+                if (cats[n].id === newParentId && cats[n].children) {
+                    for (var p = 0; p < cats[n].children.length; p++) {
+                        if (cats[n].children[p].id === newCatId) {
+                            if (!cats[n].children[p].sites) cats[n].children[p].sites = [];
+                            cats[n].children[p].sites.push(site);
                             break;
                         }
                     }
