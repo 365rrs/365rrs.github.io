@@ -212,6 +212,7 @@
         <button onclick="parseLog()">解析日志</button>
         <button onclick="clearAll()">清空</button>
         <button onclick="copyAllInfo()" style="background:#67c23a;">一键复制</button>
+        <button onclick="downloadAllInfo()" style="background:#e6a23c;">一键下载</button>
     </div>
 
     <!-- 解析结果展示区 -->
@@ -814,14 +815,8 @@
             });
     }
 
-    // 一键复制所有关键信息
-    function copyAllInfo() {
-        const resultArea = document.getElementById('resultArea');
-        if (resultArea.style.display === 'none') {
-            showNotification('请先解析日志！', 'error');
-            return;
-        }
-
+    // 构建所有关键信息文本（复制和下载共用）
+    function buildAllInfoText() {
         // 调用时间
         const timeRow = document.querySelector('#traceInfoTable tr:first-child td');
         const time = timeRow ? timeRow.firstChild.textContent.trim() : '无';
@@ -856,15 +851,44 @@
             `Trace ID: ${traceId}`,
             `请求URL: ${url}`,
         ];
-        // if (urlParams.trim()) {
-        //     parts.push(`URL参数:\n${urlParams.trimEnd()}`);
-        // }
         parts.push(`request body:\n${reqBody}`, `response body:\n${respBody}`);
-        const text = parts.join('\n\n') + '\n';
+        return parts.join('\n\n') + '\n';
+    }
+
+    // 一键复制所有关键信息
+    function copyAllInfo() {
+        const resultArea = document.getElementById('resultArea');
+        if (resultArea.style.display === 'none') {
+            showNotification('请先解析日志！', 'error');
+            return;
+        }
+
+        const text = buildAllInfoText();
 
         navigator.clipboard.writeText(text)
             .then(() => showNotification('一键复制成功！'))
             .catch(err => showNotification('复制失败：' + err, 'error'));
+    }
+
+    // 一键下载所有关键信息为txt文件
+    function downloadAllInfo() {
+        const resultArea = document.getElementById('resultArea');
+        if (resultArea.style.display === 'none') {
+            showNotification('请先解析日志！', 'error');
+            return;
+        }
+
+        const text = buildAllInfoText();
+        const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = new Date().getTime() + '.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showNotification('下载成功！');
     }
 
     // 清空功能
