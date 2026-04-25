@@ -11,7 +11,8 @@ var AdminNav = (function ($) {
         { href: './import-export.html', label: '&#128230; 导入/导出' },
         { href: './default-logo.html',  label: '&#128444; 默认 Logo' },
         { href: './oss-config.html',    label: '&#9729;&#65039; OSS 配置' },
-        { href: './sync.html',          label: '&#128260; 同步状态' }
+        { href: './sync.html',          label: '&#128260; 同步状态' },
+        { href: './cache.html',         label: '&#128190; 缓存管理' }
     ];
 
     // ── 私有方法 ─────────────────────────────────────────────

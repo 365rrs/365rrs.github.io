@@ -73,6 +73,79 @@ ES5 风格，兼容 jQuery 1.11.1，包含以下模块：
   - `startTimer(intervalSeconds)` — 启动定时同步
   - `stopTimer()` — 停止定时同步
 
+## 管理面板 JS 模块（`assets/js/admin.js`）
+
+ES5 风格，兼容 jQuery 1.11.1，包含以下模块：
+
+- **`CategoryManager`** — 分类管理
+  - `init()` — 初始化分类管理面板
+  - `render()` — 渲染分类树
+  - `addCategory(name, icon)` — 添加一级分类
+  - `addSubCategory(parentId, name)` — 添加二级子分类
+  - `renameCategory(id, newName, parentId, newIcon)` — 重命名分类
+  - `deleteCategory(id, parentId)` — 删除分类
+
+- **`BookmarkManager`** — 书签管理
+  - `render()` — 渲染书签列表
+  - `addBookmark(categoryId, name, url, logo)` — 添加书签
+  - `editBookmark(categoryId, oldUrl, newName, newUrl, newLogo)` — 编辑书签
+  - `deleteBookmark(categoryId, url)` — 删除书签
+
+- **`ImportExport`** — 导入/导出
+  - `init()` — 初始化导入/导出面板
+  - `exportJSON()` — 导出 JSON 数据
+  - `importJSON(jsonStr)` — 导入 JSON 数据
+  - `parseTabCopy(jsonStr)` — 解析 Tab Copy 数据
+  - `importTabCopy(categoryId, sites)` — 导入 Tab Copy 书签
+
+- **`OSSConfig`** — OSS 配置
+  - `init()` — 初始化 OSS 配置面板
+  - `saveConfig(config)` — 保存 OSS 配置
+  - `testConnection()` — 测试 OSS 连接
+
+- **`SyncManager`** — 数据同步（管理面板版本）
+  - `init()` — 初始化同步面板
+  - `renderStatus()` — 渲染同步状态
+  - `upload()` — 上传数据到 OSS
+  - `download()` — 从 OSS 下载数据
+
+- **`DefaultLogoManager`** — 默认 Logo 配置
+  - `init()` — 初始化默认 Logo 配置面板
+  - `getDefaultLogo()` — 获取当前默认 Logo 路径
+  - `setDefaultLogo(logoPath)` — 设置默认 Logo 路径
+  - `resetToSystemDefault()` — 重置为系统默认
+
+- **`BrowserExportManager`** — 导出到浏览器书签
+  - `init()` — 初始化导出面板
+  - `exportToHTML()` — 生成浏览器书签 HTML 文件
+
+- **`CacheManager`** — 缓存管理（新增功能）
+  - `init()` — 初始化缓存管理面板
+  - `renderOverview()` — 渲染缓存概览（总数、WebStack 数据、其他数据、预估大小）
+  - `renderCacheList()` — 渲染缓存详情列表
+  - `clearWebStackData()` — 清理所有 WebStack 缓存数据
+  - `clearAllData()` — 清空所有浏览器缓存
+  - `deleteCacheItem(key)` — 删除单个缓存项
+  - `exportCacheData()` — 导出所有缓存数据为 JSON 文件
+
+## 管理面板导航（`assets/js/admin-nav.js`）
+
+统一管理所有管理面板页面的顶部导航栏和左侧菜单：
+
+- **`NAV_CONFIG`** — 菜单项配置数组（集中维护）
+  - 书签管理（bookmarks.html）
+  - 分类管理（categories.html）
+  - 导入/导出（import-export.html）
+  - 默认 Logo（default-logo.html）
+  - OSS 配置（oss-config.html）
+  - 同步状态（sync.html）
+  - 缓存管理（cache.html）
+
+- **`_buildNavbarHtml()`** — 生成顶部导航栏 HTML
+- **`_buildSidebarHtml()`** — 生成左侧菜单 HTML
+- **`_setActive()`** — 根据当前页面 URL 设置激活菜单项
+- **`_inject()`** — 将导航栏和菜单注入页面
+
 ### 关键函数
 
 - **`normalizeLogo(logo)`** — 规范化 logo 路径，统一转为绝对路径

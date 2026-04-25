@@ -19,7 +19,8 @@ inclusion: always
 │   ├── default-logo.html   # 默认 Logo 配置
 │   ├── import-export.html  # 导入/导出
 │   ├── oss-config.html     # OSS 配置
-│   └── sync.html           # 数据同步
+│   ├── sync.html           # 数据同步
+│   └── cache.html          # 缓存管理
 │
 └── assets/
     ├── css/

@@ -4055,3 +4055,309 @@ var DefaultLogoManager = {
             .replace(/'/g, '&#39;');
     }
 };
+
+/* ----------------------------------------------------------
+   CacheManager 模块 - 缓存管理
+   ---------------------------------------------------------- */
+var CacheManager = {
+
+    /**
+     * 初始化：渲染缓存概览和详情
+     */
+    init: function () {
+        CacheManager.renderOverview();
+        CacheManager.renderCacheList();
+        CacheManager._bindEvents();
+    },
+
+    /**
+     * 渲染缓存概览
+     */
+    renderOverview: function () {
+        var allKeys = Object.keys(localStorage);
+        var wsKeys = allKeys.filter(function (key) {
+            return key.indexOf('ws_') === 0;
+        });
+        var otherKeys = allKeys.filter(function (key) {
+            return key.indexOf('ws_') !== 0;
+        });
+
+        // 计算预估大小（字符数 * 2 字节，粗略估算）
+        var totalSize = 0;
+        for (var i = 0; i < allKeys.length; i++) {
+            var key = allKeys[i];
+            var value = localStorage.getItem(key) || '';
+            totalSize += (key.length + value.length) * 2;
+        }
+
+        $('#cache-total-count').text(allKeys.length + ' 项');
+        $('#cache-ws-count').text(wsKeys.length + ' 项');
+        $('#cache-other-count').text(otherKeys.length + ' 项');
+        $('#cache-size').text(CacheManager._formatBytes(totalSize));
+    },
+
+    /**
+     * 渲染缓存列表
+     */
+    renderCacheList: function () {
+        var $container = $('#cache-list-container');
+        $container.html('<div class="cache-loading">加载中...</div>');
+
+        var allKeys = Object.keys(localStorage);
+        var wsKeys = allKeys.filter(function (key) {
+            return key.indexOf('ws_') === 0;
+        });
+
+        if (wsKeys.length === 0) {
+            $container.html('<div class="cat-empty">暂无 WebStack 缓存数据。</div>');
+            return;
+        }
+
+        // 按 key 排序
+        wsKeys.sort();
+
+        var html = '<div class="cache-list">';
+        for (var i = 0; i < wsKeys.length; i++) {
+            var key = wsKeys[i];
+            var value = localStorage.getItem(key) || '';
+            var size = (key.length + value.length) * 2;
+            var preview = CacheManager._getValuePreview(value);
+            var description = CacheManager._getKeyDescription(key);
+
+            html += '<div class="cache-item" data-key="' + CacheManager._escAttr(key) + '">';
+            html += '<div class="cache-item-header">';
+            html += '<span class="cache-item-key">' + CacheManager._escHtml(key) + '</span>';
+            html += '<span class="cache-item-size">' + CacheManager._formatBytes(size) + '</span>';
+            html += '<button class="cache-item-delete" data-key="' + CacheManager._escAttr(key) + '" title="删除此项">';
+            html += '<i class="fa fa-trash"></i>';
+            html += '</button>';
+            html += '</div>';
+            if (description) {
+                html += '<div class="cache-item-desc">' + CacheManager._escHtml(description) + '</div>';
+            }
+            html += '<div class="cache-item-preview">' + CacheManager._escHtml(preview) + '</div>';
+            html += '</div>';
+        }
+        html += '</div>';
+
+        $container.html(html);
+    },
+
+    /**
+     * 绑定事件
+     */
+    _bindEvents: function () {
+        // 清理 WebStack 数据
+        $('#cache-clear-ws-btn').off('click.cache').on('click.cache', function () {
+            var confirmed = confirm(
+                '确定要清理所有 WebStack 缓存数据吗？\n\n' +
+                '这将删除以下数据：\n' +
+                '• 私有书签数据\n' +
+                '• 数据源配置\n' +
+                '• 列数配置\n' +
+                '• OSS 配置\n' +
+                '• 同步状态\n' +
+                '• 默认 Logo 配置\n\n' +
+                '建议在清理前先导出备份！'
+            );
+            if (!confirmed) return;
+
+            CacheManager.clearWebStackData();
+        });
+
+        // 清空所有缓存
+        $('#cache-clear-all-btn').off('click.cache').on('click.cache', function () {
+            var confirmed = confirm(
+                '⚠️ 危险操作 ⚠️\n\n' +
+                '确定要清空浏览器中的所有 localStorage 数据吗？\n\n' +
+                '这将删除：\n' +
+                '• 所有 WebStack 数据\n' +
+                '• 其他网站存储的数据\n\n' +
+                '此操作不可恢复！'
+            );
+            if (!confirmed) return;
+
+            var doubleConfirm = confirm('再次确认：真的要清空所有缓存吗？');
+            if (!doubleConfirm) return;
+
+            CacheManager.clearAllData();
+        });
+
+        // 导出备份
+        $('#cache-export-btn').off('click.cache').on('click.cache', function () {
+            CacheManager.exportCacheData();
+        });
+
+        // 删除单个缓存项（事件委托）
+        $('#cache-list-container').off('click.cache').on('click.cache', '.cache-item-delete', function () {
+            var key = $(this).data('key');
+            var confirmed = confirm('确定要删除缓存项"' + key + '"吗？');
+            if (!confirmed) return;
+
+            CacheManager.deleteCacheItem(key);
+        });
+    },
+
+    /**
+     * 清理 WebStack 数据
+     */
+    clearWebStackData: function () {
+        var allKeys = Object.keys(localStorage);
+        var wsKeys = allKeys.filter(function (key) {
+            return key.indexOf('ws_') === 0;
+        });
+
+        var count = wsKeys.length;
+        for (var i = 0; i < wsKeys.length; i++) {
+            localStorage.removeItem(wsKeys[i]);
+        }
+
+        CacheManager._showResult('#cache-result', true, '已清理 ' + count + ' 项 WebStack 数据');
+        CacheManager.renderOverview();
+        CacheManager.renderCacheList();
+    },
+
+    /**
+     * 清空所有缓存
+     */
+    clearAllData: function () {
+        var count = localStorage.length;
+        localStorage.clear();
+
+        CacheManager._showResult('#cache-result', true, '已清空所有缓存（' + count + ' 项）');
+        CacheManager.renderOverview();
+        CacheManager.renderCacheList();
+    },
+
+    /**
+     * 删除单个缓存项
+     */
+    deleteCacheItem: function (key) {
+        localStorage.removeItem(key);
+
+        CacheManager._showResult('#cache-result', true, '已删除缓存项"' + key + '"');
+        CacheManager.renderOverview();
+        CacheManager.renderCacheList();
+    },
+
+    /**
+     * 导出缓存数据
+     */
+    exportCacheData: function () {
+        var allKeys = Object.keys(localStorage);
+        var data = {};
+
+        for (var i = 0; i < allKeys.length; i++) {
+            var key = allKeys[i];
+            data[key] = localStorage.getItem(key);
+        }
+
+        var json = JSON.stringify(data, null, 2);
+        var blob = new Blob([json], { type: 'application/json' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'webstack-cache-backup-' + CacheManager._getTimestamp() + '.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        CacheManager._showResult('#cache-export-result', true, '缓存数据已导出（' + allKeys.length + ' 项）');
+    },
+
+    /**
+     * 获取 key 的描述信息
+     */
+    _getKeyDescription: function (key) {
+        var descriptions = {
+            'ws_private_data': '私有书签数据（完整的分类和书签列表）',
+            'ws_active_source': '当前激活的数据源（default 或 private）',
+            'ws_columns': '每行显示的列数配置（4/6/12）',
+            'ws_default_logo': '用户设置的默认 Logo 路径',
+            'ws_app_version': '应用版本号',
+            'ws_private_version': '私有数据版本号（用于云端同步）',
+            'ws_sync_config': '自动同步配置（页面加载时同步、定时同步）',
+            'ws_oss_config': 'OSS 配置信息（已加密）',
+            'ws_last_download_at': '最后一次从 OSS 下载的时间',
+            'ws_last_download_version': '最后一次下载的数据版本号',
+            'ws_last_upload_at': '最后一次上传到 OSS 的时间',
+            'ws_last_upload_version': '最后一次上传的数据版本号'
+        };
+
+        return descriptions[key] || '';
+    },
+
+    /**
+     * 获取值的预览（截取前 100 个字符）
+     */
+    _getValuePreview: function (value) {
+        if (!value) return '(空)';
+        if (value.length <= 100) return value;
+        return value.substring(0, 100) + '...';
+    },
+
+    /**
+     * 格式化字节数
+     */
+    _formatBytes: function (bytes) {
+        if (bytes === 0) return '0 B';
+        var k = 1024;
+        var sizes = ['B', 'KB', 'MB', 'GB'];
+        var i = Math.floor(Math.log(bytes) / Math.log(k));
+        return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
+    },
+
+    /**
+     * 获取时间戳字符串（用于文件名）
+     */
+    _getTimestamp: function () {
+        var now = new Date();
+        var year = now.getFullYear();
+        var month = String(now.getMonth() + 1).padStart(2, '0');
+        var day = String(now.getDate()).padStart(2, '0');
+        var hour = String(now.getHours()).padStart(2, '0');
+        var minute = String(now.getMinutes()).padStart(2, '0');
+        var second = String(now.getSeconds()).padStart(2, '0');
+        return year + month + day + '-' + hour + minute + second;
+    },
+
+    /**
+     * 显示操作结果
+     */
+    _showResult: function (selector, success, message) {
+        var $el = $(selector);
+        $el.removeClass('ie-result-ok ie-result-err')
+           .addClass(success ? 'ie-result-ok' : 'ie-result-err')
+           .html('<i class="fa fa-' + (success ? 'check-circle' : 'exclamation-circle') + '"></i> ' + message)
+           .show();
+
+        // 3 秒后自动隐藏
+        setTimeout(function () {
+            $el.fadeOut();
+        }, 3000);
+    },
+
+    /**
+     * HTML 转义
+     */
+    _escHtml: function (str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    },
+
+    /**
+     * 属性值转义
+     */
+    _escAttr: function (str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+};

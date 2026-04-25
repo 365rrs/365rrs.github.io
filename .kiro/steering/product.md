@@ -19,6 +19,7 @@ WebStack（webstack.cc）是一个面向设计师的静态网址导航/书签目
   - 导入/导出：JSON、Tab Copy、导出到浏览器书签
   - 默认 Logo 配置：设置无 logo 书签的默认图标
   - OSS 云端同步：阿里云 OSS 备份与多端同步
+  - 缓存管理：查看、清理、导出浏览器缓存数据
 - **智能搜索**：支持中文名称、拼音全拼、拼音首字母匹配（依赖 `pinyin-pro` 库）
 - **灵活布局**：支持 4列/6列/12列切换，配置保存在本地
 - **懒加载优化**：图片懒加载（lozad.js），提升首屏加载速度
@@ -49,6 +50,7 @@ UI/UX 设计师、产品经理、前端开发者，寻找精选设计资源和�
 | `admin/import-export.html` | 导入/导出：JSON、Tab Copy、导出到浏览器书签 |
 | `admin/oss-config.html` | OSS 配置：阿里云 OSS 连接信息 |
 | `admin/sync.html` | 数据同步：上传/下载、自动同步配置 |
+| `admin/cache.html` | 缓存管理：查看、清理、导出浏览器缓存数据 |
 
 ### 工具页面（assets/html/）
 
@@ -59,6 +61,50 @@ UI/UX 设计师、产品经理、前端开发者，寻找精选设计资源和�
 | `mybatis-sql-parser.html` | MyBatis SQL 解析工具 |
 | `sqltool.html` | SQL 工具 |
 | `utf8mb4Detector.html` | UTF8MB4 检测工具 |
+
+## 缓存管理功能
+
+### 功能概览
+
+缓存管理面板（`admin/cache.html`）提供完整的浏览器 localStorage 数据管理功能：
+
+- **缓存概览**：显示缓存项总数、WebStack 数据数量、其他数据数量、预估大小
+- **缓存详情**：列出所有 WebStack 相关缓存项（`ws_` 前缀），显示 key、描述、大小、预览
+- **单项删除**：点击删除按钮可删除单个缓存项
+- **批量清理**：
+  - 清理 WebStack 数据：删除所有 `ws_` 前缀的缓存项
+  - 清空所有缓存：删除浏览器中的所有 localStorage 数据（危险操作）
+- **导出备份**：将所有缓存数据导出为 JSON 文件，文件名格式：`webstack-cache-backup-YYYYMMdd-HHmmss.json`
+
+### 缓存项说明
+
+| Key | 说明 |
+|-----|------|
+| `ws_private_data` | 私有书签数据（完整的分类和书签列表） |
+| `ws_active_source` | 当前激活的数据源（default 或 private） |
+| `ws_columns` | 每行显示的列数配置（4/6/12） |
+| `ws_default_logo` | 用户设置的默认 Logo 路径 |
+| `ws_app_version` | 应用版本号 |
+| `ws_private_version` | 私有数据版本号（用于云端同步） |
+| `ws_sync_config` | 自动同步配置（页面加载时同步、定时同步） |
+| `ws_oss_config` | OSS 配置信息（已加密） |
+| `ws_last_download_at` | 最后一次从 OSS 下载的时间 |
+| `ws_last_download_version` | 最后一次下载的数据版本号 |
+| `ws_last_upload_at` | 最后一次上传到 OSS 的时间 |
+| `ws_last_upload_version` | 最后一次上传的数据版本号 |
+
+### 使用场景
+
+1. **清理过期数据**：删除不再使用的缓存项，释放存储空间
+2. **故障排查**：查看缓存数据内容，诊断数据异常问题
+3. **数据迁移**：导出缓存数据，在其他浏览器或设备上恢复
+4. **重置应用**：清空所有 WebStack 数据，恢复初始状态
+
+### 安全提示
+
+- **清理前备份**：建议在清理缓存前先导出备份数据
+- **危险操作确认**：清空所有缓存需要二次确认，防止误操作
+- **数据不可恢复**：删除操作不可撤销，请谨慎操作
 
 ## 数据结构（`assets/data/default.json`）
 
