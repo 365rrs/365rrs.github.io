@@ -60,14 +60,24 @@
         .data-table table {
             background: white;
         }
+        .data-table td {
+            vertical-align: middle !important;
+        }
+        .data-table tbody tr {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .data-table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+        .data-table tbody tr.selected {
+            background-color: #e3f2fd;
+        }
         .data-table th {
             background-color: #3498db;
             color: white;
             font-weight: 600;
             text-align: center;
-            vertical-align: middle !important;
-        }
-        .data-table td {
             vertical-align: middle !important;
         }
         .data-table .url-cell {
@@ -351,8 +361,14 @@
 
         <div class="batch-actions" id="batchActions" style="display: none;">
             <strong><i class="fa fa-check-square-o"></i> 批量操作：</strong>
+            <button id="invertSelectionBtn" class="btn btn-default btn-sm">
+                <i class="fa fa-exchange"></i> 反选
+            </button>
             <button id="batchCopyBtn" class="btn btn-success btn-sm">
                 <i class="fa fa-copy"></i> 复制选中
+            </button>
+            <button id="batchCopyJsonBtn" class="btn btn-success btn-sm">
+                <i class="fa fa-code"></i> 复制为 JSON
             </button>
             <button id="batchCopyExcelBtn" class="btn btn-success btn-sm">
                 <i class="fa fa-table"></i> 复制为 Excel
@@ -423,7 +439,9 @@
                 $('#loadSampleBtn').on('click', loadSample);
                 $('#pasteBtn').on('click', pasteAndParse);
                 $('#selectAll').on('change', toggleSelectAll);
+                $('#invertSelectionBtn').on('click', invertSelection);
                 $('#batchCopyBtn').on('click', batchCopy);
+                $('#batchCopyJsonBtn').on('click', batchCopyJson);
                 $('#batchCopyExcelBtn').on('click', batchCopyExcel);
                 $('#batchCopyMarkdownBtn').on('click', batchCopyMarkdown);
                 $('#batchDeleteBtn').on('click', batchDelete);
@@ -513,6 +531,29 @@
                 $('.edit-btn').on('click', editRow);
                 $('.delete-btn').on('click', deleteRow);
                 $('.row-checkbox').on('change', updateBatchActions);
+                
+                // 绑定行点击事件（点击行选中/取消选中）
+                $('#tableBody tr').on('click', function(e) {
+                    // 如果点击的是复选框、按钮或链接，不触发行选中
+                    if ($(e.target).is('input[type="checkbox"]') || 
+                        $(e.target).closest('button').length > 0 || 
+                        $(e.target).is('a') ||
+                        $(e.target).closest('a').length > 0) {
+                        return;
+                    }
+                    
+                    var $checkbox = $(this).find('.row-checkbox');
+                    $checkbox.prop('checked', !$checkbox.prop('checked')).trigger('change');
+                });
+                
+                // 更新选中状态的视觉效果
+                $('.row-checkbox').on('change', function() {
+                    if ($(this).prop('checked')) {
+                        $(this).closest('tr').addClass('selected');
+                    } else {
+                        $(this).closest('tr').removeClass('selected');
+                    }
+                });
             }
 
             // 编辑行
@@ -559,8 +600,24 @@
             // 全选/取消全选
             function toggleSelectAll() {
                 var checked = $(this).prop('checked');
-                $('.row-checkbox').prop('checked', checked);
+                $('.row-checkbox').prop('checked', checked).trigger('change');
                 updateBatchActions();
+            }
+
+            // 反选
+            function invertSelection() {
+                $('.row-checkbox').each(function() {
+                    var $checkbox = $(this);
+                    $checkbox.prop('checked', !$checkbox.prop('checked')).trigger('change');
+                });
+                updateBatchActions();
+                
+                // 更新全选框状态
+                var total = $('.row-checkbox').length;
+                var checked = $('.row-checkbox:checked').length;
+                $('#selectAll').prop('checked', checked === total);
+                
+                showNotification('已反选', 'info');
             }
 
             // 更新批量操作区域
@@ -599,6 +656,19 @@
 
                 copyToClipboard(text.trim());
                 showNotification('已复制 ' + selected.length + ' 条数据');
+            }
+
+            // 批量复制为 JSON 格式
+            function batchCopyJson() {
+                var selected = getSelectedData();
+                if (selected.length === 0) {
+                    showNotification('请先选择要复制的数据', 'warning');
+                    return;
+                }
+
+                var jsonText = JSON.stringify(selected, null, 2);
+                copyToClipboard(jsonText);
+                showNotification('已复制为 JSON 格式（' + selected.length + ' 条数据）');
             }
 
             // 批量复制为 Excel 格式
