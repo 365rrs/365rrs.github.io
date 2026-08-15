@@ -103,6 +103,14 @@
         }
         .alert {
             margin-top: 15px;
+            min-height: 50px;
+            margin-bottom: 0;
+        }
+        #alertBox {
+            min-height: 50px;
+        }
+        #alertBox:empty {
+            min-height: 50px;
         }
         #selectAll {
             cursor: pointer;
@@ -542,16 +550,10 @@
             // 删除行
             function deleteRow() {
                 var index = $(this).data('index');
-                var title = dataList[index].title;
                 
-                // 使用自定义确认提示
-                customConfirm('确定要删除"' + title + '"吗？').then(function(confirmed) {
-                    if (confirmed) {
-                        dataList.splice(index, 1);
-                        renderTable();
-                        showAlert('删除成功', 'success');
-                    }
-                });
+                dataList.splice(index, 1);
+                renderTable();
+                showNotification('删除成功', 'success');
             }
 
             // 全选/取消全选
@@ -641,45 +643,30 @@
                     return;
                 }
 
-                customConfirm('确定要删除选中的 ' + selected + ' 条数据吗？').then(function(confirmed) {
-                    if (!confirmed) {
-                        return;
-                    }
-
-                    var indices = [];
-                    $('.row-checkbox:checked').each(function() {
-                        indices.push($(this).closest('tr').data('index'));
-                    });
-
-                    // 从大到小排序，避免删除时索引错乱
-                    indices.sort(function(a, b) { return b - a; });
-                    
-                    for (var i = 0; i < indices.length; i++) {
-                        dataList.splice(indices[i], 1);
-                    }
-
-                    renderTable();
-                    showAlert('已删除 ' + selected + ' 条数据', 'success');
+                var indices = [];
+                $('.row-checkbox:checked').each(function() {
+                    indices.push($(this).closest('tr').data('index'));
                 });
+
+                // 从大到小排序，避免删除时索引错乱
+                indices.sort(function(a, b) { return b - a; });
+                
+                for (var i = 0; i < indices.length; i++) {
+                    dataList.splice(indices[i], 1);
+                }
+
+                renderTable();
+                showNotification('已删除 ' + selected + ' 条数据', 'success');
             }
 
             // 清空所有
             function clearAll() {
-                if (dataList.length > 0) {
-                    customConfirm('确定要清空所有数据吗？').then(function(confirmed) {
-                        if (confirmed) {
-                            $('#jsonInput').val('');
-                            dataList = [];
-                            renderTable();
-                            $('#alertBox').html('');
-                        }
-                    });
-                } else {
-                    $('#jsonInput').val('');
-                    dataList = [];
-                    renderTable();
-                    $('#alertBox').html('');
-                }
+                $('#jsonInput').val('');
+                dataList = [];
+                renderTable();
+                // 清空提示区域但保持占位
+                $('#alertBox').html('<div style="min-height: 50px;"></div>');
+                showNotification('已清空', 'success');
             }
 
             // 加载示例数据
@@ -723,7 +710,8 @@
                 
                 setTimeout(function() {
                     $('#alertBox .alert').fadeOut(function() {
-                        $(this).remove();
+                        // 淡出后不移除，保持占位
+                        $(this).css('visibility', 'hidden').show();
                     });
                 }, 3000);
             }
