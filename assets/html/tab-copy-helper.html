@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Tab Copy Options 辅助工具 - 配合 Chrome 插件使用，快速编辑和导出复制的标签页链接">
+    <title>Tab Copy Options 辅助工具 - WebStack</title>
+    <link rel="stylesheet" href="../css/bootstrap/bootstrap-3.4.1.min.css">
+    <link rel="stylesheet" href="../css/fonts/fontawesome/css/font-awesome.min.css">
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f5f7fa;
+        }
+        .container {
+            max-width: 1200px;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .page-header {
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        .page-header h1 {
+            margin: 0;
+            font-size: 28px;
+            color: #2c3e50;
+        }
+        .control-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        .control-section label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 10px;
+            display: block;
+        }
+        #jsonInput {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            min-height: 120px;
+            resize: vertical;
+        }
+        .btn-group-custom {
+            margin-top: 10px;
+        }
+        .btn-group-custom .btn {
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        .data-table {
+            margin-top: 25px;
+        }
+        .data-table table {
+            background: white;
+        }
+        .data-table th {
+            background-color: #3498db;
+            color: white;
+            font-weight: 600;
+            text-align: center;
+            vertical-align: middle !important;
+        }
+        .data-table td {
+            vertical-align: middle !important;
+        }
+        .data-table .url-cell {
+            word-break: break-all;
+            max-width: 400px;
+        }
+        .data-table .title-cell {
+            max-width: 300px;
+            word-break: break-word;
+        }
+        .checkbox-cell {
+            text-align: center;
+            width: 50px;
+        }
+        .action-cell {
+            text-align: center;
+            width: 150px;
+            white-space: nowrap;
+        }
+        .action-cell .btn {
+            padding: 4px 10px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+        .action-cell .btn:last-child {
+            margin-right: 0;
+        }
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+        .alert {
+            margin-top: 15px;
+        }
+        #selectAll {
+            cursor: pointer;
+            transform: scale(1.2);
+        }
+        .batch-actions {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        .batch-actions .btn {
+            margin-right: 8px;
+        }
+        .stats {
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+        /* 编辑模式样式 */
+        .edit-mode .title-cell,
+        .edit-mode .url-cell {
+            padding: 5px;
+        }
+        .edit-mode input {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .copy-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 9999;
+            animation: slideIn 0.3s ease-out;
+            min-width: 200px;
+        }
+        .copy-notification.warning {
+            background: #f39c12;
+        }
+        .copy-notification.info {
+            background: #3498db;
+        }
+        .copy-notification.success {
+            background: #28a745;
+        }
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            pointer-events: none;
+        }
+        .notification-container .copy-notification {
+            position: relative;
+            top: auto;
+            right: auto;
+            margin-bottom: 10px;
+            pointer-events: auto;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        /* 自定义确认对话框 */
+        .custom-confirm-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease-out;
+        }
+        .custom-confirm-dialog {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            min-width: 400px;
+            max-width: 500px;
+            animation: scaleIn 0.3s ease-out;
+        }
+        .custom-confirm-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .custom-confirm-header h4 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+        .custom-confirm-header i {
+            color: #f39c12;
+            margin-right: 10px;
+        }
+        .custom-confirm-body {
+            padding: 25px;
+            font-size: 15px;
+            color: #555;
+            line-height: 1.6;
+        }
+        .custom-confirm-footer {
+            padding: 15px 25px;
+            border-top: 1px solid #e0e0e0;
+            text-align: right;
+        }
+        .custom-confirm-footer .btn {
+            margin-left: 10px;
+            min-width: 80px;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        /* 自定义提示对话框（纯提示，无确认按钮） */
+        .custom-alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 10001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease-out;
+        }
+        .custom-alert-dialog {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            min-width: 350px;
+            max-width: 450px;
+            animation: scaleIn 0.3s ease-out;
+        }
+        .custom-alert-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .custom-alert-header h4 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+        .custom-alert-header.alert-warning i {
+            color: #f39c12;
+            margin-right: 10px;
+        }
+        .custom-alert-header.alert-info i {
+            color: #3498db;
+            margin-right: 10px;
+        }
+        .custom-alert-body {
+            padding: 25px;
+            font-size: 15px;
+            color: #555;
+            line-height: 1.6;
+        }
+        .custom-alert-footer {
+            padding: 15px 25px;
+            border-top: 1px solid #e0e0e0;
+            text-align: right;
+        }
+        .custom-alert-footer .btn {
+            min-width: 80px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 通知容器 -->
+    <div class="notification-container" id="notificationContainer"></div>
+    
+    <div class="container">
+        <div class="page-header">
+            <h1><i class="fa fa-link"></i> Tab Copy Options 辅助工具</h1>
+            <p class="text-muted" style="margin-top: 10px; margin-bottom: 0;">
+                配合 Chrome 插件 <strong>Tab Copy Options</strong> 使用，快速编辑和导出复制的标签页链接
+            </p>
+        </div>
+
+        <div class="control-section">
+            <label for="jsonInput">
+                <i class="fa fa-code"></i> JSON 数据输入
+                <small class="text-muted">(从 Tab Copy Options 插件复制后粘贴到这里)</small>
+            </label>
+            <textarea id="jsonInput" class="form-control" placeholder='从 Tab Copy Options 复制 JSON 格式数据后粘贴到这里，例如：
+[{"title": "Google","url": "https://www.google.com/"},{"title": "百度","url": "https://www.baidu.com/"}]'></textarea>
+            
+            <div class="btn-group-custom">
+                <button id="parseBtn" class="btn btn-primary">
+                    <i class="fa fa-play"></i> 解析 JSON
+                </button>
+                <button id="clearBtn" class="btn btn-default">
+                    <i class="fa fa-eraser"></i> 清空
+                </button>
+                <button id="loadSampleBtn" class="btn btn-info">
+                    <i class="fa fa-file-text"></i> 加载示例数据
+                </button>
+                <button id="pasteBtn" class="btn btn-success">
+                    <i class="fa fa-paste"></i> 粘贴并解析
+                </button>
+            </div>
+
+            <div id="alertBox"></div>
+        </div>
+
+        <div class="batch-actions" id="batchActions" style="display: none;">
+            <strong><i class="fa fa-check-square-o"></i> 批量操作：</strong>
+            <button id="batchCopyBtn" class="btn btn-success btn-sm">
+                <i class="fa fa-copy"></i> 复制选中
+            </button>
+            <button id="batchCopyExcelBtn" class="btn btn-success btn-sm">
+                <i class="fa fa-table"></i> 复制为 Excel
+            </button>
+            <button id="batchCopyMarkdownBtn" class="btn btn-success btn-sm">
+                <i class="fa fa-markdown"></i> 复制为 Markdown
+            </button>
+            <button id="batchDeleteBtn" class="btn btn-danger btn-sm">
+                <i class="fa fa-trash"></i> 删除选中
+            </button>
+            <span class="stats" id="selectedCount">未选中任何数据</span>
+        </div>
+
+        <div class="data-table">
+            <table class="table table-bordered table-hover" id="dataTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th class="checkbox-cell">
+                            <input type="checkbox" id="selectAll">
+                        </th>
+                        <th>序号</th>
+                        <th class="title-cell">标题</th>
+                        <th class="url-cell">链接</th>
+                        <th class="action-cell">操作</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+            <div id="noData" class="no-data">
+                <i class="fa fa-info-circle fa-3x" style="color: #ccc; margin-bottom: 15px;"></i>
+                <div><strong>使用步骤：</strong></div>
+                <div style="text-align: left; max-width: 500px; margin: 15px auto; line-height: 2;">
+                    1. 在 Chrome 浏览器中安装 <strong>Tab Copy Options</strong> 插件<br>
+                    2. 打开需要复制的标签页<br>
+                    3. 使用插件复制标签页信息（JSON 格式）<br>
+                    4. 粘贴到上方输入框并点击"解析 JSON"<br>
+                    5. 编辑、删除或批量复制数据
+                </div>
+            </div>
+        </div>
+
+        <div class="stats" id="totalStats" style="display: none; margin-top: 15px;">
+            <i class="fa fa-bar-chart"></i> 总计：<strong id="totalCount">0</strong> 条记录
+        </div>
+    </div>
+
+    <script src="../js/jquery-1.11.1.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+    <script>
+        (function() {
+            var dataList = [];
+
+            // 示例数据
+            var sampleData = [
+                {"title": "百度一下，你就知道","url": "https://www.baidu.com/"},
+                {"title": "Google","url": "https://www.google.com.hk/"}
+            ];
+
+            // 初始化
+            $(document).ready(function() {
+                bindEvents();
+            });
+
+            // 绑定事件
+            function bindEvents() {
+                $('#parseBtn').on('click', parseJSON);
+                $('#clearBtn').on('click', clearAll);
+                $('#loadSampleBtn').on('click', loadSample);
+                $('#pasteBtn').on('click', pasteAndParse);
+                $('#selectAll').on('change', toggleSelectAll);
+                $('#batchCopyBtn').on('click', batchCopy);
+                $('#batchCopyExcelBtn').on('click', batchCopyExcel);
+                $('#batchCopyMarkdownBtn').on('click', batchCopyMarkdown);
+                $('#batchDeleteBtn').on('click', batchDelete);
+                
+                // 支持 Ctrl+V 快捷粘贴
+                $('#jsonInput').on('paste', function() {
+                    setTimeout(function() {
+                        // 粘贴后自动解析（可选）
+                        // parseJSON();
+                    }, 100);
+                });
+            }
+
+            // 解析 JSON
+            function parseJSON() {
+                var input = $('#jsonInput').val().trim();
+                if (!input) {
+                    showNotification('请输入 JSON 数据', 'warning');
+                    return;
+                }
+
+                try {
+                    var data = JSON.parse(input);
+                    if (!Array.isArray(data)) {
+                        showNotification('JSON 数据必须是数组格式', 'warning');
+                        return;
+                    }
+
+                    // 验证数据格式
+                    var valid = true;
+                    for (var i = 0; i < data.length; i++) {
+                        if (!data[i].title || !data[i].url) {
+                            valid = false;
+                            break;
+                        }
+                    }
+
+                    if (!valid) {
+                        showNotification('数据格式错误，每项必须包含 title 和 url 字段', 'warning');
+                        return;
+                    }
+
+                    dataList = data;
+                    renderTable();
+                    showAlert('成功解析 ' + data.length + ' 条数据', 'success');
+                } catch (e) {
+                    showNotification('JSON 解析失败：' + e.message, 'warning');
+                }
+            }
+
+            // 渲染表格
+            function renderTable() {
+                if (dataList.length === 0) {
+                    $('#dataTable').hide();
+                    $('#noData').show();
+                    $('#totalStats').hide();
+                    $('#batchActions').hide();
+                    return;
+                }
+
+                var html = '';
+                for (var i = 0; i < dataList.length; i++) {
+                    html += '<tr data-index="' + i + '">';
+                    html += '<td class="checkbox-cell"><input type="checkbox" class="row-checkbox"></td>';
+                    html += '<td>' + (i + 1) + '</td>';
+                    html += '<td class="title-cell">' + escapeHtml(dataList[i].title) + '</td>';
+                    html += '<td class="url-cell"><a href="' + escapeHtml(dataList[i].url) + '" target="_blank">' + escapeHtml(dataList[i].url) + '</a></td>';
+                    html += '<td class="action-cell">';
+                    html += '<button class="btn btn-warning btn-xs edit-btn" data-index="' + i + '"><i class="fa fa-edit"></i> 编辑</button>';
+                    html += '<button class="btn btn-danger btn-xs delete-btn" data-index="' + i + '"><i class="fa fa-trash"></i> 删除</button>';
+                    html += '</td>';
+                    html += '</tr>';
+                }
+
+                $('#tableBody').html(html);
+                $('#dataTable').show();
+                $('#noData').hide();
+                $('#totalStats').show();
+                $('#totalCount').text(dataList.length);
+
+                // 清除全选状态
+                $('#selectAll').prop('checked', false);
+                $('#batchActions').show();
+                updateBatchActions();
+
+                // 绑定行事件
+                $('.edit-btn').on('click', editRow);
+                $('.delete-btn').on('click', deleteRow);
+                $('.row-checkbox').on('change', updateBatchActions);
+            }
+
+            // 编辑行
+            function editRow() {
+                var index = $(this).data('index');
+                var $row = $('tr[data-index="' + index + '"]');
+                
+                if ($row.hasClass('edit-mode')) {
+                    // 保存编辑
+                    var newTitle = $row.find('.title-cell input').val().trim();
+                    var newUrl = $row.find('.url-cell input').val().trim();
+                    
+                    if (!newTitle || !newUrl) {
+                        showNotification('标题和链接不能为空', 'warning');
+                        return;
+                    }
+
+                    dataList[index].title = newTitle;
+                    dataList[index].url = newUrl;
+                    
+                    renderTable();
+                    showAlert('修改成功', 'success');
+                } else {
+                    // 进入编辑模式
+                    var title = dataList[index].title;
+                    var url = dataList[index].url;
+                    
+                    $row.addClass('edit-mode');
+                    $row.find('.title-cell').html('<input type="text" value="' + escapeHtml(title) + '">');
+                    $row.find('.url-cell').html('<input type="text" value="' + escapeHtml(url) + '">');
+                    $(this).html('<i class="fa fa-save"></i> 保存');
+                }
+            }
+
+            // 删除行
+            function deleteRow() {
+                var index = $(this).data('index');
+                var title = dataList[index].title;
+                
+                // 使用自定义确认提示
+                customConfirm('确定要删除"' + title + '"吗？').then(function(confirmed) {
+                    if (confirmed) {
+                        dataList.splice(index, 1);
+                        renderTable();
+                        showAlert('删除成功', 'success');
+                    }
+                });
+            }
+
+            // 全选/取消全选
+            function toggleSelectAll() {
+                var checked = $(this).prop('checked');
+                $('.row-checkbox').prop('checked', checked);
+                updateBatchActions();
+            }
+
+            // 更新批量操作区域
+            function updateBatchActions() {
+                var checkedCount = $('.row-checkbox:checked').length;
+                if (checkedCount > 0) {
+                    $('#selectedCount').text('已选中 ' + checkedCount + ' 条');
+                } else {
+                    $('#selectedCount').text('未选中任何数据');
+                    $('#selectAll').prop('checked', false);
+                }
+            }
+
+            // 获取选中的数据
+            function getSelectedData() {
+                var selected = [];
+                $('.row-checkbox:checked').each(function() {
+                    var index = $(this).closest('tr').data('index');
+                    selected.push(dataList[index]);
+                });
+                return selected;
+            }
+
+            // 批量复制（标准格式）
+            function batchCopy() {
+                var selected = getSelectedData();
+                if (selected.length === 0) {
+                    showNotification('请先选择要复制的数据', 'warning');
+                    return;
+                }
+
+                var text = '';
+                for (var i = 0; i < selected.length; i++) {
+                    text += selected[i].title + '\t' + selected[i].url + '\n';
+                }
+
+                copyToClipboard(text.trim());
+                showNotification('已复制 ' + selected.length + ' 条数据');
+            }
+
+            // 批量复制为 Excel 格式
+            function batchCopyExcel() {
+                var selected = getSelectedData();
+                if (selected.length === 0) {
+                    showNotification('请先选择要复制的数据', 'warning');
+                    return;
+                }
+
+                var text = '标题\t链接\n';
+                for (var i = 0; i < selected.length; i++) {
+                    text += selected[i].title + '\t' + selected[i].url + '\n';
+                }
+
+                copyToClipboard(text.trim());
+                showNotification('已复制为 Excel 格式（可直接粘贴到 Excel）');
+            }
+
+            // 批量复制为 Markdown 格式
+            function batchCopyMarkdown() {
+                var selected = getSelectedData();
+                if (selected.length === 0) {
+                    showNotification('请先选择要复制的数据', 'warning');
+                    return;
+                }
+
+                var text = '';
+                for (var i = 0; i < selected.length; i++) {
+                    text += '[' + selected[i].title + '](' + selected[i].url + ')\n';
+                }
+
+                copyToClipboard(text.trim());
+                showNotification('已复制为 Markdown 格式');
+            }
+
+            // 批量删除
+            function batchDelete() {
+                var selected = $('.row-checkbox:checked').length;
+                if (selected === 0) {
+                    showNotification('请先选择要删除的数据', 'warning');
+                    return;
+                }
+
+                customConfirm('确定要删除选中的 ' + selected + ' 条数据吗？').then(function(confirmed) {
+                    if (!confirmed) {
+                        return;
+                    }
+
+                    var indices = [];
+                    $('.row-checkbox:checked').each(function() {
+                        indices.push($(this).closest('tr').data('index'));
+                    });
+
+                    // 从大到小排序，避免删除时索引错乱
+                    indices.sort(function(a, b) { return b - a; });
+                    
+                    for (var i = 0; i < indices.length; i++) {
+                        dataList.splice(indices[i], 1);
+                    }
+
+                    renderTable();
+                    showAlert('已删除 ' + selected + ' 条数据', 'success');
+                });
+            }
+
+            // 清空所有
+            function clearAll() {
+                if (dataList.length > 0) {
+                    customConfirm('确定要清空所有数据吗？').then(function(confirmed) {
+                        if (confirmed) {
+                            $('#jsonInput').val('');
+                            dataList = [];
+                            renderTable();
+                            $('#alertBox').html('');
+                        }
+                    });
+                } else {
+                    $('#jsonInput').val('');
+                    dataList = [];
+                    renderTable();
+                    $('#alertBox').html('');
+                }
+            }
+
+            // 加载示例数据
+            function loadSample() {
+                $('#jsonInput').val(JSON.stringify(sampleData, null, 2));
+                showAlert('已加载示例数据，点击"解析 JSON"按钮查看', 'info');
+            }
+
+            // 粘贴并解析
+            function pasteAndParse() {
+                // 尝试从剪贴板读取
+                if (navigator.clipboard && navigator.clipboard.readText) {
+                    navigator.clipboard.readText().then(function(text) {
+                        $('#jsonInput').val(text);
+                        parseJSON();
+                    }).catch(function(err) {
+                        showNotification('无法读取剪贴板，请手动粘贴后点击"解析 JSON"', 'warning');
+                    });
+                } else {
+                    showNotification('浏览器不支持自动读取剪贴板，请手动粘贴（Ctrl+V）', 'info');
+                    $('#jsonInput').focus();
+                }
+            }
+
+            // 复制到剪贴板
+            function copyToClipboard(text) {
+                var $temp = $('<textarea>');
+                $('body').append($temp);
+                $temp.val(text).select();
+                document.execCommand('copy');
+                $temp.remove();
+            }
+
+            // 显示提示信息
+            function showAlert(message, type) {
+                var html = '<div class="alert alert-' + type + ' alert-dismissible" role="alert">';
+                html += '<button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>';
+                html += message;
+                html += '</div>';
+                $('#alertBox').html(html);
+                
+                setTimeout(function() {
+                    $('#alertBox .alert').fadeOut(function() {
+                        $(this).remove();
+                    });
+                }, 3000);
+            }
+
+            // 显示复制成功通知
+            function showNotification(message, type) {
+                type = type || 'success';
+                var iconClass = 'fa-check-circle';
+                if (type === 'warning') {
+                    iconClass = 'fa-exclamation-triangle';
+                } else if (type === 'info') {
+                    iconClass = 'fa-info-circle';
+                }
+                
+                var $notification = $('<div class="copy-notification ' + type + '"><i class="fa ' + iconClass + '"></i> ' + escapeHtml(message) + '</div>');
+                $('#notificationContainer').append($notification);
+                
+                setTimeout(function() {
+                    $notification.fadeOut(function() {
+                        $(this).remove();
+                    });
+                }, 2500);
+            }
+
+            // HTML 转义
+            function escapeHtml(text) {
+                var map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
+            }
+
+            // 自定义确认对话框
+            function customConfirm(message) {
+                return new Promise(function(resolve) {
+                    // 创建对话框 HTML
+                    var html = '<div class="custom-confirm-overlay">';
+                    html += '<div class="custom-confirm-dialog">';
+                    html += '<div class="custom-confirm-header">';
+                    html += '<h4><i class="fa fa-question-circle"></i>确认操作</h4>';
+                    html += '</div>';
+                    html += '<div class="custom-confirm-body">' + escapeHtml(message) + '</div>';
+                    html += '<div class="custom-confirm-footer">';
+                    html += '<button class="btn btn-default confirm-cancel">取消</button>';
+                    html += '<button class="btn btn-danger confirm-ok">确定</button>';
+                    html += '</div>';
+                    html += '</div>';
+                    html += '</div>';
+                    
+                    var $dialog = $(html);
+                    $('body').append($dialog);
+                    
+                    // 确定按钮
+                    $dialog.find('.confirm-ok').on('click', function() {
+                        $dialog.remove();
+                        resolve(true);
+                    });
+                    
+                    // 取消按钮
+                    $dialog.find('.confirm-cancel').on('click', function() {
+                        $dialog.remove();
+                        resolve(false);
+                    });
+                    
+                    // 点击遮罩层取消
+                    $dialog.on('click', function(e) {
+                        if ($(e.target).hasClass('custom-confirm-overlay')) {
+                            $dialog.remove();
+                            resolve(false);
+                        }
+                    });
+                    
+                    // ESC 键取消
+                    $(document).on('keydown.confirm', function(e) {
+                        if (e.keyCode === 27) {
+                            $(document).off('keydown.confirm');
+                            $dialog.remove();
+                            resolve(false);
+                        }
+                    });
+                    
+                    // 聚焦到确定按钮
+                    setTimeout(function() {
+                        $dialog.find('.confirm-ok').focus();
+                    }, 100);
+                });
+            }
+
+            // 自定义提示对话框（纯提示）
+            function customAlert(message, type) {
+                return new Promise(function(resolve) {
+                    type = type || 'info';
+                    var iconClass = type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+                    var title = type === 'warning' ? '警告' : '提示';
+                    
+                    // 创建对话框 HTML
+                    var html = '<div class="custom-alert-overlay">';
+                    html += '<div class="custom-alert-dialog">';
+                    html += '<div class="custom-alert-header alert-' + type + '">';
+                    html += '<h4><i class="fa ' + iconClass + '"></i>' + title + '</h4>';
+                    html += '</div>';
+                    html += '<div class="custom-alert-body">' + escapeHtml(message) + '</div>';
+                    html += '<div class="custom-alert-footer">';
+                    html += '<button class="btn btn-primary alert-ok">知道了</button>';
+                    html += '</div>';
+                    html += '</div>';
+                    html += '</div>';
+                    
+                    var $dialog = $(html);
+                    $('body').append($dialog);
+                    
+                    // 确定按钮
+                    $dialog.find('.alert-ok').on('click', function() {
+                        $dialog.remove();
+                        resolve();
+                    });
+                    
+                    // 点击遮罩层关闭
+                    $dialog.on('click', function(e) {
+                        if ($(e.target).hasClass('custom-alert-overlay')) {
+                            $dialog.remove();
+                            resolve();
+                        }
+                    });
+                    
+                    // ESC 键关闭
+                    $(document).on('keydown.alert', function(e) {
+                        if (e.keyCode === 27) {
+                            $(document).off('keydown.alert');
+                            $dialog.remove();
+                            resolve();
+                        }
+                    });
+                    
+                    // 聚焦到确定按钮
+                    setTimeout(function() {
+                        $dialog.find('.alert-ok').focus();
+                    }, 100);
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
