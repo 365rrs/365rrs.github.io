@@ -534,7 +534,6 @@
         (function () {
             'use strict';
 
-            var STORAGE_KEY = 'tab_copy_helper_data';
             var UID = 0;
 
             // dataList 中每项：{ id, title, url, checked }
@@ -553,7 +552,6 @@
 
             $(document).ready(function () {
                 bindEvents();
-                restore();
                 render();
             });
 
@@ -622,7 +620,6 @@
                     if (item) { item.checked = $(this).prop('checked'); }
                     $(this).closest('tr').toggleClass('selected', $(this).prop('checked'));
                     updateToolbar();
-                    persist();
                 });
 
                 // 点击行空白处切换选中（编辑中的行除外）
@@ -822,7 +819,7 @@
                 }
                 confirmDialog({
                     title: '清空全部数据',
-                    message: '将清空输入框和列表中的 ' + dataList.length + ' 条记录，本地缓存也会一起删除。',
+                    message: '将清空输入框和列表中的 ' + dataList.length + ' 条记录。',
                     okText: '清空',
                     okClass: 'btn-danger'
                 }).then(function (ok) {
@@ -876,7 +873,6 @@
                               '4. 编辑、去重、筛选后按需复制导出</div>')
                         .show();
                     updateToolbar();
-                    persist();
                     return;
                 }
 
@@ -892,7 +888,6 @@
                               '<div>没有匹配「' + escapeHtml(keyword) + '」的记录</div>')
                         .show();
                     updateToolbar();
-                    persist();
                     return;
                 }
 
@@ -945,7 +940,6 @@
                 }
 
                 updateToolbar();
-                persist();
             }
 
             var editFocus = 'title';
@@ -1137,7 +1131,7 @@
                 $temp.remove();
             }
 
-            /* ============ 撤销 & 持久化 ============ */
+            /* ============ 撤销 ============ */
             function snapshot(label) {
                 lastAction = {
                     label: label,
@@ -1152,37 +1146,6 @@
                 editingId = null;
                 render();
                 toast('已撤销', 'info');
-            }
-
-            function persist() {
-                try {
-                    var plain = [];
-                    for (var i = 0; i < dataList.length; i++) {
-                        plain.push({ title: dataList[i].title, url: dataList[i].url, checked: dataList[i].checked });
-                    }
-                    localStorage.setItem(STORAGE_KEY, JSON.stringify(plain));
-                } catch (e) { /* 隐私模式等场景忽略 */ }
-            }
-
-            function restore() {
-                try {
-                    var raw = localStorage.getItem(STORAGE_KEY);
-                    if (!raw) { return; }
-                    var arr = JSON.parse(raw);
-                    if (!Array.isArray(arr) || !arr.length) { return; }
-                    for (var i = 0; i < arr.length; i++) {
-                        if (!arr[i] || !arr[i].url) { continue; }
-                        dataList.push({
-                            id: ++UID,
-                            title: String(arr[i].title || arr[i].url),
-                            url: String(arr[i].url),
-                            checked: !!arr[i].checked
-                        });
-                    }
-                    if (dataList.length) {
-                        toast('已恢复上次的 ' + dataList.length + ' 条数据', 'info');
-                    }
-                } catch (e) { /* ignore */ }
             }
 
             /* ============ 通知 & 确认 ============ */
