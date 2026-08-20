@@ -80,6 +80,10 @@
         .input-actions .btn {
             margin-right: 8px;
         }
+        .input-actions .btn:last-child {
+            margin-right: 0;
+        }
+
         .tip-hint {
             font-size: 12px;
             color: #95a5a6;
@@ -139,7 +143,7 @@
         }
         .counter {
             display: inline-block;
-            margin-left: 14px;
+            margin-right: 14px;
             font-size: 13px;
             color: #7f8c8d;
             vertical-align: middle;
@@ -150,8 +154,8 @@
         .counter .sel-num {
             color: #3498db;
         }
-        .toolbar-right .btn {
-            margin-left: 6px;
+        .toolbar-left .btn {
+            margin-right: 6px;
         }
 
         /* ---------- 表格 ---------- */
@@ -395,7 +399,8 @@
                 text-align: left;
             }
             .toolbar-right { margin-top: 8px; }
-            .toolbar-right .btn { margin-left: 0; margin-right: 6px; }
+            .toolbar-left .btn { margin-right: 6px; margin-bottom: 6px; }
+            .counter { display: block; margin: 0 0 6px; }
             .search-wrap { width: 100%; }
             .data-table th { position: static; }
         }
@@ -434,11 +439,15 @@
                     <button id="pasteBtn" class="btn btn-success">
                         <i class="fa fa-paste"></i> 读取剪贴板并解析
                     </button>
+                    <button id="clearBtn" class="btn btn-danger" title="清空输入框、列表与本地缓存">
+                        <i class="fa fa-trash-o"></i> 清空全部
+                    </button>
                     <button id="appendBtn" class="btn btn-default" title="解析结果追加到现有列表，而不是替换">
                         <i class="fa fa-plus-circle"></i> 追加解析
                     </button>
-                    <button id="loadSampleBtn" class="btn btn-link btn-sm">加载示例</button>
-                    <button id="clearBtn" class="btn btn-link btn-sm text-danger">清空全部</button>
+                    <button id="loadSampleBtn" class="btn btn-default" title="填入示例数据">
+                        <i class="fa fa-flask"></i> 加载示例
+                    </button>
                 </div>
                 <div class="tip-hint">
                     <i class="fa fa-info-circle"></i>
@@ -451,14 +460,6 @@
         <div class="toolbar" id="toolbar" style="display: none;">
             <div class="toolbar-row">
                 <div class="toolbar-left">
-                    <span class="search-wrap">
-                        <i class="fa fa-search"></i>
-                        <input type="text" id="searchInput" class="form-control" placeholder="搜索标题或链接">
-                        <span class="search-clear" id="searchClear" title="清除搜索"><i class="fa fa-times-circle"></i></span>
-                    </span>
-                    <span class="counter" id="counter"></span>
-                </div>
-                <div class="toolbar-right">
                     <button id="addRowBtn" class="btn btn-default btn-sm" title="手动新增一条">
                         <i class="fa fa-plus"></i> 新增
                     </button>
@@ -472,7 +473,7 @@
                         <button class="btn btn-success btn-sm batch-btn" id="copyMenuBtn" data-toggle="dropdown" aria-expanded="false" disabled>
                             <i class="fa fa-copy"></i> 复制选中 <span class="caret"></span>
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                        <ul class="dropdown-menu" role="menu">
                             <li><a href="#" data-copy="tsv"><i class="fa fa-table fa-fw"></i> 标题 + 链接（Excel / TSV）</a></li>
                             <li><a href="#" data-copy="url"><i class="fa fa-link fa-fw"></i> 仅链接</a></li>
                             <li><a href="#" data-copy="title"><i class="fa fa-font fa-fw"></i> 仅标题</a></li>
@@ -485,6 +486,14 @@
                     <button id="batchDeleteBtn" class="btn btn-danger btn-sm batch-btn" disabled>
                         <i class="fa fa-trash"></i> 删除选中
                     </button>
+                </div>
+                <div class="toolbar-right">
+                    <span class="counter" id="counter"></span>
+                    <span class="search-wrap">
+                        <i class="fa fa-search"></i>
+                        <input type="text" id="searchInput" class="form-control" placeholder="搜索标题或链接">
+                        <span class="search-clear" id="searchClear" title="清除搜索"><i class="fa fa-times-circle"></i></span>
+                    </span>
                 </div>
             </div>
         </div>
